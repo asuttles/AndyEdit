@@ -1,0 +1,1081 @@
+/***
+        _              _         _____    _ _ _
+       / \   _ __   __| |_   _  | ____|__| (_) |_
+      / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
+     / ___ \| | | | (_| | |_| | | |__| (_| | | |_
+    /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|
+                         |___/
+    Copyright 2019
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+    KNOWN BUGS
+    - None
+    
+    TODO
+    - Save File (C-x C-s)  
+    - Delete (c-d) and Backspace (c-h)
+    - Delete Word
+    - Fix up Delete (c-d) -> navigation state should fix line and reset editP
+    - Backward word should stop at beginning of word
+    
+    FUTURE
+    - Highlight current row
+
+    - Put Tabs back in files -- render the tab as spaces, but
+    - keep the tab in the text line.  
+
+    - Create undo/redo capability
+    - Create a (row_t *) redo pointer for each row.  
+    - Each time a line is modified, a new row_t is malloc'd
+    - Ending up in a linked list of mods for the row.
+    - an undo history array can keep a list of modified lines to undo
+
+    - An analogous redo linked list can allow the line to be redo'd
+
+    - Rectangle operations
+
+    DONE (for Update 0.2)
+    - ENTER (**)
+    - Kill Line (**)
+    - Meta Key Navigation
+    - Jump to Line 
+    - Minibuffer Read/Messages
+    - Set Mark and Swap Point/Mark
+    - Cursor Movement Function Updates Terminal State
+    - Edits to a Line updates Editor State
+    - eXtension Menu
+    - Dirty Flag/State for Modified Buffer
+    - Forward/Backward Word
+ ***/
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <curses.h>
+#include <stdbool.h>
+#include <string.h>
+
+/* Macros */
+#define CTRL_KEY(k) ((k) & 0x1f)
+#define ALT_KEY 27
+#define MXRWS 512
+#define MINIBUFFSIZE 128
+#define thisRow() (ROWOFFSET + POINT_Y)
+#define screenRows() (getmaxy( WIN ) - 3)
+
+/* Text Line Data Structures */
+typedef struct {
+  char *txt;  
+  size_t len;
+  size_t lPtr;
+  size_t rPtr;
+  bool   editP;
+} row_t;
+
+
+/* Global Data */
+WINDOW *WIN;			/* Window Handle */
+int POINT_X   = 0;		/* Point X Position */
+int POINT_Y   = 0;		/* Point Y Position */
+int MARK_X    = -1;		/* Mark X Position */
+int MARK_Y    = -1;		/* Mark Y Position */
+int NUMROWS   = 0;		/* Num Rows in Text Buffer */
+int ROWOFFSET = 0;		/* Buffer Index of Top Row */
+int COLOFFSET = 0;		/* Buffer Index of First Col */
+int MAXROWS = MXRWS;		/* MAX Number of Buffer Lines */
+bool dirtyP   = false; 		/* Is Buffer Modified? */
+row_t **BUFFER;			/* File Buffer */
+char MINIBUFFER[MINIBUFFSIZE];	/* Minibuffer Input */
+char EDITBUFFER[64];		/* Edit Buffer For Text Input */
+
+
+/*******************************************************************************
+
+			   TERMINATE EDITOR
+
+*******************************************************************************/
+
+/* Restore tty */
+void closeEditor() {
+
+  endwin();
+}
+
+
+/* Print Error Message and Exit */
+void die( const char *s ) {
+
+  perror(s);
+  sleep(3);
+  closeEditor();
+  
+  exit(EXIT_FAILURE);
+}
+
+/*******************************************************************************
+
+				  IO
+
+*******************************************************************************/
+
+/* Read Keypresses */
+int readKey() {
+
+  int c;			/* 'Char' or Flags */
+
+  /* wgetch handles SIGWINCH */
+  while(( c = wgetch( WIN )) == ERR ) {
+
+    // Handle Timeouts...
+    refresh();
+  }
+  
+  return c;
+}
+
+/*******************************************************************************
+
+			      MINIBUFFER
+
+*******************************************************************************/
+
+/* Write Message to User */
+void miniBufferMessage( const char *msg ) {
+
+  int mbRow = getmaxy( WIN ) - 1;
+  
+  /* Print Input Message */
+  mvaddstr( mbRow, 0, msg );
+  refresh();
+}
+
+/* Clear Minibuffer Messages */
+void miniBufferClear() {
+  
+  int mbRow = getmaxy( WIN ) - 1;
+  
+  /* Clear Message Buffer */
+  move( mbRow, 0 );
+  clrtoeol();
+  refresh();
+}
+
+
+/* Minibuffer IO */
+void miniBufferGetInput( const char *msg ) {
+
+  int c;			/* Input Char */
+
+  int mbRow = getmaxy( WIN ) - 1;
+  
+  /* Print Input Message */
+  mvaddstr( mbRow, 0, msg );
+  refresh();
+
+  /* Read Inputs */
+  int col = strlen( msg);
+  int i = 0;
+  
+  while((( c = readKey()) != '\r' ) &&
+	( i < MINIBUFFSIZE - 1 )) {
+
+    mvaddch( mbRow, col+i, c );
+    MINIBUFFER[i++] = c;
+    refresh();
+  }
+
+  MINIBUFFER[i] = '\0';		/* NULL Terminate String */
+  
+  move( mbRow, 0 );
+  clrtoeol();
+}
+
+
+/* Read Integer from Minibuffer */
+int miniBufferGetPosInteger( const char *msg ) {
+
+  miniBufferGetInput( msg );
+  return atoi( MINIBUFFER );
+}
+
+/*******************************************************************************
+
+				 TABS
+
+*******************************************************************************/
+
+/* Convert Tabs to Spaces */
+char *removeTabs( char *line ) {
+
+  size_t i;
+
+  size_t countTabs = 0;
+  size_t len = strlen( line );
+  
+  /* Count the Number of Tabs */
+  for( i = 0; i<len; i++ ) {
+    if( line[i] == '\t' ) {
+      countTabs++;
+    }
+  }
+
+  /* Return if No Tabs Found */
+  if( countTabs == 0 ) return line;
+
+  /* Create Space for 'Newline' Without Tabs */
+  char *newline = malloc(( sizeof( char ) *
+			   ( len + ( countTabs * 7 ))) + 1 );
+  size_t j;
+  size_t index = 0;
+
+  /* Copy Line to Newline With Spaces */
+  for( i = 0; i<len; i++ ) {
+
+    if( line[i] == '\t' ) {	/* Tabs Found */
+      for( j = 0; j<8; j++ ) {
+	newline[index] = ' ';
+	index++;
+      }
+    }
+    else {			/* Not a Tab */
+      newline[index] = line[i];
+      index++;
+    }
+  }
+
+  newline[index] = '\0';
+  free( line );			/* Delete Old Line */
+  return newline;		/* Save New Line */
+}
+
+/*******************************************************************************
+
+			  BUFFER MANAGEMENT
+
+*******************************************************************************/
+
+/* Close Text Buffer */
+void closeBuffer() {
+
+  int i;
+
+  for( i=0; i<NUMROWS; i++ ) {
+    free( BUFFER[i]->txt );
+    free( BUFFER[i] );
+  }
+
+  free( BUFFER );
+  BUFFER = (row_t **)NULL;
+
+  MAXROWS   = MXRWS;
+  NUMROWS   = 0;
+  POINT_X   = 0;
+  POINT_Y   = 0;
+  MARK_X    = -1;
+  MARK_Y    = -1;
+  ROWOFFSET = 0;
+  COLOFFSET = 0;
+
+  dirtyP    = false;
+
+  clear();
+}
+
+
+/* Double Buffer Size */
+void doubleBufferSize() {
+  
+  row_t **ptr = BUFFER;
+  row_t **newPtr = NULL;
+
+  int newMaxRows = MAXROWS * 2;	/* Double Buffer Size */
+    
+  newPtr = realloc( ptr, newMaxRows * sizeof( row_t *));
+  MAXROWS = newMaxRows;
+  
+  if( newPtr == NULL ) die( "doubleBufferSize: realloc failed" );
+  if( newPtr != ptr  ) {
+
+    BUFFER = newPtr;
+    free( ptr );
+  }
+}
+
+
+/* Setup Editor Data Structures */
+void initializeData() {
+
+  /* Reserve Heap Space for Buffer */
+  if(( BUFFER = malloc( sizeof( row_t * ) * MXRWS )) == NULL )
+    die( "initializeData: BUFFER malloc failed" );
+}
+
+
+/* Read A Text File from Disk */
+void openBuffer( char * fn ) {
+
+  int i = 0;
+  FILE *fp = NULL;
+
+  
+  /* Open File for Editing */
+  if(( fp = fopen( fn, "r" )) == NULL ) {
+    die( "openBuffer: fopen failed." );
+  }
+
+  /* Read File Rows into BUFFER */
+  while( true ) {
+
+    /* Check Buffer Size */
+    if( i == MAXROWS ) {	
+      doubleBufferSize();
+    }
+
+    /* Reserve Heap Space for Text Row  */
+    BUFFER[i] = malloc( sizeof( row_t ));
+    BUFFER[i]->len   = 0;
+    BUFFER[i]->lPtr  = 0;
+    BUFFER[i]->rPtr  = 0;
+    BUFFER[i]->editP = false;
+    BUFFER[i]->txt   = NULL;
+
+    /* Read Next Text Row */
+    if( getline( &BUFFER[i]->txt, &BUFFER[i]->len, fp ) == ERR ) break;
+
+    /* Clean-up Tabs and Set Length */
+    BUFFER[i]->txt = removeTabs( BUFFER[i]->txt );
+    BUFFER[i]->len = strlen( BUFFER[i]->txt );
+
+    i++;			/* Line Counter */
+  }
+  
+  NUMROWS = i;
+
+  fclose(fp);
+}
+
+/*******************************************************************************
+
+			      STATUS BAR
+
+*******************************************************************************/
+
+/* Draw Status Line */
+void drawStatusLine() {
+
+  int  curCol, maxCol;
+  char status[256];
+
+  int  curRow = getmaxy( WIN ) - 2;
+  
+  
+  attron( A_REVERSE );		/* Reverse Video */
+
+  snprintf( status, 256, "%s  /home/acs/ae/src/ae.c -------[%d of %d]---[col %d]----(c mode)---------[%d, %d]",
+	    dirtyP ? "**" : "--",
+	    thisRow() + 1, NUMROWS, POINT_X, ROWOFFSET, MAXROWS );
+  mvaddstr( curRow, 0, status );
+
+  curCol = getcurx( WIN );
+  maxCol = getmaxx( WIN ); 
+  
+  while( curCol < maxCol ) {
+    mvaddch( curRow, curCol++, '-' );
+  }
+  
+  attroff( A_REVERSE );
+}
+
+
+/*******************************************************************************
+
+			     RENDER TEXT
+
+*******************************************************************************/
+
+/* Draw the Rows of Text */
+void renderText() {
+
+  int i, row, col, colMax, txtLen, nextRow;
+  int maxRows = getmaxy( WIN ) - 2;
+  int maxCols = getmaxx( WIN );
+
+  for( row = 0; row < maxRows; row++ ) {
+
+    nextRow = row+ROWOFFSET;
+    
+    if( nextRow < NUMROWS ) {	/* Write Text */
+
+      /* Calculate what subset of the Row Fits in the Term */
+      txtLen = (int)BUFFER[nextRow]->len - COLOFFSET;
+      colMax = maxCols > txtLen ? txtLen : maxCols;
+      
+      /* Write Letter at a Time */
+      col = 0;
+      for( i=0; i < colMax; i++ ) {
+
+	/* Skip Deleted Chars */
+	if( i >=  (int)BUFFER[row+ROWOFFSET]->lPtr && 
+	    i < (int)BUFFER[row+ROWOFFSET]->rPtr ) {
+	  continue;
+	}
+	else {
+	  mvaddch( row, col, BUFFER[row+ROWOFFSET]->txt[i+COLOFFSET] );
+	  col++;
+	}
+      }
+    }
+    
+    else {			/* vi EOF Markers */      
+      mvaddch( row, 0, '~' );
+      clrtoeol();
+    }    
+  }
+
+  drawStatusLine();
+
+  move( POINT_Y, POINT_X );	/* Set POINT */
+  refresh();
+}
+
+/*******************************************************************************
+
+			      NAVIGATION
+
+*******************************************************************************/
+
+/* Move Point to End of Line */
+void pointToEndLine() {
+
+  int x = BUFFER[ROWOFFSET+POINT_Y]->len - 1; /* Text Line Length */
+  int y = getmaxx( WIN ) - 1;		      /* Terminal Length */
+
+  if( x > y ) {
+    POINT_X = y;
+    COLOFFSET = x - y;
+  }
+  else {
+    POINT_X = x;
+    COLOFFSET = 0;
+  }
+}
+
+
+/* Forward Word */
+void forwardWord() {
+  
+if( POINT_X == (int)BUFFER[thisRow()]->len-1 ) /* At EOL? */
+  return;
+
+ POINT_X++;			
+
+ /* Move Past Spaces */
+ while( BUFFER[thisRow()]->txt[POINT_X] == ' ' ) 
+   POINT_X++;
+
+ /* Move to End of Word */
+ while( BUFFER[thisRow()]->txt[POINT_X] != '\n' &&
+	BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
+	BUFFER[thisRow()]->txt[POINT_X] != '('  &&
+	BUFFER[thisRow()]->txt[POINT_X] != ')'  &&
+	BUFFER[thisRow()]->txt[POINT_X] != '+'  &&
+	BUFFER[thisRow()]->txt[POINT_X] != '['  &&
+	BUFFER[thisRow()]->txt[POINT_X] != ']' )
+	
+   POINT_X++;
+}
+
+
+/* Backward Word */
+void backwardWord() {
+
+  if( POINT_X == 0 ) return;	/* At BOL? */
+
+  POINT_X--;
+  
+ /* Move Past Spaces */
+  while( BUFFER[thisRow()]->txt[POINT_X] == ' ' &&
+	 POINT_X > 0 )
+    POINT_X--;
+
+ /* Move to Beginning of Word */
+ while( POINT_X >= 0                            &&
+	BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
+	BUFFER[thisRow()]->txt[POINT_X] != '('  &&
+	BUFFER[thisRow()]->txt[POINT_X] != ')'  &&
+	BUFFER[thisRow()]->txt[POINT_X] != '+'  &&
+	BUFFER[thisRow()]->txt[POINT_X] != '['  &&
+	BUFFER[thisRow()]->txt[POINT_X] != ']' )
+	
+   POINT_X--;
+}
+
+  
+/* Move Point to End of Buffer */
+void pointToEndBuffer() {
+
+  ROWOFFSET = NUMROWS - getmaxy( WIN ) + 2;
+
+  if( ROWOFFSET < 1 ) {		/* Buffer Smaller Than Term */
+    ROWOFFSET = 0;
+    POINT_X = 0;
+    POINT_Y = NUMROWS - 1;
+  }
+
+  else {			/* Scroll to End Buffer */
+    POINT_Y = screenRows();
+    POINT_X = 0;
+  }
+}
+
+
+/* Center Line */
+void centerLine() {
+
+  int distToCenter = POINT_Y - ( getmaxy( WIN ) / 2 ) + 2;
+
+  /* Point Above Center */
+  if( distToCenter < 0 ) {
+
+    if( ROWOFFSET > abs( distToCenter )) {
+      ROWOFFSET += distToCenter;
+      POINT_Y += abs( distToCenter );
+      POINT_X = 0;
+    }
+
+    else {
+      POINT_Y += ROWOFFSET;
+      ROWOFFSET = 0;
+    }
+  }
+
+  /* Point Below Center */
+  else {
+
+    ROWOFFSET += distToCenter;
+    POINT_Y -= distToCenter;
+  }
+}
+
+
+/* Jump to <input> Linenumber */
+void jumpToLine() {
+
+  int lineNum = miniBufferGetPosInteger( "Line: " );
+
+  if( lineNum < 1 || lineNum > NUMROWS ) return;
+
+  if( NUMROWS < screenRows() ) {
+    POINT_Y = lineNum - 1;
+  }
+  else {
+    ROWOFFSET = lineNum - 1;
+    POINT_Y = 0;
+    centerLine();
+  }
+}
+
+
+/* Page Down */
+void pageDown() {
+
+  /* Point NOT at bottom of Terminal */
+  if( POINT_Y < screenRows() ) {
+
+    /* Last Line of Buffer Already Visible - No scroll */
+    if(( NUMROWS - thisRow()) < getmaxy( WIN ) - 2)
+      return;
+
+    /* Scroll to Bottom of Terminal */
+    POINT_Y = screenRows();
+    POINT_X = 0;
+    return;
+  }
+
+  /* Point at Bottom Row - Page Down */
+  ROWOFFSET += screenRows();
+  POINT_Y = 0;
+  POINT_X = 0;
+}
+
+
+/* Page Up */
+void pageUp() {
+
+  /* Point NOT at top of terminal */
+  if( POINT_Y > 0 ) {
+    POINT_X = 0;
+    POINT_Y = 0;
+
+    return;
+  }
+
+  /* Point at Top - Page Up */
+  if( ROWOFFSET > getmaxy( WIN ) - 2 ) {
+    ROWOFFSET -= screenRows();
+    POINT_X = 0;
+    POINT_Y = screenRows();
+    return;
+  }
+
+  /* Scroll to Top of Buffer */
+  ROWOFFSET = 0;
+  POINT_X = 0;
+  POINT_Y = 0;
+}
+
+/*******************************************************************************
+
+			    POINT AND MARK
+
+*******************************************************************************/
+
+/* Swap Point and Mark */
+void swapPointAndMark() {
+
+  int tmpX, tmpY;
+  
+  if( MARK_X != -1      &&	/* Mark Not Set */
+      MARK_Y != -1 ) {
+    
+    tmpX     = POINT_X;		/* Swap Point/Mark */
+    tmpY     = thisRow();
+    POINT_X = MARK_X;
+    POINT_Y = MARK_Y;
+    MARK_X  = tmpX;
+    MARK_Y  = tmpY;
+
+    if( NUMROWS >= screenRows() ) { /* Scroll to Point Location */
+
+      ROWOFFSET = POINT_Y;
+      POINT_Y = 0;
+      centerLine();
+    }
+    miniBufferMessage( "Mark Set" );
+  }
+}
+
+/*******************************************************************************
+
+			   LINE MANAGEMENT
+
+*******************************************************************************/
+
+
+/* Kill Line at Point */
+void killLine() {
+
+  int i;
+
+  /* Line Empty - Delete it */
+  if( BUFFER[thisRow()]->len == 1 ) {
+
+    if( thisRow() == NUMROWS - 1 ) return; /* Cant Delete if Nothing Follows */
+    
+    free( BUFFER[thisRow()]->txt );
+    free( BUFFER[thisRow()] );
+    
+    for( i=thisRow(); i<NUMROWS-1; i++ ) {
+
+      BUFFER[i] = BUFFER[i+1];
+    }
+
+    --NUMROWS;
+  }
+
+  /* Delete from POINT to EOL */
+  else {			
+
+    /* Heap Space for Trimmed String */
+    char *tmp = malloc( sizeof( char ) * ( POINT_X + 2 ));
+    if( POINT_X > 0 )
+      strncpy( tmp, BUFFER[thisRow()]->txt, POINT_X );
+    free( BUFFER[thisRow()]->txt );
+
+    /* Fix Up row_t For This Row */
+    BUFFER[thisRow()]->txt = tmp;
+    BUFFER[thisRow()]->len = POINT_X + 1;
+    BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len-1] = '\n';
+    BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len] = '\0';
+
+    clrtoeol();
+  }
+}
+
+
+/* Open a New Line */
+void openLine() {
+
+  /* Check Buffer Size */
+  if( NUMROWS == MAXROWS ) {	
+    doubleBufferSize();
+  }
+
+  /* Move Lines Down */
+  int i;
+  
+  for( i=NUMROWS; i>thisRow()+1; i-- ) {
+    BUFFER[i] = BUFFER[i-1];
+  }
+
+  /* Create New Line */
+  BUFFER[i] = malloc( sizeof( row_t ));
+  BUFFER[i]->len = BUFFER[thisRow()]->len - POINT_X;
+  BUFFER[i]->txt = malloc( sizeof( char ) * ( BUFFER[i]->len + 1 ));
+
+  /* Copy Text Into New Line */
+  if( strncpy( BUFFER[i]->txt, 
+	       BUFFER[thisRow()]->txt + POINT_X,
+	       BUFFER[i]->len ) == NULL ) die( "openLine: strncpy failed." );
+
+  BUFFER[i]->txt[BUFFER[i]->len] = '\0';
+
+  /* Heap Space for Trimmed String */
+  char *tmp = malloc( sizeof( char ) * ( POINT_X + 2 ));
+  if( POINT_X > 0 )
+    strncpy( tmp, BUFFER[thisRow()]->txt, POINT_X );
+  free( BUFFER[thisRow()]->txt );
+
+  /* Fix Up row_t For This Row */
+  BUFFER[thisRow()]->txt = tmp;
+  BUFFER[thisRow()]->len = POINT_X + 1;
+  BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len-1] = '\n';
+  BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len] = '\0';
+
+  clrtoeol();
+  
+  /* Move Point */
+  POINT_X = 0;	
+  POINT_Y++;
+  NUMROWS++;			/* Increment Num Lines */
+}
+
+/*******************************************************************************
+
+			     EDITOR STATE
+
+*******************************************************************************/
+
+
+/* Cursor Movement Functions */
+void updateNavigationState() {
+
+
+  miniBufferClear();
+    // Save Line Edits
+}
+
+
+/* Edit Line */
+void updateEditState() {
+
+  BUFFER[thisRow()]->editP = true;
+  dirtyP = true;
+}
+
+/*******************************************************************************
+
+			 PROCESS KEY PRESSES
+
+*******************************************************************************/
+
+/* Meta Menu */
+void metaMenu() {
+
+  int c = readKey();
+
+  switch(c) {
+
+    /* Buffer Navigation */
+  case 'f':			/* Forward Word */
+    forwardWord();
+    updateNavigationState();
+    break;
+
+  case 'b':			/* Backward Word */
+    backwardWord();
+    updateNavigationState();
+    break;
+
+  case 'v':			/* Forward Word */
+    pageUp();
+    updateNavigationState();
+    break;
+
+  case '<':			/* Top of Buffer */
+    POINT_X = 0;
+    POINT_Y = 0;
+    COLOFFSET = 0;
+    ROWOFFSET = 0;
+    updateNavigationState();
+    break;
+
+  case '>':			/* End of Buffer */
+    pointToEndBuffer();
+    updateNavigationState();
+    break;
+  }  
+}
+
+
+/* eXtension Menu */
+void eXtensionMenu() {
+
+  int c = readKey();
+
+  switch(c) {
+
+  case CTRL_KEY('x'):		/* Forward Word */
+    swapPointAndMark();
+    break;
+
+  case CTRL_KEY('c'):		/* Close Editor */
+    closeEditor();
+    exit(EXIT_SUCCESS);
+    break;
+
+  }  
+}
+  
+
+/* Process Keypresses */
+void processKeypress() {
+
+  int c = readKey();
+  
+  switch(c) {
+    
+    /* Meta Key */
+  case ALT_KEY:
+    metaMenu();
+    break;
+
+    /* CTRL Key */
+  case CTRL_KEY('x'):
+    eXtensionMenu();
+    break;
+    
+    /* Quit Program */
+  case CTRL_KEY('q'):		
+    closeEditor();
+    exit(EXIT_SUCCESS);
+    break;
+
+    /* Close a Buffer */
+  case CTRL_KEY('c'):		
+    closeBuffer();
+    break;
+
+    /* Cursor Movement */
+  case KEY_HOME:		/* Home */
+    POINT_X = 0;
+    POINT_Y = 0;
+    COLOFFSET = 0;
+    ROWOFFSET = 0;
+    updateNavigationState();
+    break;
+  case CTRL_KEY('l'):		/* Center Line */
+    centerLine();
+    updateNavigationState();
+    break;
+  case CTRL_KEY('b'):		/* Point Back */
+  case KEY_LEFT:		
+    if( POINT_X > 0 ) --POINT_X;
+    updateNavigationState();
+    break;
+  case CTRL_KEY('a'):		/* Point BOL */
+    POINT_X = 0;
+    COLOFFSET = 0;
+    updateNavigationState();
+    break;
+  case CTRL_KEY('f'):		/* Point Forward */
+  case KEY_RIGHT:
+    if( POINT_X + COLOFFSET < (int)BUFFER[ROWOFFSET+POINT_Y]->len - 1 ) {
+      if( POINT_X < getmaxx( WIN ) - 1 ) ++POINT_X;
+      else COLOFFSET++;
+    }
+    updateNavigationState();
+    break;
+  case CTRL_KEY('e'):		/* Point EOL */
+    pointToEndLine();
+    updateNavigationState();
+    break;
+  case CTRL_KEY('j'):
+    jumpToLine();
+    updateNavigationState();
+    break;
+  case CTRL_KEY('p'):		/* Prior Line */
+  case KEY_UP:
+    if( POINT_Y > 0 ) --POINT_Y;
+    else if ( ROWOFFSET > 0 ) --ROWOFFSET;
+    if( COLOFFSET > 0 ) pointToEndLine();
+    updateNavigationState();
+    break;
+  case CTRL_KEY('n'):		/* Next Line */
+  case KEY_DOWN:
+    if( POINT_Y + ROWOFFSET < NUMROWS - 1 ) {
+
+      /* Avoid Mode Line */
+      if( POINT_Y < screenRows() ) ++POINT_Y;
+      else ++ROWOFFSET;
+
+      if( POINT_X + COLOFFSET > 
+	  (int)BUFFER[ROWOFFSET+POINT_Y]->len - 1 ) pointToEndLine();
+    }
+    updateNavigationState();
+    break;
+  case KEY_PPAGE:		/* Page Up */
+    pageUp();
+    updateNavigationState();
+    break;
+  case KEY_END:			/* End of Buffer */
+    pointToEndBuffer();
+    updateNavigationState();
+    break;
+  case KEY_NPAGE:		/* Page Down */
+  case CTRL_KEY('v'):
+    pageDown();
+    updateNavigationState();
+    break;
+
+    /* Create a Newline */
+  case '\r':			/* Enter Key */
+    openLine();
+    updateNavigationState();
+    updateEditState();
+    break;
+
+    /* Point/Mark */
+  case CTRL_KEY(' '):
+    MARK_X = POINT_X;
+    MARK_Y = thisRow();
+    miniBufferMessage( "Mark Set" );
+    break;
+
+    /* Edit Text */
+  case CTRL_KEY('d'):		/* Delete Char */
+    if( BUFFER[thisRow()]->editP ) {
+      if( BUFFER[thisRow()]->rPtr < BUFFER[thisRow()]->len )
+	BUFFER[thisRow()]->rPtr++;
+    }
+    else {
+      if( (size_t)POINT_X < BUFFER[thisRow()]->len ) {
+	BUFFER[thisRow()]->lPtr = POINT_X;
+	BUFFER[thisRow()]->rPtr = POINT_X+1;
+	updateEditState();
+      }
+    }
+    break;
+  case CTRL_KEY('k'):		/* Kill Line */
+    killLine();
+    updateEditState();
+    break;
+    
+    /* Handle Signals */
+  case KEY_RESIZE:		/* Window Resized */
+    break;
+
+  default:			/* Letters */
+    break;
+  }
+
+
+  renderText();			/* Redraw Terminal */
+  refresh();
+}
+
+/*******************************************************************************
+
+		       STARTUP / INITIALIZATION
+
+*******************************************************************************/
+
+/* Prepare tty for Raw nCurses Input */
+void initializeTerminal() {
+
+  if(( WIN = initscr() ) == NULL ) { /* Setup ncurses */
+    die( "initializeTerminal: initscr failed" );
+  }
+
+  if( cbreak() == ERR ) {	/* Unbuffered Input */
+    die( "initializeTerminal: cbreak failed" );
+  }
+
+  if( noecho() == ERR ) {	/* Do NOT local echo */
+    die( "initializeTerminal: noecho failed" );
+  }
+
+  if( nonl() == ERR ) {		/* \n != \r\n */
+    die( "initializeTerminal: nonl failed" );
+  }
+
+  if( keypad( stdscr, TRUE ) == ERR ) { /* Enable keypad */
+    die( "initializeterminal: keypad failed" );
+  }
+
+  if( raw() == ERR ) {		/* Set ICANON, ISIG, IXON off */
+    die( "initializeterminal: raw" );
+  }
+
+  timeout(100);
+}
+
+
+/* Display Splash Screen */
+void displaySplash( void ) {
+
+  int center = (getmaxx(WIN) / 2);
+  int third  = (getmaxy(WIN) / 3);
+  
+  mvaddstr( third + 0, center - 10, "Welcome to Andy Edit!" );
+  mvaddstr( third + 1, center - 6, "Version 0.02" );
+  mvaddstr( third + 3, center - 9, "(c) Copyright 2019" );
+
+  refresh();
+  sleep(2);
+
+  clear();
+  renderText();
+}
+
+
+/* Open AE on an Empty Buffer */
+void emptyBuffer() {
+
+  displaySplash();
+
+  BUFFER[0] = malloc( sizeof( row_t ));
+  BUFFER[0]->txt = malloc( sizeof( char ) * 2 );
+  strncpy( BUFFER[0]->txt, "\n", 2 );
+  BUFFER[0]->len = 1;
+
+  NUMROWS = 1;
+}
+
+
+/* Editor Polling Loop */
+int main( int argc, char *argv[] ) {
+
+  /* Initialize */
+  initializeTerminal();
+  initializeData();
+
+  /* Open File or Display Splash */
+  if( argc > 1 )
+    openBuffer( argv[argc-1] );
+  else
+    emptyBuffer();
+  
+  /* Process Key Presses */
+  while( true ) {
+    renderText();
+    processKeypress();
+  } 
+
+  /* Shutdown */
+  closeEditor();
+  return EXIT_SUCCESS;
+} 
