@@ -5,51 +5,19 @@
      / ___ \| | | | (_| | |_| | | |__| (_| | | |_
     /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|
                          |___/
-    Copyright 2019
+    Copyright 2019 (andrew.suttles@gmail.com)
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
+ OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ DEALINGS IN THE SOFTWARE.
 
+ A simple, line-oriented, terminal-based text editor with an emacs-like keybinding.
 
-    KNOWN BUGS
-    - None
-    
-    TODO
-    - Save File (C-x C-s)  
-    - Delete (c-d) and Backspace (c-h)
-    - Delete Word
-    - Fix up Delete (c-d) -> navigation state should fix line and reset editP
-    - Backward word should stop at beginning of word
-    
-    FUTURE
-    - Highlight current row
+ For more information about AndyEdit, see README.md.
 
-    - Put Tabs back in files -- render the tab as spaces, but
-    - keep the tab in the text line.  
-
-    - Create undo/redo capability
-    - Create a (row_t *) redo pointer for each row.  
-    - Each time a line is modified, a new row_t is malloc'd
-    - Ending up in a linked list of mods for the row.
-    - an undo history array can keep a list of modified lines to undo
-
-    - An analogous redo linked list can allow the line to be redo'd
-
-    - Rectangle operations
-
-    DONE (for Update 0.2)
-    - ENTER (**)
-    - Kill Line (**)
-    - Meta Key Navigation
-    - Jump to Line 
-    - Minibuffer Read/Messages
-    - Set Mark and Swap Point/Mark
-    - Cursor Movement Function Updates Terminal State
-    - Edits to a Line updates Editor State
-    - eXtension Menu
-    - Dirty Flag/State for Modified Buffer
-    - Forward/Backward Word
  ***/
 
 #include <stdlib.h>
@@ -68,11 +36,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 /* Text Line Data Structures */
 typedef struct {
-  char *txt;  
-  size_t len;
-  size_t lPtr;
+  char *txt;  			/* Editor Text Line */
+  size_t len;			/* Length of Text */
+  size_t lPtr;			/* Editor Pointers */
   size_t rPtr;
-  bool   editP;
+  bool   editP;			/* Row Edited Flag */
 } row_t;
 
 
@@ -90,12 +58,10 @@ bool dirtyP   = false; 		/* Is Buffer Modified? */
 row_t **BUFFER;			/* File Buffer */
 char MINIBUFFER[MINIBUFFSIZE];	/* Minibuffer Input */
 char EDITBUFFER[64];		/* Edit Buffer For Text Input */
-
+int  EBINDEX  = 0;
 
 /*******************************************************************************
-
 			   TERMINATE EDITOR
-
 *******************************************************************************/
 
 /* Restore tty */
@@ -116,9 +82,7 @@ void die( const char *s ) {
 }
 
 /*******************************************************************************
-
 				  IO
-
 *******************************************************************************/
 
 /* Read Keypresses */
@@ -137,9 +101,7 @@ int readKey() {
 }
 
 /*******************************************************************************
-
 			      MINIBUFFER
-
 *******************************************************************************/
 
 /* Write Message to User */
@@ -202,9 +164,7 @@ int miniBufferGetPosInteger( const char *msg ) {
 }
 
 /*******************************************************************************
-
 				 TABS
-
 *******************************************************************************/
 
 /* Convert Tabs to Spaces */
@@ -252,9 +212,7 @@ char *removeTabs( char *line ) {
 }
 
 /*******************************************************************************
-
 			  BUFFER MANAGEMENT
-
 *******************************************************************************/
 
 /* Close Text Buffer */
@@ -358,9 +316,7 @@ void openBuffer( char * fn ) {
 }
 
 /*******************************************************************************
-
 			      STATUS BAR
-
 *******************************************************************************/
 
 /* Draw Status Line */
@@ -391,9 +347,7 @@ void drawStatusLine() {
 
 
 /*******************************************************************************
-
 			     RENDER TEXT
-
 *******************************************************************************/
 
 /* Draw the Rows of Text */
@@ -429,7 +383,7 @@ void renderText() {
       }
     }
     
-    else {			/* vi EOF Markers */      
+    else {			/* vi style EOF Markers */      
       mvaddch( row, 0, '~' );
       clrtoeol();
     }    
@@ -442,9 +396,7 @@ void renderText() {
 }
 
 /*******************************************************************************
-
 			      NAVIGATION
-
 *******************************************************************************/
 
 /* Move Point to End of Line */
@@ -479,10 +431,7 @@ if( POINT_X == (int)BUFFER[thisRow()]->len-1 ) /* At EOL? */
  /* Move to End of Word */
  while( BUFFER[thisRow()]->txt[POINT_X] != '\n' &&
 	BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
-	BUFFER[thisRow()]->txt[POINT_X] != '('  &&
 	BUFFER[thisRow()]->txt[POINT_X] != ')'  &&
-	BUFFER[thisRow()]->txt[POINT_X] != '+'  &&
-	BUFFER[thisRow()]->txt[POINT_X] != '['  &&
 	BUFFER[thisRow()]->txt[POINT_X] != ']' )
 	
    POINT_X++;
@@ -494,23 +443,33 @@ void backwardWord() {
 
   if( POINT_X == 0 ) return;	/* At BOL? */
 
+  int old_POINT_X = POINT_X;
   POINT_X--;
   
  /* Move Past Spaces */
-  while( BUFFER[thisRow()]->txt[POINT_X] == ' ' &&
-	 POINT_X > 0 )
+  while(( BUFFER[thisRow()]->txt[POINT_X] == ' '   ||
+	  BUFFER[thisRow()]->txt[POINT_X] == ')'   ||
+	  BUFFER[thisRow()]->txt[POINT_X] == ';'   ||
+	  BUFFER[thisRow()]->txt[POINT_X] == ']' ) &&
+	POINT_X > 0 )
     POINT_X--;
 
+  /* If POINT_X is a Space, No Prior Word this Line */
+  if( BUFFER[thisRow()]->txt[POINT_X] == ' ' ) {
+    POINT_X = old_POINT_X;
+    return;
+  }
+  
  /* Move to Beginning of Word */
- while( POINT_X >= 0                            &&
+ while( POINT_X > 0                             &&
 	BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
 	BUFFER[thisRow()]->txt[POINT_X] != '('  &&
-	BUFFER[thisRow()]->txt[POINT_X] != ')'  &&
-	BUFFER[thisRow()]->txt[POINT_X] != '+'  &&
-	BUFFER[thisRow()]->txt[POINT_X] != '['  &&
-	BUFFER[thisRow()]->txt[POINT_X] != ']' )
-	
+	BUFFER[thisRow()]->txt[POINT_X] != '[' )
    POINT_X--;
+
+ /* Don't Leave POINT on a Space */
+ if( BUFFER[thisRow()]->txt[POINT_X] == ' ' )
+   POINT_X++;
 }
 
   
@@ -628,9 +587,7 @@ void pageUp() {
 }
 
 /*******************************************************************************
-
 			    POINT AND MARK
-
 *******************************************************************************/
 
 /* Swap Point and Mark */
@@ -659,11 +616,8 @@ void swapPointAndMark() {
 }
 
 /*******************************************************************************
-
 			   LINE MANAGEMENT
-
 *******************************************************************************/
-
 
 /* Kill Line at Point */
 void killLine() {
@@ -753,10 +707,48 @@ void openLine() {
   NUMROWS++;			/* Increment Num Lines */
 }
 
+
+/* Incorporate Adds/Deletes Into Row Structure */
+void updateLine() {
+
+  int i   = 0;
+  int col = 0;
+  
+  int delta = EBINDEX - ( BUFFER[thisRow()]->rPtr -
+			  BUFFER[thisRow()]->lPtr );
+
+  int newLen = BUFFER[thisRow()]->len + delta;
+    
+  char *tmp;			/* New Text Row */
+
+  if(( tmp = malloc(( sizeof( char ) * newLen ) + 1 )) == NULL )
+    die( "updateLine: tmp malloc failed" );
+
+  /* Copy Non-deleted Chars */
+  for( i = 0; i<(int)BUFFER[thisRow()]->lPtr; i++ ) {
+    tmp[col] = BUFFER[thisRow()]->txt[i];
+    col++;
+  }
+
+  // Add chars from Edit Buffer
+  
+  for( i = BUFFER[thisRow()]->rPtr; i<(int)BUFFER[thisRow()]->len; i++ ) {
+    tmp[col] = BUFFER[thisRow()]->txt[i];
+    col++;
+  }
+
+  tmp[newLen] = '\0';		/* NULL Terminate New String */
+
+  free( BUFFER[thisRow()]->txt );
+  BUFFER[thisRow()]->txt  = tmp;
+  BUFFER[thisRow()]->len  = newLen;
+  BUFFER[thisRow()]->lPtr = 0;
+  BUFFER[thisRow()]->rPtr = 0;
+}
+
+
 /*******************************************************************************
-
 			     EDITOR STATE
-
 *******************************************************************************/
 
 
@@ -764,8 +756,12 @@ void openLine() {
 void updateNavigationState() {
 
 
+  if( BUFFER[thisRow()]->editP )
+    updateLine();
+
+  BUFFER[thisRow()]->editP = false;
+
   miniBufferClear();
-    // Save Line Edits
 }
 
 
@@ -777,9 +773,7 @@ void updateEditState() {
 }
 
 /*******************************************************************************
-
 			 PROCESS KEY PRESSES
-
 *******************************************************************************/
 
 /* Meta Menu */
@@ -903,7 +897,7 @@ void processKeypress() {
     pointToEndLine();
     updateNavigationState();
     break;
-  case CTRL_KEY('j'):
+  case CTRL_KEY('j'):		/* Jump to Linenum */
     jumpToLine();
     updateNavigationState();
     break;
@@ -949,7 +943,7 @@ void processKeypress() {
     break;
 
     /* Point/Mark */
-  case CTRL_KEY(' '):
+  case CTRL_KEY(' '):		/* Set Mark */
     MARK_X = POINT_X;
     MARK_Y = thisRow();
     miniBufferMessage( "Mark Set" );
@@ -962,7 +956,7 @@ void processKeypress() {
 	BUFFER[thisRow()]->rPtr++;
     }
     else {
-      if( (size_t)POINT_X < BUFFER[thisRow()]->len ) {
+      if( (size_t)POINT_X < BUFFER[thisRow()]->len - 1 ) {
 	BUFFER[thisRow()]->lPtr = POINT_X;
 	BUFFER[thisRow()]->rPtr = POINT_X+1;
 	updateEditState();
@@ -978,19 +972,13 @@ void processKeypress() {
   case KEY_RESIZE:		/* Window Resized */
     break;
 
-  default:			/* Letters */
+  default:			/* Self Insert */
     break;
   }
-
-
-  renderText();			/* Redraw Terminal */
-  refresh();
 }
 
 /*******************************************************************************
-
 		       STARTUP / INITIALIZATION
-
 *******************************************************************************/
 
 /* Prepare tty for Raw nCurses Input */
@@ -1079,3 +1067,7 @@ int main( int argc, char *argv[] ) {
   closeEditor();
   return EXIT_SUCCESS;
 } 
+
+/***
+END PROGRAM
+ ***/

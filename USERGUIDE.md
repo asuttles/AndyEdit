@@ -1,4 +1,4 @@
-/*******************************************************************************
+# Andy Edit v0.1 User Guide (WIP)
 
         _              _         _____    _ _ _
        / \   _ __   __| |_   _  | ____|__| (_) |_
@@ -8,34 +8,54 @@
                          |___/
     Copyright 2019
 
-## Keymap for AE 0.1
+    See [LICENSE](LICENSE) for licensing details.
+    See [README](README.md) for information on how to compile ae.
 
- *** HOME - Cursor Top*
- *** C-a  - Start of Line*
- *** C-b  - Back Char*
- *** C-c  
- *** C-d  - Delete Char
- *** C-e  - End of Line*
- *** C-f  - Forward Char*
- *** C-g
- *** C-h  - Delete Back
- *** C-i
- *** C-j
- *** C-k  - Kill Line
- *** C-l  - Center Line*
- *** C-m  -
- *** C-n  - Next Line*
- *** C-o  - Open File
- *** C-p  - Previous Line*
- *** C-q  - Quit*
- *** C-r  - REGEXP
- *** C-s  - Save File
- *** C-t
- *** C-u  - Undo
- *** C-V  - 
- *** C-w  - 
- *** C-x  - eXtension Menu
- *** C-y  -
- *** C-z  -
- ***
- *******************************************************************************/
+## Preliminary Keymap for AE 
+
+### Standard Keys
+* HOME   - Point to Top
+* ENTER  - Open Line
+* PGUp   - Page Up
+* PGDn   - Page Down
+* END    - Point to End
+
+### CTRL Modifier (c-k)
+* C-a    - Start of Line
+* C-b    - Back Char
+* C-c    -
+* C-d    - Delete Char
+* C-e    - End of Line
+* C-f    - Forward Char
+* C-g    -
+* C-h    - Delete Back (TODO)
+* C-i    -
+* C-j    - Jump to Line
+* C-k    - Kill Line
+* C-l    - reCenter Line
+* C-m    -
+* C-n    - Next Line
+* C-o    - 
+* C-p    - Previous Line
+* C-q    - Quit
+* C-r    - Search Reverse (TODO)
+* C-s    - Search Forward (TODO)
+* C-t    -
+* C-u    - Undo (TODO)
+* C-V    - Vertical Paging
+* C-w    - 
+* C-x    - eXtension Menu
+* C-y    - Yank Text (TODO)
+* C-z    - 
+
+### eXtension Keybindings (c-x k)
+* C-x C-x - Swap Point and Mark
+* C-x C-c - Close AE
+
+### Alt-Key Keybindings (a-k)
+* a-f     - Forward Word
+* a-b     - Backward Word
+* a-v     - Vertical Scroll Up
+* a-<     - Top of Buffer
+* a->     - Bottom of Buffer
+

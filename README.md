@@ -7,14 +7,14 @@ The editor is inspired by, but not based on, Microemacs and Kilo.
 ## Getting Started
 
 To download:
-'''
+
 > git clone https://github.com/asuttles/AndyEdit.git
-'''
+
 
 From the top-level directory, make the editor:
-'''
+
 > make
-'''
+
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ The Andy Edit editor is being developed using the LLVM CLANG 6.0.0 compiler and 
 
 ## Versioning
 
-### Release 0.2 In Active Development
+### Release 0.2 (WIP)
   - Open Line
   - Kill Line
   - Meta Key by Second Level Dispatch
@@ -37,7 +37,7 @@ The Andy Edit editor is being developed using the LLVM CLANG 6.0.0 compiler and 
   - Dirty Flag/State for Modified Buffer
   - Forward/Backward Word
 
-### Release 0.1 (Never Released)
+### Release 0.1
   - Splash Screen
   - Open Buffer from command line
   - Initialize terminal and buffer data structures
