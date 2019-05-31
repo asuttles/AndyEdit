@@ -758,9 +758,9 @@ void updateNavigationState() {
 
   if( BUFFER[thisRow()]->editP )
     updateLine();
-
+  
   BUFFER[thisRow()]->editP = false;
-
+  
   miniBufferClear();
 }
 
@@ -785,31 +785,31 @@ void metaMenu() {
 
     /* Buffer Navigation */
   case 'f':			/* Forward Word */
-    forwardWord();
     updateNavigationState();
+    forwardWord();
     break;
 
   case 'b':			/* Backward Word */
-    backwardWord();
     updateNavigationState();
+    backwardWord();
     break;
 
   case 'v':			/* Forward Word */
-    pageUp();
     updateNavigationState();
+    pageUp();
     break;
 
   case '<':			/* Top of Buffer */
+    updateNavigationState();
     POINT_X = 0;
     POINT_Y = 0;
     COLOFFSET = 0;
     ROWOFFSET = 0;
-    updateNavigationState();
     break;
 
   case '>':			/* End of Buffer */
-    pointToEndBuffer();
     updateNavigationState();
+    pointToEndBuffer();
     break;
   }  
 }
@@ -823,6 +823,7 @@ void eXtensionMenu() {
   switch(c) {
 
   case CTRL_KEY('x'):		/* Forward Word */
+    updateNavigationState();
     swapPointAndMark();
     break;
 
@@ -865,81 +866,82 @@ void processKeypress() {
 
     /* Cursor Movement */
   case KEY_HOME:		/* Home */
+    updateNavigationState();
     POINT_X = 0;
     POINT_Y = 0;
     COLOFFSET = 0;
     ROWOFFSET = 0;
-    updateNavigationState();
     break;
   case CTRL_KEY('l'):		/* Center Line */
-    centerLine();
     updateNavigationState();
+    centerLine();
     break;
   case CTRL_KEY('b'):		/* Point Back */
   case KEY_LEFT:		
-    if( POINT_X > 0 ) --POINT_X;
     updateNavigationState();
+    if( POINT_X > 0 ) --POINT_X;
     break;
   case CTRL_KEY('a'):		/* Point BOL */
+    updateNavigationState();
     POINT_X = 0;
     COLOFFSET = 0;
-    updateNavigationState();
     break;
   case CTRL_KEY('f'):		/* Point Forward */
   case KEY_RIGHT:
+    updateNavigationState();
     if( POINT_X + COLOFFSET < (int)BUFFER[ROWOFFSET+POINT_Y]->len - 1 ) {
       if( POINT_X < getmaxx( WIN ) - 1 ) ++POINT_X;
       else COLOFFSET++;
     }
-    updateNavigationState();
     break;
   case CTRL_KEY('e'):		/* Point EOL */
-    pointToEndLine();
     updateNavigationState();
+    pointToEndLine();
     break;
   case CTRL_KEY('j'):		/* Jump to Linenum */
-    jumpToLine();
     updateNavigationState();
+    jumpToLine();
     break;
   case CTRL_KEY('p'):		/* Prior Line */
   case KEY_UP:
+    updateNavigationState();
     if( POINT_Y > 0 ) --POINT_Y;
     else if ( ROWOFFSET > 0 ) --ROWOFFSET;
-    if( COLOFFSET > 0 ) pointToEndLine();
-    updateNavigationState();
+    if(( POINT_X + COLOFFSET ) > 
+       ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
     break;
   case CTRL_KEY('n'):		/* Next Line */
   case KEY_DOWN:
+    updateNavigationState();
     if( POINT_Y + ROWOFFSET < NUMROWS - 1 ) {
 
       /* Avoid Mode Line */
       if( POINT_Y < screenRows() ) ++POINT_Y;
       else ++ROWOFFSET;
 
-      if( POINT_X + COLOFFSET > 
-	  (int)BUFFER[ROWOFFSET+POINT_Y]->len - 1 ) pointToEndLine();
+      if(( POINT_X + COLOFFSET ) > 
+	 ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
     }
-    updateNavigationState();
     break;
   case KEY_PPAGE:		/* Page Up */
-    pageUp();
     updateNavigationState();
+    pageUp();
     break;
   case KEY_END:			/* End of Buffer */
-    pointToEndBuffer();
     updateNavigationState();
+    pointToEndBuffer();
     break;
   case KEY_NPAGE:		/* Page Down */
   case CTRL_KEY('v'):
-    pageDown();
     updateNavigationState();
+    pageDown();
     break;
 
     /* Create a Newline */
   case '\r':			/* Enter Key */
-    openLine();
     updateNavigationState();
-    updateEditState();
+    openLine();
+    //updateEditState();
     break;
 
     /* Point/Mark */
@@ -963,9 +965,25 @@ void processKeypress() {
       }
     }
     break;
+  case CTRL_KEY('h'):		/* Backspace */
+    if( BUFFER[thisRow()]->editP ) {
+      if( POINT_X > 0 )
+	BUFFER[thisRow()]->lPtr--;
+      POINT_X--;
+    }
+    else {
+      if( POINT_X > 0 ) {
+	BUFFER[thisRow()]->lPtr = POINT_X - 1;
+	BUFFER[thisRow()]->rPtr = POINT_X;
+	updateEditState();
+	POINT_X--;
+      }
+    }
+    break;
   case CTRL_KEY('k'):		/* Kill Line */
-    killLine();
     updateEditState();
+    killLine();
+    updateNavigationState();
     break;
     
     /* Handle Signals */
