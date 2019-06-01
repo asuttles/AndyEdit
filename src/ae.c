@@ -25,6 +25,7 @@
 #include <curses.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -353,7 +354,7 @@ void drawStatusLine() {
 /* Draw the Rows of Text */
 void renderText() {
 
-  int i, row, col, colMax, txtLen, nextRow;
+  int i, j, row, col, colMax, txtLen, nextRow;
   int maxRows = getmaxy( WIN ) - 2;
   int maxCols = getmaxx( WIN );
 
@@ -371,12 +372,31 @@ void renderText() {
       col = 0;
       for( i=0; i < colMax; i++ ) {
 
-	/* Skip Deleted Chars */
-	if( i >=  (int)BUFFER[row+ROWOFFSET]->lPtr && 
-	    i < (int)BUFFER[row+ROWOFFSET]->rPtr ) {
+	/* Insert Edit Buffer Chars */
+	if( nextRow == thisRow()    &&
+	    BUFFER[nextRow]->editP  &&
+	    ( BUFFER[nextRow]->lPtr == BUFFER[nextRow]->rPtr ) &&
+	    ( i == (int)BUFFER[nextRow]->lPtr )) {
+
+	  for( j = 0; j<EBINDEX; j++ ) {
+	    mvaddch( row, col, EDITBUFFER[j] );
+	    col++;
+	  }
+
+	  mvaddch( row, col, BUFFER[row+ROWOFFSET]->txt[i+COLOFFSET] );
+	  col++;
+	}
+
+	/* Ignore Chars In Line Buffer Gap */
+	else if( nextRow == thisRow()     &&
+		 BUFFER[thisRow()]->editP &&
+		 i >= (int)BUFFER[row+ROWOFFSET]->lPtr && 
+		 i <  (int)BUFFER[row+ROWOFFSET]->rPtr ) {
 	  continue;
 	}
-	else {
+
+	/* Insert Line Buffer Chars */
+	else {			
 	  mvaddch( row, col, BUFFER[row+ROWOFFSET]->txt[i+COLOFFSET] );
 	  col++;
 	}
@@ -730,8 +750,13 @@ void updateLine() {
     col++;
   }
 
-  // Add chars from Edit Buffer
-  
+  /* Add Chars from Edit Buffer */
+  for( i = 0; i<EBINDEX; i++ ) {
+    tmp[col] = EDITBUFFER[i];
+    col++;
+  }
+
+  /* Add Rest of Chars */
   for( i = BUFFER[thisRow()]->rPtr; i<(int)BUFFER[thisRow()]->len; i++ ) {
     tmp[col] = BUFFER[thisRow()]->txt[i];
     col++;
@@ -744,6 +769,8 @@ void updateLine() {
   BUFFER[thisRow()]->len  = newLen;
   BUFFER[thisRow()]->lPtr = 0;
   BUFFER[thisRow()]->rPtr = 0;
+
+  EBINDEX = 0;
 }
 
 
@@ -754,7 +781,6 @@ void updateLine() {
 
 /* Cursor Movement Functions */
 void updateNavigationState() {
-
 
   if( BUFFER[thisRow()]->editP )
     updateLine();
@@ -770,6 +796,26 @@ void updateEditState() {
 
   BUFFER[thisRow()]->editP = true;
   dirtyP = true;
+}
+
+/*******************************************************************************
+			     INSERT CHARS
+*******************************************************************************/
+
+/* Insert User Typed Chars */
+void selfInsert( int c ) {
+
+  if( BUFFER[thisRow()]->lPtr != BUFFER[thisRow()]->rPtr )
+    updateNavigationState();
+  
+  if( !BUFFER[thisRow()]->editP ) {
+    BUFFER[thisRow()]->lPtr = POINT_X;
+    BUFFER[thisRow()]->rPtr = POINT_X;
+    updateEditState();
+  }
+
+  EDITBUFFER[EBINDEX++] = c;
+  POINT_X++;
 }
 
 /*******************************************************************************
@@ -953,6 +999,7 @@ void processKeypress() {
 
     /* Edit Text */
   case CTRL_KEY('d'):		/* Delete Char */
+  case KEY_DC:
     if( BUFFER[thisRow()]->editP ) {
       if( BUFFER[thisRow()]->rPtr < BUFFER[thisRow()]->len )
 	BUFFER[thisRow()]->rPtr++;
@@ -966,6 +1013,7 @@ void processKeypress() {
     }
     break;
   case CTRL_KEY('h'):		/* Backspace */
+  case KEY_BACKSPACE:
     if( BUFFER[thisRow()]->editP ) {
       if( POINT_X > 0 )
 	BUFFER[thisRow()]->lPtr--;
@@ -991,6 +1039,8 @@ void processKeypress() {
     break;
 
   default:			/* Self Insert */
+    if( isprint( c ))
+      selfInsert( c );
     break;
   }
 }
