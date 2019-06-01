@@ -1,11 +1,13 @@
 /***
+==========================================================================================
         _              _         _____    _ _ _
        / \   _ __   __| |_   _  | ____|__| (_) |_
       / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
      / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-    /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|
+    /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.2
                          |___/
     Copyright 2019 (andrew.suttles@gmail.com)
+    MIT LICENSE
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -14,7 +16,7 @@
  OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  DEALINGS IN THE SOFTWARE.
 
- A simple, line-oriented, terminal-based text editor with an emacs-like keybinding.
+ AndyEDIT is a simple, line-oriented, terminal-based text editor with emacs-like keybindings.
 
  For more information about AndyEdit, see README.md.
 
@@ -383,21 +385,21 @@ void renderText() {
 	    col++;
 	  }
 
-	  mvaddch( row, col, BUFFER[row+ROWOFFSET]->txt[i+COLOFFSET] );
+	  mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
 	  col++;
 	}
 
 	/* Ignore Chars In Line Buffer Gap */
 	else if( nextRow == thisRow()     &&
 		 BUFFER[thisRow()]->editP &&
-		 i >= (int)BUFFER[row+ROWOFFSET]->lPtr && 
-		 i <  (int)BUFFER[row+ROWOFFSET]->rPtr ) {
+		 i >= (int)BUFFER[nextRow]->lPtr && 
+		 i <  (int)BUFFER[nextRow]->rPtr ) {
 	  continue;
 	}
 
 	/* Insert Line Buffer Chars */
 	else {			
-	  mvaddch( row, col, BUFFER[row+ROWOFFSET]->txt[i+COLOFFSET] );
+	  mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
 	  col++;
 	}
       }
@@ -422,8 +424,8 @@ void renderText() {
 /* Move Point to End of Line */
 void pointToEndLine() {
 
-  int x = BUFFER[ROWOFFSET+POINT_Y]->len - 1; /* Text Line Length */
-  int y = getmaxx( WIN ) - 1;		      /* Terminal Length */
+  int x = BUFFER[thisRow()]->len - 1; /* Text Line Length */
+  int y = getmaxx( WIN ) - 1;	      /* Terminal Length */
 
   if( x > y ) {
     POINT_X = y;
@@ -1000,10 +1002,23 @@ void processKeypress() {
     /* Edit Text */
   case CTRL_KEY('d'):		/* Delete Char */
   case KEY_DC:
+
+    /* Continue Editing This Line? */
     if( BUFFER[thisRow()]->editP ) {
+
+      /* Start Deleting Chars After Inserting Chars? */
+      if( BUFFER[thisRow()]->lPtr == BUFFER[thisRow()]->rPtr ) {
+	updateLine();
+	BUFFER[thisRow()]->lPtr = POINT_X;
+	BUFFER[thisRow()]->rPtr = POINT_X;
+      }
+	
+      /* Continue Deleting Chars Up to EOL  */
       if( BUFFER[thisRow()]->rPtr < BUFFER[thisRow()]->len )
 	BUFFER[thisRow()]->rPtr++;
     }
+    
+    /* *New* Edit To This Line? */
     else {
       if( (size_t)POINT_X < BUFFER[thisRow()]->len - 1 ) {
 	BUFFER[thisRow()]->lPtr = POINT_X;
@@ -1014,12 +1029,27 @@ void processKeypress() {
     break;
   case CTRL_KEY('h'):		/* Backspace */
   case KEY_BACKSPACE:
+
+    /* Continue Editing This Line? */
     if( BUFFER[thisRow()]->editP ) {
-      if( POINT_X > 0 )
+
+      /* Start Deleting Chars After Inserting Chars? */
+      if( BUFFER[thisRow()]->lPtr == BUFFER[thisRow()]->rPtr ) {
+	updateLine();
+	BUFFER[thisRow()]->lPtr = POINT_X;
+	BUFFER[thisRow()]->rPtr = POINT_X;
+      }
+
+      /* Continue Deleting Chars to BOL */
+      if( POINT_X > 0 ) {
 	BUFFER[thisRow()]->lPtr--;
-      POINT_X--;
+	POINT_X--;
+      }
     }
+
+    /* Begin *New* Edits to This Line */
     else {
+
       if( POINT_X > 0 ) {
 	BUFFER[thisRow()]->lPtr = POINT_X - 1;
 	BUFFER[thisRow()]->rPtr = POINT_X;

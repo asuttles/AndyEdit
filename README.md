@@ -1,4 +1,13 @@
-# Andy Edit
+# AndyEdit
+
+
+     ___,                       ___
+    /   |             |        / (_)   |  o
+   |    |   _  _    __|        \__   __|    _|_
+   |    |  / |/ |  /  |  |   | /    /  |  |  |
+    \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.2
+                             /|
+			     \|
 
 A simple, line-oriented, terminal-based text editor with an emacs-like keybinding.
 
@@ -18,9 +27,11 @@ From the top-level directory, make the editor:
 
 ## Prerequisites
 
-The Andy Edit editor requires the ncurses library be installed for terminal rendering.
+The AndyEdit editor requires the ncurses library be installed for terminal rendering.
 
-The Andy Edit editor is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 on OpenBSD 6.4.
+AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 on OpenBSD 6.4.
+
+AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
 
 ## Versioning
 
@@ -36,6 +47,7 @@ The Andy Edit editor is being developed using the LLVM CLANG 6.0.0 compiler and 
   - eXtension Menu
   - Dirty Flag/State for Modified Buffer
   - Forward/Backward Word
+  - Self insert printable characters
 
 ### Release 0.1
   - Splash Screen
@@ -50,18 +62,17 @@ The Andy Edit editor is being developed using the LLVM CLANG 6.0.0 compiler and 
 
 ## TODO
    - Save modified buffers
-   - Self insert printable characters
    - Row highlighting
    - Undo/Redo
    - Rectangle Operations with Point/Mark
 
 ## Author
 
-* **Andrew Suttles** - [asuttles](github.com/asuttles)
+* **Andrew Suttles** - [asuttles](https://github.com/asuttles)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
