@@ -20,6 +20,7 @@
 
  For more information about AndyEdit, see README.md.
 
+==========================================================================================
  ***/
 
 #include <stdlib.h>
@@ -29,11 +30,13 @@
 #include <string.h>
 #include <ctype.h>
 
+
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
 #define MXRWS 512
 #define MINIBUFFSIZE 128
+#define FNLENGTH 128
 #define thisRow() (ROWOFFSET + POINT_Y)
 #define screenRows() (getmaxy( WIN ) - 3)
 
@@ -46,22 +49,22 @@ typedef struct {
   bool   editP;			/* Row Edited Flag */
 } row_t;
 
-
 /* Global Data */
+char FILENAME[FNLENGTH];	/* Buffer Filename */
 WINDOW *WIN;			/* Window Handle */
-int POINT_X   = 0;		/* Point X Position */
-int POINT_Y   = 0;		/* Point Y Position */
+int POINT_X   =  0;		/* Point X Position */
+int POINT_Y   =  0;		/* Point Y Position */
 int MARK_X    = -1;		/* Mark X Position */
 int MARK_Y    = -1;		/* Mark Y Position */
-int NUMROWS   = 0;		/* Num Rows in Text Buffer */
-int ROWOFFSET = 0;		/* Buffer Index of Top Row */
-int COLOFFSET = 0;		/* Buffer Index of First Col */
+int NUMROWS   =  0;		/* Num Rows in Text Buffer */
+int ROWOFFSET =  0;		/* Buffer Index of Top Row */
+int COLOFFSET =  0;		/* Buffer Index of First Col */
 int MAXROWS = MXRWS;		/* MAX Number of Buffer Lines */
 bool dirtyP   = false; 		/* Is Buffer Modified? */
 row_t **BUFFER;			/* File Buffer */
 char MINIBUFFER[MINIBUFFSIZE];	/* Minibuffer Input */
 char EDITBUFFER[64];		/* Edit Buffer For Text Input */
-int  EBINDEX  = 0;
+int  EBINDEX  =  0;
 
 /*******************************************************************************
 			   TERMINATE EDITOR
@@ -281,6 +284,8 @@ void openBuffer( char * fn ) {
   int i = 0;
   FILE *fp = NULL;
 
+  /* Save Filename */
+  strncpy( FILENAME, fn, FNLENGTH );
   
   /* Open File for Editing */
   if(( fp = fopen( fn, "r" )) == NULL ) {
@@ -318,6 +323,31 @@ void openBuffer( char * fn ) {
   fclose(fp);
 }
 
+
+/* Save Buffer Lines */
+void saveBuffer() {
+
+  int row;
+  FILE *fp = NULL;
+
+  /***
+      Poll User for Filename to save Buffer as
+  ***/
+
+  /* Open File for Editing */
+  if(( fp = fopen( FILENAME, "w" )) == NULL ) {
+    die( "openBuffer: fopen failed." );
+  }
+
+  for( row = 0; row<NUMROWS; row++ ) {
+    fprintf( fp, "%s", BUFFER[row]->txt );
+  }
+
+  fclose( fp );
+  dirtyP = false;
+  miniBufferMessage( "Wrote Text File." );
+}
+
 /*******************************************************************************
 			      STATUS BAR
 *******************************************************************************/
@@ -333,8 +363,9 @@ void drawStatusLine() {
   
   attron( A_REVERSE );		/* Reverse Video */
 
-  snprintf( status, 256, "%s  /home/acs/ae/src/ae.c -------[%d of %d]---[col %d]----(c mode)---------[%d, %d]",
+  snprintf( status, 256, "%s  %s -------[%d of %d]---[col %d]----(c mode)---------[%d, %d]",
 	    dirtyP ? "**" : "--",
+	    FILENAME,
 	    thisRow() + 1, NUMROWS, POINT_X, ROWOFFSET, MAXROWS );
   mvaddstr( curRow, 0, status );
 
@@ -725,7 +756,10 @@ void openLine() {
   
   /* Move Point */
   POINT_X = 0;	
-  POINT_Y++;
+  if( POINT_Y == screenRows() )
+    ROWOFFSET++;
+  else
+    POINT_Y++;
   NUMROWS++;			/* Increment Num Lines */
 }
 
@@ -779,7 +813,6 @@ void updateLine() {
 /*******************************************************************************
 			     EDITOR STATE
 *******************************************************************************/
-
 
 /* Cursor Movement Functions */
 void updateNavigationState() {
@@ -880,6 +913,9 @@ void eXtensionMenu() {
     exit(EXIT_SUCCESS);
     break;
 
+  case CTRL_KEY('s'):
+    saveBuffer();
+    break;
   }  
 }
   
@@ -1167,5 +1203,13 @@ int main( int argc, char *argv[] ) {
 } 
 
 /***
+ -----------------------------
+< AndyEdit is Udderly Awesome >
+ -----------------------------
+        o   ^__^
+         o  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 END PROGRAM
  ***/

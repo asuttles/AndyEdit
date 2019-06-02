@@ -7,11 +7,13 @@
    |    |  / |/ |  /  |  |   | /    /  |  |  |
     \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.2
                              /|
-			     \|
+                             \|
 
 A simple, line-oriented, terminal-based text editor with an emacs-like keybinding.
 
 The editor is inspired by, but not based on, Microemacs and Kilo.
+
+This readme was edited in AndyEdit!
 
 ## Getting Started
 
@@ -20,7 +22,7 @@ To download:
 > git clone https://github.com/asuttles/AndyEdit.git
 
 
-From the top-level directory, make the editor:
+From the top-level directory, simply type 'make' to compile the editor:
 
 > make
 
@@ -29,9 +31,37 @@ From the top-level directory, make the editor:
 
 The AndyEdit editor requires the ncurses library be installed for terminal rendering.
 
+AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
+
 AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 on OpenBSD 6.4.
 
-AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
+ ________________ 
+< AE on OpenBSD! >
+  --------------- 
+   \
+    \
+               |    . 
+           .   |L  /|
+       _ . |\ _| \--+._/| .  
+      / ||\| Y J  )   / |/| ./    
+     J  |)'( |        ` F`.'/
+   -<|  F         __     .-<    
+     | /       .-'. `.  /-. L___ 
+     J \      <    \  | | O\|.-' 
+   _J \  .-    \/ O | | \  |F    
+  '-F  -<_.     \   .-'  `-' L__ 
+ __J  _   _.     >-'  )._.   |-' 
+ `-|.'   /_.           \_|   F 
+   /.-   .                _.<  
+  /'    /.'             .'  `\
+   /L  /'   |/      _.-'-\      
+  /'J       ___.---'\|             
+    |\  .--' V  | `. `          
+    |/`. `-.     `._)           
+       / .-.\                      
+       \ (  `\                  
+        `.\                     
+
 
 ## Versioning
 
@@ -48,8 +78,9 @@ AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
   - Dirty Flag/State for Modified Buffer
   - Forward/Backward Word
   - Self insert printable characters
+  - Save File (WIP)
 
-### Release 0.1
+### Release 0.1 (A Text Viewer)
   - Splash Screen
   - Open Buffer from command line
   - Initialize terminal and buffer data structures
@@ -61,10 +92,11 @@ AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
   
 
 ## TODO
-   - Save modified buffers
+   - TAB Function
    - Row highlighting
    - Undo/Redo
    - Rectangle Operations with Point/Mark
+   - Delete 
 
 ## Author
 
