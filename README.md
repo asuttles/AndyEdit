@@ -1,6 +1,6 @@
 # AndyEdit
 
-
+'''
      ___,                       ___
     /   |             |        / (_)   |  o
    |    |   _  _    __|        \__   __|    _|_
@@ -8,6 +8,7 @@
     \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.2
                              /|
                              \|
+'''
 
 A simple, line-oriented, terminal-based text editor with an emacs-like keybinding.
 
@@ -35,7 +36,8 @@ AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
 
 AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 on OpenBSD 6.4.
 
- ________________ 
+'''
+________________ 
 < AE on OpenBSD! >
   --------------- 
    \
@@ -61,7 +63,7 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
        / .-.\                      
        \ (  `\                  
         `.\                     
-
+'''
 
 ## Versioning
 
