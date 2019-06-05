@@ -66,7 +66,10 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
 
 ## Versioning
 
-### Release 0.2 (WIP)
+Current Version 0.2 Released
+
+### Release 0.2
+  - Save Buffer (as)
   - Open Line
   - Kill Line
   - Meta Key by Second Level Dispatch
@@ -79,7 +82,7 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
   - Dirty Flag/State for Modified Buffer
   - Forward/Backward Word
   - Self insert printable characters
-  - Save File (WIP)
+  - Delete and Backspace
 
 ### Release 0.1 (A Text Viewer)
   - Splash Screen
@@ -97,7 +100,7 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
    - Row highlighting
    - Undo/Redo
    - Rectangle Operations with Point/Mark
-   - Delete 
+   - Helpful Help
 
 ## Author
 
@@ -109,5 +112,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-I would like to acknowledge Richard Stallman for the amazing EMACS text editor and countless of my fellow hobyist software developers who have written the various Ersatz Emacs clones which have inspired this present effort.
+I would like to acknowledge countless of my fellow hobyist software developers who have written the various Ersatz Emacs clones which have inspired this present effort.
 

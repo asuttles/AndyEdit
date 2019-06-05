@@ -1,13 +1,13 @@
 /***
 ==========================================================================================
-        _              _         _____    _ _ _
-       / \   _ __   __| |_   _  | ____|__| (_) |_
-      / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
-     / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-    /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.2
-                         |___/
-    Copyright 2019 (andrew.suttles@gmail.com)
-    MIT LICENSE
+            _              _         _____    _ _ _
+           / \   _ __   __| |_   _  | ____|__| (_) |_
+          / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
+         / ___ \| | | | (_| | |_| | | |__| (_| | | |_
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.2
+                             |___/
+        Copyright 2019 (andrew.suttles@gmail.com)
+        MIT LICENSE
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -30,41 +30,46 @@
 #include <string.h>
 #include <ctype.h>
 
-
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
 #define MXRWS 512
 #define MINIBUFFSIZE 128
 #define FNLENGTH 128
+#define DEFAULTFILENAME "newfile.txt"
 #define thisRow() (ROWOFFSET + POINT_Y)
 #define screenRows() (getmaxy( WIN ) - 3)
 
+/* Buffer Status Flag */
+enum _sf { ORIGINAL, MODIFIED, READONLY };
+const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
+
 /* Text Line Data Structures */
 typedef struct {
-  char *txt;  			/* Editor Text Line */
+  char  *txt;  			/* Editor Text Line */
   size_t len;			/* Length of Text */
   size_t lPtr;			/* Editor Pointers */
   size_t rPtr;
-  bool   editP;			/* Row Edited Flag */
+  bool   editP;			/* This Row Edited Predicate */
 } row_t;
 
 /* Global Data */
 char FILENAME[FNLENGTH];	/* Buffer Filename */
 WINDOW *WIN;			/* Window Handle */
-int POINT_X   =  0;		/* Point X Position */
-int POINT_Y   =  0;		/* Point Y Position */
-int MARK_X    = -1;		/* Mark X Position */
-int MARK_Y    = -1;		/* Mark Y Position */
-int NUMROWS   =  0;		/* Num Rows in Text Buffer */
-int ROWOFFSET =  0;		/* Buffer Index of Top Row */
-int COLOFFSET =  0;		/* Buffer Index of First Col */
-int MAXROWS = MXRWS;		/* MAX Number of Buffer Lines */
-bool dirtyP   = false; 		/* Is Buffer Modified? */
+int POINT_X    =  0;		/* Point X Position */
+int POINT_Y    =  0;		/* Point Y Position */
+int MARK_X     = -1;		/* Mark X Position */
+int MARK_Y     = -1;		/* Mark Y Position */
+int NUMROWS    =  0;		/* Num Rows in Text Buffer */
+int ROWOFFSET  =  0;		/* Buffer Index of Top Row */
+int COLOFFSET  =  0;		/* Buffer Index of First Col */
+int MAXROWS    = MXRWS;		/* MAX Number of Buffer Lines */
+enum _sf STATUSFLAG \
+               = ORIGINAL;	/* Is Buffer Modified? */
 row_t **BUFFER;			/* File Buffer */
 char MINIBUFFER[MINIBUFFSIZE];	/* Minibuffer Input */
 char EDITBUFFER[64];		/* Edit Buffer For Text Input */
-int  EBINDEX  =  0;
+int  EBINDEX   =  0;
 
 /*******************************************************************************
 			   TERMINATE EDITOR
@@ -162,6 +167,21 @@ void miniBufferGetInput( const char *msg ) {
 }
 
 
+/* Get a Filename */
+char *miniBufferGetFilename( const char *fn ) {
+
+  char msg[128];
+
+  snprintf( msg, MINIBUFFSIZE-1, "Enter filename (%s) : ", fn );
+  
+  miniBufferGetInput( msg );
+  if( strlen( MINIBUFFER ) == 0 )
+    return (char *)fn;
+  else
+    return MINIBUFFER;
+}
+
+
 /* Read Integer from Minibuffer */
 int miniBufferGetPosInteger( const char *msg ) {
 
@@ -234,16 +254,16 @@ void closeBuffer() {
   free( BUFFER );
   BUFFER = (row_t **)NULL;
 
-  MAXROWS   = MXRWS;
-  NUMROWS   = 0;
-  POINT_X   = 0;
-  POINT_Y   = 0;
-  MARK_X    = -1;
-  MARK_Y    = -1;
-  ROWOFFSET = 0;
-  COLOFFSET = 0;
+  MAXROWS    = MXRWS;
+  NUMROWS    = 0;
+  POINT_X    = 0;
+  POINT_Y    = 0;
+  MARK_X     = -1;
+  MARK_Y     = -1;
+  ROWOFFSET  = 0;
+  COLOFFSET  = 0;
 
-  dirtyP    = false;
+  STATUSFLAG = ORIGINAL;
 
   clear();
 }
@@ -285,7 +305,7 @@ void openBuffer( char * fn ) {
   FILE *fp = NULL;
 
   /* Save Filename */
-  strncpy( FILENAME, fn, FNLENGTH );
+  strncpy( FILENAME, fn, FNLENGTH-1 );
   
   /* Open File for Editing */
   if(( fp = fopen( fn, "r" )) == NULL ) {
@@ -330,13 +350,9 @@ void saveBuffer() {
   int row;
   FILE *fp = NULL;
 
-  /***
-      Poll User for Filename to save Buffer as
-  ***/
-
   /* Open File for Editing */
   if(( fp = fopen( FILENAME, "w" )) == NULL ) {
-    die( "openBuffer: fopen failed." );
+    die( "saveBuffer: fopen failed." );
   }
 
   for( row = 0; row<NUMROWS; row++ ) {
@@ -344,7 +360,34 @@ void saveBuffer() {
   }
 
   fclose( fp );
-  dirtyP = false;
+  STATUSFLAG = ORIGINAL;
+  miniBufferMessage( "Wrote Text File." );
+}
+
+
+/* Save Buffer Lines */
+void saveBufferNewName() {
+
+  int row;
+  FILE *fp = NULL;
+  char *fn = FILENAME;
+
+  /* Get Filename to Write */
+  fn = miniBufferGetFilename( fn );
+  
+  /* Open File for Editing */
+  if(( fp = fopen( fn, "w" )) == NULL ) {
+    die( "saveBufferNewName: fopen failed." );
+  }
+
+  for( row = 0; row<NUMROWS; row++ ) {
+    fprintf( fp, "%s", BUFFER[row]->txt );
+  }
+
+  strncpy( FILENAME, fn, FNLENGTH-1 );
+  
+  fclose( fp );
+  STATUSFLAG = ORIGINAL;
   miniBufferMessage( "Wrote Text File." );
 }
 
@@ -363,10 +406,15 @@ void drawStatusLine() {
   
   attron( A_REVERSE );		/* Reverse Video */
 
-  snprintf( status, 256, "%s  %s -------[%d of %d]---[col %d]----(c mode)---------[%d, %d]",
-	    dirtyP ? "**" : "--",
+  snprintf( status, (getmaxx( WIN ) > 256 ? 256 : getmaxx( WIN )) - 1,
+	    "--[ %s ]-------(%s)------- Row %d of %d ------- Col %d of %d ------- F1 for Help --- F10 to Quit",
 	    FILENAME,
-	    thisRow() + 1, NUMROWS, POINT_X, ROWOFFSET, MAXROWS );
+	    _sfname[ STATUSFLAG ],
+	    thisRow() + 1, NUMROWS,
+	    POINT_X + 1, (int)BUFFER[thisRow()]->len + 1 );
+	    
+    
+    
   mvaddstr( curRow, 0, status );
 
   curCol = getcurx( WIN );
@@ -830,7 +878,7 @@ void updateNavigationState() {
 void updateEditState() {
 
   BUFFER[thisRow()]->editP = true;
-  dirtyP = true;
+  STATUSFLAG = MODIFIED;
 }
 
 /*******************************************************************************
@@ -913,6 +961,10 @@ void eXtensionMenu() {
     exit(EXIT_SUCCESS);
     break;
 
+  case CTRL_KEY('w'):
+    saveBufferNewName();
+    break;
+
   case CTRL_KEY('s'):
     saveBuffer();
     break;
@@ -937,17 +989,16 @@ void processKeypress() {
     eXtensionMenu();
     break;
     
-    /* Quit Program */
-  case CTRL_KEY('q'):		
+    /* Function Keys */
+  case KEY_F(1):		/* Help */
+    miniBufferMessage("Help Not Available. Good luck!" );
+    break;
+
+  case KEY_F(10):		/* Exit */
     closeEditor();
     exit(EXIT_SUCCESS);
     break;
-
-    /* Close a Buffer */
-  case CTRL_KEY('c'):		
-    closeBuffer();
-    break;
-
+    
     /* Cursor Movement */
   case KEY_HOME:		/* Home */
     updateNavigationState();
@@ -1167,14 +1218,20 @@ void displaySplash( void ) {
 /* Open AE on an Empty Buffer */
 void emptyBuffer() {
 
-  displaySplash();
-
   BUFFER[0] = malloc( sizeof( row_t ));
   BUFFER[0]->txt = malloc( sizeof( char ) * 2 );
-  strncpy( BUFFER[0]->txt, "\n", 2 );
-  BUFFER[0]->len = 1;
+  BUFFER[0]->txt[0] = '\n';
+  BUFFER[0]->txt[1] = '\0';
+  BUFFER[0]->len    = 1;
+  BUFFER[0]->lPtr   = 0;
+  BUFFER[0]->rPtr   = 0;
+  BUFFER[0]->editP  = false;
 
+  strncpy( FILENAME, DEFAULTFILENAME, FNLENGTH-1 );
+  
   NUMROWS = 1;
+
+  displaySplash();
 }
 
 
@@ -1203,9 +1260,9 @@ int main( int argc, char *argv[] ) {
 } 
 
 /***
- -----------------------------
-< AndyEdit is Udderly Awesome >
- -----------------------------
+   -----------------------------
+  < AndyEdit is Udderly Sweet! >
+   -----------------------------
         o   ^__^
          o  (oo)\_______
             (__)\       )\/\

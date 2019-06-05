@@ -1,4 +1,4 @@
-# Andy Edit v0.1 User Guide (WIP)
+# Andy Edit v0.2 User Guide
 
         _              _         _____    _ _ _
        / \   _ __   __| |_   _  | ____|__| (_) |_
@@ -37,7 +37,7 @@
 * C-n    - Next Line
 * C-o    - 
 * C-p    - Previous Line
-* C-q    - Quit
+* C-q    - 
 * C-r    - Search Reverse (TODO)
 * C-s    - Search Forward (TODO)
 * C-t    -
@@ -51,6 +51,8 @@
 ### eXtension Keybindings (c-x k)
 * C-x C-x - Swap Point and Mark
 * C-x C-c - Close AE
+* C-x C-w - Save As
+* C-x C-s - Save Buffer
 
 ### Alt-Key Keybindings (a-k)
 * a-f     - Forward Word
