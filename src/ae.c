@@ -69,7 +69,9 @@ enum _sf STATUSFLAG \
 row_t **BUFFER;			/* File Buffer */
 char MINIBUFFER[MINIBUFFSIZE];	/* Minibuffer Input */
 char EDITBUFFER[64];		/* Edit Buffer For Text Input */
-int  EBINDEX   =  0;
+int  EBINDEX   =  0;		/* Edit Buffer Index */
+bool REGIONP   = false;		/* Is Region Active? */
+
 
 /*******************************************************************************
 			   TERMINATE EDITOR
@@ -901,6 +903,29 @@ void selfInsert( int c ) {
   POINT_X++;
 }
 
+
+/*******************************************************************************
+			     DELETE CHARS
+*******************************************************************************/
+
+void killWord() {
+
+  int thisPoint = POINT_X;	/* Save Current Point */
+
+  forwardWord();		/* Find End Next Word */
+
+  if( POINT_X == thisPoint )	/* No Word to Kill */
+    return;
+
+  /* Mark Word for Deletion and Restore Point */
+  BUFFER[thisRow()]->lPtr = thisPoint;
+  BUFFER[thisRow()]->rPtr = POINT_X;
+  POINT_X = thisPoint;
+  updateEditState();
+  updateNavigationState();
+}
+
+
 /*******************************************************************************
 			 PROCESS KEY PRESSES
 *******************************************************************************/
@@ -923,6 +948,15 @@ void metaMenu() {
     backwardWord();
     break;
 
+  case 'd':			/* Kill Forward Word */
+    killWord();
+    updateEditState();
+    break;
+
+  case 'g':			/* Alias for c-j */
+    jumpToLine();
+    break;
+    
   case 'v':			/* Forward Word */
     updateNavigationState();
     pageUp();
@@ -951,23 +985,28 @@ void eXtensionMenu() {
 
   switch(c) {
 
-  case CTRL_KEY('x'):		/* Forward Word */
-    updateNavigationState();
-    swapPointAndMark();
-    break;
-
   case CTRL_KEY('c'):		/* Close Editor */
     closeEditor();
     exit(EXIT_SUCCESS);
     break;
 
-  case CTRL_KEY('w'):
+  case CTRL_KEY('g'):		/* Keyboard Quit */
+    REGIONP = false;
+    break;
+
+  case CTRL_KEY('s'):		/* Save Buffer */
+    saveBuffer();
+    break;
+
+  case CTRL_KEY('w'):		/* Save Buffer As */
     saveBufferNewName();
     break;
 
-  case CTRL_KEY('s'):
-    saveBuffer();
+  case CTRL_KEY('x'):		/* Forward Word */
+    updateNavigationState();
+    swapPointAndMark();
     break;
+
   }  
 }
   
@@ -1083,6 +1122,7 @@ void processKeypress() {
   case CTRL_KEY(' '):		/* Set Mark */
     MARK_X = POINT_X;
     MARK_Y = thisRow();
+    REGIONP = true;
     miniBufferMessage( "Mark Set" );
     break;
 
@@ -1204,7 +1244,7 @@ void displaySplash( void ) {
   int third  = (getmaxy(WIN) / 3);
   
   mvaddstr( third + 0, center - 10, "Welcome to Andy Edit!" );
-  mvaddstr( third + 1, center - 6, "Version 0.02" );
+  mvaddstr( third + 1, center - 6, "Version 0.3" );
   mvaddstr( third + 3, center - 9, "(c) Copyright 2019" );
 
   refresh();

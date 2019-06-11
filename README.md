@@ -10,11 +10,11 @@
                                  \|
 
 
-A simple, line-oriented, terminal-based text editor with an emacs-like keybinding.
+A simple, featureless, line-oriented, terminal-based text editor with an emacs-like keybindings.
 
-The editor is inspired by, but not based on, Microemacs and Kilo.
+The editor is inspired by, but not derived from, Microemacs and Kilo.
 
-This readme was edited in AndyEdit!
+This readme was last edited in AndyEdit!
 
 ## Getting Started
 
@@ -66,7 +66,10 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
 
 ## Versioning
 
-Current Version 0.2 Released
+Current Version 0.2 [Released]
+
+### Release 0.3 (IN WORK)
+  - Kill Word
 
 ### Release 0.2
   - Save Buffer (as)
