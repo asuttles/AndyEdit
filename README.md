@@ -70,6 +70,7 @@ Current Version 0.2 [Released]
 
 ### Release 0.3 (IN WORK)
   - Kill Word
+  - Highlight Region Between Point/Mark (WIP)
 
 ### Release 0.2
   - Save Buffer (as)

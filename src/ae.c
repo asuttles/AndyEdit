@@ -38,6 +38,7 @@
 #define FNLENGTH 128
 #define DEFAULTFILENAME "newfile.txt"
 #define thisRow() (ROWOFFSET + POINT_Y)
+#define thisCol() (COLOFFSET + POINT_X)
 #define screenRows() (getmaxy( WIN ) - 3)
 
 /* Buffer Status Flag */
@@ -434,6 +435,36 @@ void drawStatusLine() {
 			     RENDER TEXT
 *******************************************************************************/
 
+/* Rendering Text Within Active Region? */
+bool inRegion( int row, int col ) {
+
+  if( !REGIONP ) return false;
+
+  if( row == MARK_Y ) {
+
+    if( col >= MARK_X ) {
+
+      if( thisRow() > row )
+	return true;
+    
+      if( col < thisCol() )
+	return true;
+    }
+  }
+
+  else if( row > MARK_Y ) {
+
+    if( row < thisRow() )
+      return true;
+
+    else if( row == thisRow() && col < thisCol() )
+      return true;
+  }
+    
+  return false;
+}
+
+
 /* Draw the Rows of Text */
 void renderText() {
 
@@ -444,13 +475,14 @@ void renderText() {
   for( row = 0; row < maxRows; row++ ) {
 
     nextRow = row+ROWOFFSET;
+
     
     if( nextRow < NUMROWS ) {	/* Write Text */
 
       /* Calculate what subset of the Row Fits in the Term */
       txtLen = (int)BUFFER[nextRow]->len - COLOFFSET;
       colMax = maxCols > txtLen ? txtLen : maxCols;
-      
+
       /* Write Letter at a Time */
       col = 0;
       for( i=0; i < colMax; i++ ) {
@@ -466,8 +498,11 @@ void renderText() {
 	    col++;
 	  }
 
+	  if( inRegion( nextRow, i+COLOFFSET ))
+	    attron( A_STANDOUT );
 	  mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
 	  col++;
+	  attroff( A_STANDOUT );
 	}
 
 	/* Ignore Chars In Line Buffer Gap */
@@ -479,12 +514,16 @@ void renderText() {
 	}
 
 	/* Insert Line Buffer Chars */
-	else {			
+	else {
+	  if( inRegion( nextRow, i+COLOFFSET ))
+	    attron( A_STANDOUT );
 	  mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
 	  col++;
+	  attroff( A_STANDOUT );
 	}
       }
-    }
+    } 
+
     
     else {			/* vi style EOF Markers */      
       mvaddch( row, 0, '~' );
@@ -701,8 +740,8 @@ void swapPointAndMark() {
   if( MARK_X != -1      &&	/* Mark Not Set */
       MARK_Y != -1 ) {
     
-    tmpX     = POINT_X;		/* Swap Point/Mark */
-    tmpY     = thisRow();
+    tmpX    = thisCol();	/* Swap Point/Mark */
+    tmpY    = thisRow();
     POINT_X = MARK_X;
     POINT_Y = MARK_Y;
     MARK_X  = tmpX;
@@ -990,10 +1029,6 @@ void eXtensionMenu() {
     exit(EXIT_SUCCESS);
     break;
 
-  case CTRL_KEY('g'):		/* Keyboard Quit */
-    REGIONP = false;
-    break;
-
   case CTRL_KEY('s'):		/* Save Buffer */
     saveBuffer();
     break;
@@ -1027,7 +1062,14 @@ void processKeypress() {
   case CTRL_KEY('x'):
     eXtensionMenu();
     break;
-    
+
+    /* Keyboard Quit */
+  case CTRL_KEY('g'):		
+    REGIONP = false;
+    MARK_X  = -1;
+    MARK_Y  = -1;
+    break;
+
     /* Function Keys */
   case KEY_F(1):		/* Help */
     miniBufferMessage("Help Not Available. Good luck!" );
@@ -1120,7 +1162,7 @@ void processKeypress() {
 
     /* Point/Mark */
   case CTRL_KEY(' '):		/* Set Mark */
-    MARK_X = POINT_X;
+    MARK_X = thisCol();
     MARK_Y = thisRow();
     REGIONP = true;
     miniBufferMessage( "Mark Set" );
