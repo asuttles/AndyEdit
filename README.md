@@ -5,16 +5,16 @@
         /   |             |        / (_)   |  o
        |    |   _  _    __|        \__   __|    _|_
        |    |  / |/ |  /  |  |   | /    /  |  |  |
-        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.2
+        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.3
                                  /|
                                  \|
 
 
-A simple, featureless, line-oriented, terminal-based text editor with an emacs-like keybindings.
+A simple, featureless, line-oriented, terminal-based text editor with emacs-like keybindings.
 
-The editor is inspired by, but not derived from, Microemacs and Kilo.
+The editor is inspired by, but not derived from, similar works like mg and Kilo.
 
-This readme was last edited in AndyEdit!
+This readme was edited in AndyEdit!
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ From the top-level directory, simply type 'make' to compile the editor:
 
 The AndyEdit editor requires the ncurses library be installed for terminal rendering.
 
-AndyEdit uses the POSIX getline utility.  This may not be found on all systems.
+AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems.
 
 AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 on OpenBSD 6.4.
 
@@ -66,11 +66,14 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
 
 ## Versioning
 
-Current Version 0.2 [Released]
+Latest Release: 0.2
 
 ### Release 0.3 (IN WORK)
   - Kill Word
-  - Highlight Region Between Point/Mark (WIP)
+  - Highlight Region Between Point/Mark
+  - Kill Buffer
+  - Save Buffer on Exit
+  - Region Highlighting (when mark active)
 
 ### Release 0.2
   - Save Buffer (as)
@@ -98,12 +101,11 @@ Current Version 0.2 [Released]
   - Status bar
   - Text Renderer
   
-
 ## TODO
-   - TAB Function
-   - Row highlighting
+   - (auto)TAB Function
    - Undo/Redo
-   - Rectangle Operations with Point/Mark
+   - Syntax Coloring
+   - Region Operations (Kill/Yank)
    - Helpful Help
 
 ## Author
@@ -116,5 +118,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-I would like to acknowledge countless of my fellow hobyist software developers who have written the various Ersatz Emacs clones which have inspired this present effort.
+I would like to acknowledge countless of my fellow hobyist software developers who have written the various Ersatz Emacsen which have inspired this present effort.
 
