@@ -15,10 +15,10 @@
 
 ### Standard Keys
 * HOME    - Point to Top
-* ENTER   - Open Line
+* ENTER   - Insert Line
 * PGUp    - Page Up
 * PGDn    - Page Down
-* END     - Point to End
+* END     - Point to Buffer End
 
 ### CTRL Modifier (c-k)
 * C-a     - Start of Line
@@ -28,7 +28,7 @@
 * C-e     - End of Line
 * C-f     - Forward Char
 * C-g     - Keyboard Quit
-* C-h     - Delete Back
+* C-h     - Delete Backward
 * C-i     -
 * C-j     - Jump to Line
 * C-k     - Kill Line
@@ -43,7 +43,7 @@
 * C-t     -
 * C-u     - Undo (TODO)
 * C-V     - Vertical Paging
-* C-w     - Cut Regoin (TODO)
+* C-w     - Kill Region
 * C-x     - eXtension Menu
 * C-y     - Yank Text (TODO)
 * C-z     - 

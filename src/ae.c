@@ -1,4 +1,4 @@
-/***
+com/***
 ==========================================================================================
             _              _         _____    _ _ _
            / \   _ __   __| |_   _  | ____|__| (_) |_
@@ -47,31 +47,31 @@ const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
 
 /* Text Line Data Structures */
 typedef struct {
-  char  *txt;			    /* Editor Text Line */
-  size_t len;                       /* Length of Text */
-  size_t lPtr;                      /* Editor Pointers */
+  char  *txt;                                /* Editor Text Line */
+  size_t len;                                /* Length of Text */
+  size_t lPtr;                                /* Editor Pointers */
   size_t rPtr;
-  bool   editP;                     /* This Row Edited Predicate */
+  bool   editP;                                /* This Row Edited Predicate */
 } row_t;
 
 /* Global Data */
-char FILENAME[FNLENGTH];            /* Buffer Filename */
-WINDOW *WIN;                        /* Window Handle */
-int POINT_X    =  0;                /* Point X Position */
-int POINT_Y    =  0;                /* Point Y Position */
-int MARK_X     = -1;                /* Mark X Position */
-int MARK_Y     = -1;                /* Mark Y Position */
-int NUMROWS    =  0;                /* Num Rows in Text Buffer */
-int ROWOFFSET  =  0;                /* Buffer Index of Top Row */
-int COLOFFSET  =  0;                /* Buffer Index of First Col */
-int MAXROWS    = MXRWS;             /* MAX Number of Buffer Lines */
+char FILENAME[FNLENGTH];                /* Buffer Filename */
+WINDOW *WIN;                                /* Window Handle */
+int POINT_X    =  0;                        /* Point X Position */
+int POINT_Y    =  0;                        /* Point Y Position */
+int MARK_X     = -1;                        /* Mark X Position */
+int MARK_Y     = -1;                        /* Mark Y Position */
+int NUMROWS    =  0;                        /* Num Rows in Text Buffer */
+int ROWOFFSET  =  0;                        /* Buffer Index of Top Row */
+int COLOFFSET  =  0;                        /* Buffer Index of First Col */
+int MAXROWS    = MXRWS;                        /* MAX Number of Buffer Lines */
 enum _sf STATUSFLAG \
-               = ORIGINAL;          /* Is Buffer Modified? */
-row_t **BUFFER;			    /* File Buffer */
-char MINIBUFFER[MINIBUFFSIZE];	    /* Minibuffer Input */
-char EDITBUFFER[64];                /* Edit Buffer For Text Input */
-int  EBINDEX   =  0;                /* Edit Buffer Index */
-bool REGIONP   = false;		    /* Is Region Active? */
+               = ORIGINAL;                /* Is Buffer Modified? */
+row_t **BUFFER;                                /* File Buffer */
+char MINIBUFFER[MINIBUFFSIZE];                /* Minibuffer Input */
+char EDITBUFFER[64];                        /* Edit Buffer For Text Input */
+int  EBINDEX   =  0;                        /* Edit Buffer Index */
+bool REGIONP   = false;                        /* Is Region Active? */
 
 
 /*******************************************************************************
@@ -107,7 +107,7 @@ int readKey() {
   /* wgetch handles SIGWINCH */
   while(( c = wgetch( WIN )) == ERR ) {
 
-    // Handle Timeouts...
+    /* Handle Timeouts */
     refresh();
   }
   
@@ -197,7 +197,14 @@ int miniBufferGetPosInteger( const char *msg ) {
 bool miniBufferGetYN( const char *msg ) {
 
   miniBufferGetInput( msg );
-  return( MINIBUFFER[0] == 'y' || MINIBUFFER[0] == 'Y' );
+
+  if( MINIBUFFER[0] == 'y' || MINIBUFFER[0] == 'Y' )
+    return true;
+
+  if( MINIBUFFER[0] != 'n' && MINIBUFFER[0] != 'N' )
+    return miniBufferGetYN( msg );
+
+  return false;
 }
 
 
@@ -332,7 +339,6 @@ void doubleBufferSize() {
 }
 
 
-
 /* Read A Text File from Disk */
 void openBuffer( char * fn ) {
 
@@ -446,7 +452,7 @@ void drawStatusLine() {
             FILENAME,
             _sfname[ STATUSFLAG ],
             thisRow() + 1, NUMROWS,
-            POINT_X + 1, (int)BUFFER[thisRow()]->len + 1 );
+            thisCol() + 1, (int)BUFFER[thisRow()]->len );
             
     
     
@@ -467,7 +473,7 @@ void drawStatusLine() {
                              RENDER TEXT
 *******************************************************************************/
 
-/* Rendering Text Within Active Region? */
+/* Is (Row,Col) Within Active Region? */
 bool inRegion( int row, int col ) {
 
   /* Region Not Active */
@@ -482,7 +488,7 @@ bool inRegion( int row, int col ) {
       if( thisRow() > row )
         return true;
     
-      if( col < thisCol() )
+      else if( col < thisCol() && thisRow() == MARK_Y )
         return true;
     }
 
@@ -491,7 +497,7 @@ bool inRegion( int row, int col ) {
       if( thisRow() < row )
         return true;
 
-      if( col > thisCol() )
+      else if( col > thisCol() && thisRow() == MARK_Y )
         return true;
     }
   }
@@ -520,7 +526,7 @@ bool inRegion( int row, int col ) {
 }
 
 
-/* Draw the Rows of Text */
+/* Draw and Color the Rows of Text */
 void renderText() {
 
   int i, j, row, col, colMax, txtLen, nextRow;
@@ -613,25 +619,61 @@ void pointToEndLine() {
 }
 
 
+/* Move Point to Prior Line */
+void priorLine() {
+
+  if( POINT_Y > 0 ) --POINT_Y;  
+  else if ( ROWOFFSET > 0 ) --ROWOFFSET;
+  
+  if(( POINT_X + COLOFFSET ) > 
+     ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
+}
+
+
+/* Move Point to Next Line */
+void nextLine() {
+  
+  if( POINT_Y + ROWOFFSET < NUMROWS - 1 ) {
+
+    /* Avoid Mode Line */
+    if( POINT_Y < screenRows() ) ++POINT_Y;
+    else ++ROWOFFSET;
+    
+    if(( POINT_X + COLOFFSET ) > 
+       ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
+  }
+}
+
+
+/* Move Point Forward */
+void pointForward() {
+  
+  if( thisCol() < (int)BUFFER[thisRow()]->len - 1 ) {
+    if( POINT_X < getmaxx( WIN ) - 1 ) ++POINT_X;
+    else COLOFFSET++;
+  }
+}
+
+
 /* Forward Word */
 void forwardWord() {
   
-if( POINT_X == (int)BUFFER[thisRow()]->len-1 ) /* At EOL? */
-  return;
+  if( thisCol() == (int)BUFFER[thisRow()]->len-1 ) /* At EOL? */
+    return;
 
- POINT_X++;                        
+  pointForward();
 
  /* Move Past Spaces */
- while( BUFFER[thisRow()]->txt[POINT_X] == ' ' ) 
-   POINT_X++;
+  while( BUFFER[thisRow()]->txt[POINT_X] == ' ' ) 
+    pointForward();
 
  /* Move to End of Word */
  while( BUFFER[thisRow()]->txt[POINT_X] != '\n' &&
         BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
         BUFFER[thisRow()]->txt[POINT_X] != ')'  &&
         BUFFER[thisRow()]->txt[POINT_X] != ']' )
-        
-   POINT_X++;
+
+   pointForward();
 }
 
 
@@ -783,58 +825,34 @@ void pageUp() {
   POINT_Y = 0;
 }
 
-/*******************************************************************************
-                            POINT AND MARK
-*******************************************************************************/
-
-/* Swap Point and Mark */
-void swapPointAndMark() {
-
-  int tmpX, tmpY;
-  
-  if( MARK_X != -1      &&        /* Mark Not Set */
-      MARK_Y != -1 ) {
-    
-    tmpX    = thisCol();        /* Swap Point/Mark */
-    tmpY    = thisRow();
-    POINT_X = MARK_X;
-    POINT_Y = MARK_Y;
-    MARK_X  = tmpX;
-    MARK_Y  = tmpY;
-
-    if( NUMROWS >= screenRows() ) { /* Scroll to Point Location */
-
-      ROWOFFSET = POINT_Y;
-      POINT_Y = 0;
-      centerLine();
-    }
-    miniBufferMessage( "Mark Set" );
-  }
-}
 
 /*******************************************************************************
                            LINE MANAGEMENT
 *******************************************************************************/
 
+/* Free row_t */
+void freeLine() {
+
+  free( BUFFER[thisRow()]->txt );
+  free( BUFFER[thisRow()] );
+    
+  for( int i=thisRow(); i<NUMROWS-1; i++ ) {
+
+    BUFFER[i] = BUFFER[i+1];
+  }
+
+  --NUMROWS;
+}
+
 /* Kill Line at Point */
 void killLine() {
-
-  int i;
 
   /* Line Empty - Delete it */
   if( BUFFER[thisRow()]->len == 1 ) {
 
     if( thisRow() == NUMROWS - 1 ) return; /* Cant Delete if Nothing Follows */
-    
-    free( BUFFER[thisRow()]->txt );
-    free( BUFFER[thisRow()] );
-    
-    for( i=thisRow(); i<NUMROWS-1; i++ ) {
 
-      BUFFER[i] = BUFFER[i+1];
-    }
-
-    --NUMROWS;
+    freeLine();
   }
 
   /* Delete from POINT to EOL */
@@ -908,7 +926,7 @@ void openLine() {
 }
 
 
-/* Incorporate Adds/Deletes Into Row Structure */
+/* Incorporate Edits Into Row Structure */
 void updateLine() {
 
   int i   = 0;
@@ -978,6 +996,183 @@ void updateEditState() {
 }
 
 /*******************************************************************************
+                             DELETE CHARS
+*******************************************************************************/
+
+void killWord() {
+
+  int thisPoint = POINT_X;        /* Save Current Point */
+
+  forwardWord();                /* Find End Next Word */
+
+  if( POINT_X == thisPoint )        /* No Word to Kill */
+    return;
+
+  /* Mark Word for Deletion and Restore Point */
+  BUFFER[thisRow()]->lPtr = thisPoint;
+  BUFFER[thisRow()]->rPtr = POINT_X;
+  POINT_X = thisPoint;
+  updateEditState();
+  updateNavigationState();
+}
+
+
+void combineLineWithPrior() {
+
+  if( thisRow() == 0 )
+    return;
+
+  char *tmp;
+        
+  /* Allocate Memory for Combined String */
+  int preLineLen = BUFFER[thisRow()-1]->len;
+  int nxtLineLen = BUFFER[thisRow()]->len;
+  int size       = preLineLen + nxtLineLen + 1;
+
+  if(( tmp = malloc( sizeof( char ) * size )) == NULL )
+    die( "backspace: tmp malloc failed" );
+
+  /* Copy Old/New Text Into New Line */
+  strncpy( tmp, 
+           BUFFER[thisRow()-1]->txt,
+           preLineLen );
+  strncpy( tmp + preLineLen,
+           BUFFER[thisRow()]->txt,
+           nxtLineLen );
+  BUFFER[thisRow()-1]->len = size - 1;
+        
+  /* Free Old Memory and Set Pointer */
+  free( BUFFER[thisRow()-1]->txt );
+  BUFFER[thisRow()-1]->txt = tmp;
+
+  /* Destroy Next Line */
+  freeLine();
+
+  POINT_Y--;
+  POINT_X = preLineLen;
+}
+
+void backspace() {
+
+  /* Continue Editing This Line? */
+  if( BUFFER[thisRow()]->editP ) {
+
+    /* If Deleting Chars After Inserting Chars? */
+    /* Then, Save Insertions Befor Making Deletions */ 
+    if( BUFFER[thisRow()]->lPtr == BUFFER[thisRow()]->rPtr ) {
+      updateLine();
+      BUFFER[thisRow()]->lPtr = POINT_X;
+      BUFFER[thisRow()]->rPtr = POINT_X;
+    }
+
+    /* Continue Deleting Chars to BOL */
+    if( POINT_X > 0 ) {
+      BUFFER[thisRow()]->lPtr--;
+      POINT_X--;
+    }
+
+    /* At BOL, Combine With Prior Line */
+    else {
+      updateNavigationState();
+      combineLineWithPrior();
+    }
+  }
+
+  /* Begin *New* Edits to This Line */
+  else {
+
+    if( POINT_X > 0 ) {
+      BUFFER[thisRow()]->lPtr = POINT_X - 1;
+      BUFFER[thisRow()]->rPtr = POINT_X;
+      updateEditState();
+      POINT_X--;
+    }
+
+    else {
+      combineLineWithPrior();
+    }
+  }
+}
+
+
+/*******************************************************************************
+                           POINT, MARK, and
+                          REGION OPERATIONS
+*******************************************************************************/
+
+/* Swap Point and Mark */
+void swapPointAndMark() {
+
+  int tmpX, tmpY;
+  
+  if( MARK_X != -1      &&          /* Mark Not Set */
+      MARK_Y != -1 ) {
+    
+    tmpX    = thisCol();            /* Swap Point/Mark */
+    tmpY    = thisRow();
+    POINT_X = MARK_X;
+    POINT_Y = MARK_Y;
+    MARK_X  = tmpX;
+    MARK_Y  = tmpY;
+
+    if( NUMROWS >= screenRows() ) { /* Scroll to Point Location */
+
+      ROWOFFSET = POINT_Y;
+      POINT_Y = 0;
+      centerLine();
+    }
+    miniBufferMessage( "Mark Set" );
+  }
+}
+
+
+/* Kill Text Between Point and Mark */
+void killRegion() {
+
+  /* Swap Point/Mark */
+  if( MARK_Y < POINT_Y )
+    swapPointAndMark();
+
+  /* Kill From POINT to EOL */
+  if( POINT_Y < MARK_Y && POINT_X > 0 ) {
+    
+    updateEditState();
+    killLine();
+    updateNavigationState();
+    nextLine();
+
+    POINT_X = 0;
+  }
+
+  /* Kill Lines Between POINT/MARK */
+  while( POINT_Y < MARK_Y ) {
+
+    freeLine();
+    MARK_Y--;
+  }
+  
+  /* Kill Last Line Up to MARK */
+  if( POINT_Y == MARK_Y ) {
+
+    if( POINT_X < MARK_X ) {
+      swapPointAndMark();
+    }
+    
+    BUFFER[thisRow()]->lPtr = MARK_X;
+    BUFFER[thisRow()]->rPtr = POINT_X;
+    updateLine();
+  }
+  
+  POINT_X = 0;
+  backspace();
+
+  MARK_X  = -1;
+  MARK_Y  = -1;
+  REGIONP = false;
+}
+
+
+/*******************************************************************************
                              INSERT CHARS
 *******************************************************************************/
 
@@ -995,28 +1190,6 @@ void selfInsert( int c ) {
 
   EDITBUFFER[EBINDEX++] = c;
   POINT_X++;
-}
-
-
-/*******************************************************************************
-                             DELETE CHARS
-*******************************************************************************/
-
-void killWord() {
-
-  int thisPoint = POINT_X;	/* Save Current Point */
-
-  forwardWord();                /* Find End Next Word */
-
-  if( POINT_X == thisPoint )	/* No Word to Kill */
-    return;
-
-  /* Mark Word for Deletion and Restore Point */
-  BUFFER[thisRow()]->lPtr = thisPoint;
-  BUFFER[thisRow()]->rPtr = POINT_X;
-  POINT_X = thisPoint;
-  updateEditState();
-  updateNavigationState();
 }
 
 
@@ -1056,7 +1229,7 @@ void metaMenu() {
     pageUp();
     break;
 
-  case '<':                        /* Top of Buffer */
+  case '<':                              /* Top of Buffer */
     updateNavigationState();
     POINT_X = 0;
     POINT_Y = 0;
@@ -1064,7 +1237,7 @@ void metaMenu() {
     ROWOFFSET = 0;
     break;
 
-  case '>':                        /* End of Buffer */
+  case '>':                           /* End of Buffer */
     updateNavigationState();
     pointToEndBuffer();
     break;
@@ -1079,7 +1252,7 @@ void eXtensionMenu() {
 
   switch(c) {
 
-  case CTRL_KEY('c'):                /* Close Editor */
+  case CTRL_KEY('c'):                 /* Close Editor */
     if( STATUSFLAG == MODIFIED )
       if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " ))
         saveBuffer();
@@ -1088,7 +1261,7 @@ void eXtensionMenu() {
     exit(EXIT_SUCCESS);
     break;
 
-  case 'k':                        /* Kill Buffer */
+  case 'k':                           /* Kill Buffer */
     if( STATUSFLAG == MODIFIED )
       if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " ))
         saveBuffer();
@@ -1137,7 +1310,7 @@ void processKeypress() {
     break;
 
     /* Function Keys */
-  case KEY_F(1):                /* Help */
+  case KEY_F(1):                     /* Help */
     miniBufferMessage( "Read the User Guide!" );
     break;
 
@@ -1171,10 +1344,7 @@ void processKeypress() {
   case CTRL_KEY('f'):                /* Point Forward */
   case KEY_RIGHT:
     updateNavigationState();
-    if( POINT_X + COLOFFSET < (int)BUFFER[ROWOFFSET+POINT_Y]->len - 1 ) {
-      if( POINT_X < getmaxx( WIN ) - 1 ) ++POINT_X;
-      else COLOFFSET++;
-    }
+    pointForward();
     break;
   case CTRL_KEY('e'):                /* Point EOL */
     updateNavigationState();
@@ -1187,33 +1357,22 @@ void processKeypress() {
   case CTRL_KEY('p'):                /* Prior Line */
   case KEY_UP:
     updateNavigationState();
-    if( POINT_Y > 0 ) --POINT_Y;
-    else if ( ROWOFFSET > 0 ) --ROWOFFSET;
-    if(( POINT_X + COLOFFSET ) > 
-       ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
+    priorLine();
     break;
   case CTRL_KEY('n'):                /* Next Line */
   case KEY_DOWN:
     updateNavigationState();
-    if( POINT_Y + ROWOFFSET < NUMROWS - 1 ) {
-
-      /* Avoid Mode Line */
-      if( POINT_Y < screenRows() ) ++POINT_Y;
-      else ++ROWOFFSET;
-
-      if(( POINT_X + COLOFFSET ) > 
-         ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
-    }
+    nextLine();
     break;
-  case KEY_PPAGE:                /* Page Up */
+  case KEY_PPAGE:                    /* Page Up */
     updateNavigationState();
     pageUp();
     break;
-  case KEY_END:                        /* End of Buffer */
+  case KEY_END:                      /* End of Buffer */
     updateNavigationState();
     pointToEndBuffer();
     break;
-  case KEY_NPAGE:                /* Page Down */
+  case KEY_NPAGE:                    /* Page Down */
   case CTRL_KEY('v'):
     updateNavigationState();
     pageDown();
@@ -1262,41 +1421,20 @@ void processKeypress() {
       }
     }
     break;
+
   case CTRL_KEY('h'):                /* Backspace */
   case KEY_BACKSPACE:
-
-    /* Continue Editing This Line? */
-    if( BUFFER[thisRow()]->editP ) {
-
-      /* Start Deleting Chars After Inserting Chars? */
-      if( BUFFER[thisRow()]->lPtr == BUFFER[thisRow()]->rPtr ) {
-        updateLine();
-        BUFFER[thisRow()]->lPtr = POINT_X;
-        BUFFER[thisRow()]->rPtr = POINT_X;
-      }
-
-      /* Continue Deleting Chars to BOL */
-      if( POINT_X > 0 ) {
-        BUFFER[thisRow()]->lPtr--;
-        POINT_X--;
-      }
-    }
-
-    /* Begin *New* Edits to This Line */
-    else {
-
-      if( POINT_X > 0 ) {
-        BUFFER[thisRow()]->lPtr = POINT_X - 1;
-        BUFFER[thisRow()]->rPtr = POINT_X;
-        updateEditState();
-        POINT_X--;
-      }
-    }
+    backspace();
     break;
-  case CTRL_KEY('k'):                /* Kill Line */
+  case CTRL_KEY('k'):                   /* Kill Line */
     updateEditState();
     killLine();
     updateNavigationState();
+    break;
+
+  case CTRL_KEY('w'):                   /* Kill Region  */
+    killRegion();
+    updateEditState();
     break;
     
     /* Handle Signals */
@@ -1392,6 +1530,12 @@ int main( int argc, char *argv[] ) {
 } 
 
 /***
+    Local Variables:
+    mode: c
+    comment-column: 40
+    fill-column: 90
+    End:
+
    -----------------------------
   < AndyEdit is Udderly Sweet! >
    -----------------------------

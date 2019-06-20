@@ -74,6 +74,8 @@ Latest Release: 0.2
   - Kill Buffer
   - Save Buffer on Exit
   - Region Highlighting (when mark active)
+  - Kill Region
+  - Backspace Works Across Lines
 
 ### Release 0.2
   - Save Buffer (as)
