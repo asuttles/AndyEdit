@@ -1,4 +1,4 @@
-com/***
+/***
 ==========================================================================================
             _              _         _____    _ _ _
            / \   _ __   __| |_   _  | ____|__| (_) |_
@@ -47,31 +47,31 @@ const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
 
 /* Text Line Data Structures */
 typedef struct {
-  char  *txt;                                /* Editor Text Line */
-  size_t len;                                /* Length of Text */
-  size_t lPtr;                                /* Editor Pointers */
+  char  *txt;				/* Editor Text Line */
+  size_t len;				/* Length of Text */
+  size_t lPtr;				/* Editor Pointers */
   size_t rPtr;
-  bool   editP;                                /* This Row Edited Predicate */
+  bool   editP;				/* This Row Edited Predicate */
 } row_t;
 
 /* Global Data */
 char FILENAME[FNLENGTH];                /* Buffer Filename */
-WINDOW *WIN;                                /* Window Handle */
-int POINT_X    =  0;                        /* Point X Position */
-int POINT_Y    =  0;                        /* Point Y Position */
-int MARK_X     = -1;                        /* Mark X Position */
-int MARK_Y     = -1;                        /* Mark Y Position */
-int NUMROWS    =  0;                        /* Num Rows in Text Buffer */
-int ROWOFFSET  =  0;                        /* Buffer Index of Top Row */
-int COLOFFSET  =  0;                        /* Buffer Index of First Col */
-int MAXROWS    = MXRWS;                        /* MAX Number of Buffer Lines */
+WINDOW *WIN;				/* Window Handle */
+int POINT_X    =  0;			/* Point X Position */
+int POINT_Y    =  0;			/* Point Y Position */
+int MARK_X     = -1;			/* Mark X Position */
+int MARK_Y     = -1;			/* Mark Y Position */
+int NUMROWS    =  0;			/* Num Rows in Text Buffer */
+int ROWOFFSET  =  0;			/* Buffer Index of Top Row */
+int COLOFFSET  =  0;			/* Buffer Index of First Col */
+int MAXROWS    = MXRWS;			/* MAX Number of Buffer Lines */
 enum _sf STATUSFLAG \
-               = ORIGINAL;                /* Is Buffer Modified? */
-row_t **BUFFER;                                /* File Buffer */
-char MINIBUFFER[MINIBUFFSIZE];                /* Minibuffer Input */
-char EDITBUFFER[64];                        /* Edit Buffer For Text Input */
-int  EBINDEX   =  0;                        /* Edit Buffer Index */
-bool REGIONP   = false;                        /* Is Region Active? */
+               = ORIGINAL;		/* Is Buffer Modified? */
+row_t **BUFFER;				/* File Buffer */
+char MINIBUFFER[MINIBUFFSIZE];		/* Minibuffer Input */
+char EDITBUFFER[64];			/* Edit Buffer For Text Input */
+int  EBINDEX   =  0;			/* Edit Buffer Index */
+bool REGIONP   = false;			/* Is Region Active? */
 
 
 /*******************************************************************************
@@ -655,6 +655,18 @@ void pointForward() {
 }
 
 
+/* Move Point Backward */
+void pointBackward() {
+  
+  if( thisCol() > 0 ) {
+    if( POINT_X == 0 )
+      --COLOFFSET;
+    else
+      --POINT_X;
+  }
+}
+
+
 /* Forward Word */
 void forwardWord() {
   
@@ -664,14 +676,14 @@ void forwardWord() {
   pointForward();
 
  /* Move Past Spaces */
-  while( BUFFER[thisRow()]->txt[POINT_X] == ' ' ) 
+  while( BUFFER[thisRow()]->txt[ thisCol() ] == ' ' ) 
     pointForward();
 
  /* Move to End of Word */
- while( BUFFER[thisRow()]->txt[POINT_X] != '\n' &&
-        BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
-        BUFFER[thisRow()]->txt[POINT_X] != ')'  &&
-        BUFFER[thisRow()]->txt[POINT_X] != ']' )
+ while( BUFFER[thisRow()]->txt[ thisCol() ] != '\n' &&
+        BUFFER[thisRow()]->txt[ thisCol() ] != ' '  &&
+        BUFFER[thisRow()]->txt[ thisCol() ] != ')'  &&
+        BUFFER[thisRow()]->txt[ thisCol() ] != ']' )
 
    pointForward();
 }
@@ -680,35 +692,35 @@ void forwardWord() {
 /* Backward Word */
 void backwardWord() {
 
-  if( POINT_X == 0 ) return;        /* At BOL? */
+  if( thisCol() == 0 ) return;        /* At BOL? */
 
   int old_POINT_X = POINT_X;
-  POINT_X--;
+  pointBackward();
   
  /* Move Past Spaces */
-  while(( BUFFER[thisRow()]->txt[POINT_X] == ' '   ||
-          BUFFER[thisRow()]->txt[POINT_X] == ')'   ||
-          BUFFER[thisRow()]->txt[POINT_X] == ';'   ||
-          BUFFER[thisRow()]->txt[POINT_X] == ']' ) &&
-        POINT_X > 0 )
-    POINT_X--;
+  while(( BUFFER[thisRow()]->txt[ thisCol() ] == ' '   ||
+          BUFFER[thisRow()]->txt[ thisCol() ] == ')'   ||
+          BUFFER[thisRow()]->txt[ thisCol() ] == ';'   ||
+          BUFFER[thisRow()]->txt[ thisCol() ] == ']' ) &&
+        thisCol() > 0 )
+    pointBackward();
 
   /* If POINT_X is a Space, No Prior Word this Line */
-  if( BUFFER[thisRow()]->txt[POINT_X] == ' ' ) {
+  if( BUFFER[thisRow()]->txt[ thisCol() ] == ' ' ) {
     POINT_X = old_POINT_X;
     return;
   }
   
  /* Move to Beginning of Word */
- while( POINT_X > 0                             &&
-        BUFFER[thisRow()]->txt[POINT_X] != ' '  &&
-        BUFFER[thisRow()]->txt[POINT_X] != '('  &&
-        BUFFER[thisRow()]->txt[POINT_X] != '[' )
-   POINT_X--;
+  while( thisCol() > 0                              &&
+        BUFFER[thisRow()]->txt[ thisCol() ] != ' '  &&
+        BUFFER[thisRow()]->txt[ thisCol() ] != '('  &&
+        BUFFER[thisRow()]->txt[ thisCol() ] != '[' )
+    pointBackward();
 
  /* Don't Leave POINT on a Space */
- if( BUFFER[thisRow()]->txt[POINT_X] == ' ' )
-   POINT_X++;
+  if( BUFFER[thisRow()]->txt[ thisCol() ] == ' ' )
+    pointForward();
 }
 
   
@@ -1334,7 +1346,7 @@ void processKeypress() {
   case CTRL_KEY('b'):                /* Point Back */
   case KEY_LEFT:                
     updateNavigationState();
-    if( POINT_X > 0 ) --POINT_X;
+    pointBackward();
     break;
   case CTRL_KEY('a'):                /* Point BOL */
     updateNavigationState();
