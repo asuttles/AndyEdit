@@ -36,6 +36,7 @@
 #define MXRWS 512
 #define MINIBUFFSIZE 128
 #define FNLENGTH 128
+#define MSGBUFFSIZE 64
 #define DEFAULTFILENAME "newfile.txt"
 #define thisRow() (ROWOFFSET + POINT_Y)
 #define thisCol() (COLOFFSET + POINT_X)
@@ -389,6 +390,7 @@ void openBuffer( char * fn ) {
 void saveBuffer() {
 
   int row;
+  char buffer[ MSGBUFFSIZE ];
   FILE *fp = NULL;
 
   /* Open File for Editing */
@@ -402,7 +404,9 @@ void saveBuffer() {
 
   fclose( fp );
   STATUSFLAG = ORIGINAL;
-  miniBufferMessage( "Wrote Text File." );
+
+  snprintf( buffer, MSGBUFFSIZE, "Wrote %d lines to %s", row, FILENAME );
+  miniBufferMessage( buffer );
 }
 
 
@@ -1266,8 +1270,10 @@ void eXtensionMenu() {
 
   case CTRL_KEY('c'):                 /* Close Editor */
     if( STATUSFLAG == MODIFIED )
-      if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " ))
-        saveBuffer();
+      if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " )) {
+	updateNavigationState();
+	saveBuffer();
+      }
     closeBuffer();
     closeEditor();
     exit(EXIT_SUCCESS);
@@ -1275,16 +1281,20 @@ void eXtensionMenu() {
 
   case 'k':                           /* Kill Buffer */
     if( STATUSFLAG == MODIFIED )
-      if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " ))
-        saveBuffer();
+      if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " )) {
+	updateNavigationState();
+	saveBuffer();
+      }
     closeBuffer();
     break;
     
   case CTRL_KEY('s'):                /* Save Buffer */
+    updateNavigationState();
     saveBuffer();
     break;
 
   case CTRL_KEY('w'):                /* Save Buffer As */
+    updateNavigationState();
     saveBufferNewName();
     break;
 
