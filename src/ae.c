@@ -1291,13 +1291,17 @@ void eXtensionMenu() {
     break;
     
   case CTRL_KEY('s'):                /* Save Buffer */
-    updateNavigationState();
-    saveBuffer();
+    if( STATUSFLAG == MODIFIED ) {
+	updateNavigationState();
+	saveBuffer();
+      }
     break;
 
   case CTRL_KEY('w'):                /* Save Buffer As */
-    updateNavigationState();
-    saveBufferNewName();
+    if( STATUSFLAG == MODIFIED ) {
+	updateNavigationState();
+	saveBufferNewName();
+      }
     break;
 
   case CTRL_KEY('x'):                /* Forward Word */
