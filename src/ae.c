@@ -142,7 +142,6 @@ void miniBufferClear() {
   refresh();
 }
 
-
 /* Minibuffer IO */
 void miniBufferGetInput( const char *msg ) {
 
