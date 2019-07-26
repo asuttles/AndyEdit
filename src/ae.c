@@ -32,6 +32,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <readline/readline.h>
+
+
+
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
@@ -78,7 +82,7 @@ bool REGIONP   = false;			/* Is Region Active? */
 
 
 /*******************************************************************************
-                           TERMINATE EDITOR
+			       INITIALIZE/TERMINATE EDITOR
 *******************************************************************************/
 
 /* Restore tty */
@@ -97,6 +101,38 @@ void die( const char *s ) {
   
   exit(EXIT_FAILURE);
 }
+
+
+/* Prepare tty for Raw nCurses Input */
+void initializeTerminal() {
+
+  if(( WIN = initscr() ) == NULL ) { /* Setup ncurses */
+    die( "initializeTerminal: initscr failed" );
+  }
+
+  if( cbreak() == ERR ) {        /* Unbuffered Input */
+    die( "initializeTerminal: cbreak failed" );
+  }
+
+  if( noecho() == ERR ) {        /* Do NOT local echo */
+    die( "initializeTerminal: noecho failed" );
+  }
+
+  if( nonl() == ERR ) {                /* \n != \r\n */
+    die( "initializeTerminal: nonl failed" );
+  }
+
+  if( keypad( stdscr, TRUE ) == ERR ) { /* Enable keypad */
+    die( "initializeterminal: keypad failed" );
+  }
+
+  if( raw() == ERR ) {                /* Set ICANON, ISIG, IXON off */
+    die( "initializeterminal: raw" );
+  }
+
+  timeout(100);
+}
+
 
 /*******************************************************************************
                                   IO
@@ -142,7 +178,6 @@ void miniBufferClear() {
   refresh();
 }
 
-
 /* Minibuffer IO */
 void miniBufferGetInput( const char *msg ) {
 
@@ -173,20 +208,49 @@ void miniBufferGetInput( const char *msg ) {
 }
 
 
-/* Get a Filename */
-char *miniBufferGetFilename( const char *fn ) {
+/* Get a New Filename */
+char *miniBufferGetFilename() {
 
-  char msg[128];
-
-  snprintf( msg, MINIBUFFSIZE-1, "Enter filename (%s) : ", fn );
+  int i;
   
-  miniBufferGetInput( msg );
-  if( strlen( MINIBUFFER ) == 0 )
-    return (char *)fn;
-  else
-    return MINIBUFFER;
-}
+  char *newFileName = NULL;
+  char message[ FNLENGTH + 14 ];	/* User Message */
+  
+  int yMax = getmaxx( WIN );		/* Size of Curses Window */
 
+  
+  /* End Curses & Clear garbage off of terminal */
+  endwin();
+  for( i=0; i<yMax; i++ ) printf( "\n" );
+  
+  /* Create a message for user */
+  printf( ">>>>> Enter a filename for buffer <<<<<\n\n" );
+  printf( "Press ENTER to accept default name.\n" );
+  printf( "Uses EMACS keybindings and TAB for autocompletion.\n\n" );
+
+  snprintf( message, FNLENGTH + 14, "filename [%s] : ", FILENAME );
+
+  /* Get the new filename */
+  if(( newFileName = readline( message )) == NULL )
+    die( "miniBufferGetFilename: readline failed" );
+
+  /* Save new non-default filename */
+  if( strlen( newFileName ) > 0 ) {
+    
+  
+    // Checks to see if name is writable...
+
+    // Filename is good, go for it!
+    strncpy( FILENAME, newFileName, strlen( newFileName ) + 1 );
+  }
+
+  
+  free( newFileName );			
+
+  initializeTerminal();			/* Restart curses */
+
+  return FILENAME;
+}
 
 /* Read Integer from Minibuffer */
 int miniBufferGetPosInteger( const char *msg ) {
@@ -420,7 +484,7 @@ void saveBufferNewName() {
   char *fn = FILENAME;
 
   /* Get Filename to Write */
-  fn = miniBufferGetFilename( fn );
+  fn = miniBufferGetFilename();
   
   /* Open File for Editing */
   if(( fp = fopen( fn, "w" )) == NULL ) {
@@ -1295,6 +1359,9 @@ void eXtensionMenu() {
 	updateNavigationState();
 	saveBuffer();
       }
+    else {
+      miniBufferMessage( "Buffer not Modified" );
+    }
     break;
 
   case CTRL_KEY('w'):                /* Save Buffer As */
@@ -1302,6 +1369,9 @@ void eXtensionMenu() {
 	updateNavigationState();
 	saveBufferNewName();
       }
+    else {
+      miniBufferMessage( "Buffer not Modified" );
+    }
     break;
 
   case CTRL_KEY('x'):                /* Forward Word */
@@ -1476,40 +1546,10 @@ void processKeypress() {
   }
 }
 
-/*******************************************************************************
-                       STARTUP / INITIALIZATION
-*******************************************************************************/
 
-/* Prepare tty for Raw nCurses Input */
-void initializeTerminal() {
-
-  if(( WIN = initscr() ) == NULL ) { /* Setup ncurses */
-    die( "initializeTerminal: initscr failed" );
-  }
-
-  if( cbreak() == ERR ) {        /* Unbuffered Input */
-    die( "initializeTerminal: cbreak failed" );
-  }
-
-  if( noecho() == ERR ) {        /* Do NOT local echo */
-    die( "initializeTerminal: noecho failed" );
-  }
-
-  if( nonl() == ERR ) {                /* \n != \r\n */
-    die( "initializeTerminal: nonl failed" );
-  }
-
-  if( keypad( stdscr, TRUE ) == ERR ) { /* Enable keypad */
-    die( "initializeterminal: keypad failed" );
-  }
-
-  if( raw() == ERR ) {                /* Set ICANON, ISIG, IXON off */
-    die( "initializeterminal: raw" );
-  }
-
-  timeout(100);
-}
-
+/*****************************************************************************************
+				       MAIN PROGRAM
+*****************************************************************************************/
 
 /* Display Splash Screen */
 void displaySplash( void ) {
@@ -1556,6 +1596,7 @@ int main( int argc, char *argv[] ) {
   closeEditor();
   return EXIT_SUCCESS;
 } 
+
 
 /***
     Local Variables:
