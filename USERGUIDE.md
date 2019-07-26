@@ -8,8 +8,8 @@
                          |___/
     Copyright 2019
 
-    See [LICENSE](LICENSE) for licensing details.
-    See [README](README.md) for information on how to compile ae.
+See [LICENSE](LICENSE) for licensing details.
+See [README](README.md) for information on how to compile ae.
 
 ## Preliminary Keymap for AE 
 

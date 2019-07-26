@@ -1,4 +1,9 @@
-SRC=./src
+SRCDIR=src
+SOURCES=ae.c
 
-ae: $(SRC)/ae.c
-	$(CC) $(SRC)/ae.c -o ae -lcurses -lreadline -Wall -Wextra -pedantic -std=c99
+CFLAGS=-Wall -Wextra -pedantic -std=c99
+
+LIBS=-lcurses -lreadline
+
+ae: $(SRCDIR)/$(SOURCES)
+	$(CC) $(SRCDIR)/$(SOURCES) -o ae $(CFLAGS) $(LIBS)

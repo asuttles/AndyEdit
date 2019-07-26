@@ -211,7 +211,7 @@ void miniBufferGetInput( const char *msg ) {
 /* Get a New Filename */
 char *miniBufferGetFilename() {
 
-  int i;
+  int i, nameLen;
   
   char *newFileName = NULL;
   char message[ FNLENGTH + 14 ];	/* User Message */
@@ -234,13 +234,15 @@ char *miniBufferGetFilename() {
   if(( newFileName = readline( message )) == NULL )
     die( "miniBufferGetFilename: readline failed" );
 
-  /* Save new non-default filename */
-  if( strlen( newFileName ) > 0 ) {
-    
+  nameLen = strlen( newFileName );
   
-    // Checks to see if name is writable...
-
-    // Filename is good, go for it!
+  /* Save new non-default filename */
+  if( nameLen  > 0 ) {
+    
+    if( newFileName[ nameLen - 1 ] == ' ' )
+      newFileName[ nameLen - 1 ] = '\0';
+      
+    /* Set global FILENAME */
     strncpy( FILENAME, newFileName, strlen( newFileName ) + 1 );
   }
 
@@ -412,6 +414,9 @@ void openBuffer( char * fn ) {
   int i = 0;
   FILE *fp = NULL;
 
+  // DEBUG
+  printf( "The filname is: %s; the len is: %lu\n\n", fn, strlen( fn ));
+  
   /* Save Filename */
   strncpy( FILENAME, fn, FNLENGTH-1 );
   
@@ -485,6 +490,8 @@ void saveBufferNewName() {
 
   /* Get Filename to Write */
   fn = miniBufferGetFilename();
+
+  // Ensure fn is writable...
   
   /* Open File for Editing */
   if(( fp = fopen( fn, "w" )) == NULL ) {
@@ -1364,6 +1371,18 @@ void eXtensionMenu() {
     }
     break;
 
+  case CTRL_KEY('v'):
+    /* Close Old Buffer */
+    if( STATUSFLAG == MODIFIED )
+      if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " )) {
+	updateNavigationState();
+	saveBuffer();
+      }
+    closeBuffer();
+    /* Open New Buffer */
+    openBuffer( miniBufferGetFilename() );
+    break;
+    
   case CTRL_KEY('w'):                /* Save Buffer As */
     if( STATUSFLAG == MODIFIED ) {
 	updateNavigationState();
