@@ -35,7 +35,6 @@
 #include <readline/readline.h>
 
 
-
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
@@ -414,9 +413,6 @@ void openBuffer( char * fn ) {
   int i = 0;
   FILE *fp = NULL;
 
-  // DEBUG
-  printf( "The filname is: %s; the len is: %lu\n\n", fn, strlen( fn ));
-  
   /* Save Filename */
   strncpy( FILENAME, fn, FNLENGTH-1 );
   
