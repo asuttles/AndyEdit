@@ -51,6 +51,9 @@
 enum _sf { ORIGINAL, MODIFIED, READONLY };
 const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
 
+/* Empty Buffer : Default or User Named */
+enum _bn { DEFAULT, UNAMED };
+
 /* Text Line Data Structures */
 typedef struct {
   char  *txt;				/* Editor Text Line */
@@ -245,7 +248,6 @@ char *miniBufferGetFilename() {
     strncpy( FILENAME, newFileName, strlen( newFileName ) + 1 );
   }
 
-  
   free( newFileName );			
 
   initializeTerminal();			/* Restart curses */
@@ -338,7 +340,7 @@ void initializeData() {
 
 
 /* Open AE on an Empty Buffer */
-void emptyBuffer() {
+void emptyBuffer(enum _bn bn) {
 
   BUFFER[0] = malloc( sizeof( row_t ));
   BUFFER[0]->txt = malloc( sizeof( char ) * 2 );
@@ -349,7 +351,9 @@ void emptyBuffer() {
   BUFFER[0]->rPtr   = 0;
   BUFFER[0]->editP  = false;
 
-  strncpy( FILENAME, DEFAULTFILENAME, FNLENGTH-1 );
+  if( bn == DEFAULT ) {
+    strncpy( FILENAME, DEFAULTFILENAME, FNLENGTH-1 );
+  }
   
   NUMROWS = 1;
 }
@@ -381,7 +385,7 @@ void closeBuffer() {
   STATUSFLAG = ORIGINAL;
 
   initializeData();
-  emptyBuffer();
+  emptyBuffer( DEFAULT );
   
   clear();
 }
@@ -412,14 +416,29 @@ void openBuffer( char * fn ) {
 
   int i = 0;
   FILE *fp = NULL;
+  bool newFile = FALSE;
 
-  /* Save Filename */
-  strncpy( FILENAME, fn, FNLENGTH-1 );
+  /* Check to See if File Exists and Readable */
+  if( access( fn, R_OK | F_OK ) == -1 ) {
+
+    miniBufferMessage( "filename doesn't exist!" );
+    emptyBuffer( UNAMED );
+    newFile = TRUE;
+  }
+
+  /* Save fn as Global */
+  if( fn != FILENAME )
+    strncpy( FILENAME, fn, FNLENGTH-1 );
+
+  /* If newfile, Skip Opening/Reading from Disk */
+  if( newFile ) return;
+
   
   /* Open File for Editing */
   if(( fp = fopen( fn, "r" )) == NULL ) {
     die( "openBuffer: fopen failed." );
   }
+
 
   /* Read File Rows into BUFFER */
   while( true ) {
@@ -1597,7 +1616,7 @@ int main( int argc, char *argv[] ) {
     openBuffer( argv[argc-1] );
   }
   else {
-    emptyBuffer();
+    emptyBuffer( DEFAULT );
     displaySplash();
   }
   
