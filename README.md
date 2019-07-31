@@ -10,7 +10,7 @@
                                  \|
 
 
-A simple, featureless, line-oriented, terminal-based text editor with emacs-like keybindings.
+A simple, featureless, one file-at-a-time, line-oriented, terminal-based text editor with emacs-like keybindings.
 
 The editor is inspired by, but not derived from, similar works like mg and Kilo.
 
@@ -76,6 +76,8 @@ Latest Release: 0.2
   - Region Highlighting (when mark active)
   - Kill Region
   - Backspace Works Across Lines
+  - Find (alternate) File
+  - Display Help
 
 ### Release 0.2
   - Save Buffer (as)
@@ -108,7 +110,6 @@ Latest Release: 0.2
    - Undo/Redo
    - Syntax Coloring
    - Region Operations (Kill/Yank)
-   - Helpful Help
 
 ## Author
 

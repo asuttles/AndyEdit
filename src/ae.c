@@ -421,7 +421,7 @@ void openBuffer( char * fn ) {
   /* Check to See if File Exists and Readable */
   if( access( fn, R_OK | F_OK ) == -1 ) {
 
-    miniBufferMessage( "filename doesn't exist!" );
+    miniBufferMessage( "Filename doesn't exist. Creating buffer for new file." );
     emptyBuffer( UNAMED );
     newFile = TRUE;
   }
@@ -1386,6 +1386,7 @@ void eXtensionMenu() {
     }
     break;
 
+  case CTRL_KEY('f'):
   case CTRL_KEY('v'):
     /* Close Old Buffer */
     if( STATUSFLAG == MODIFIED )
@@ -1442,17 +1443,20 @@ void processKeypress() {
     break;
 
     /* Function Keys */
-  case KEY_F(1):                     /* Help */
-    miniBufferMessage( "Read the User Guide!" );
+  case KEY_F(1):			/* Help */
+
+    endwin();				/* Dumb Help */
+    system( "cat USERGUIDE.md | more" );
+    initializeTerminal();
     break;
 
-  case KEY_F(10):                    /* Exit */
+  case KEY_F(10):			/* Exit */
     closeEditor();
     exit(EXIT_SUCCESS);
     break;
     
     /* Cursor Movement */
-  case KEY_HOME:                     /* Home */
+  case KEY_HOME:			/* Home */
     updateNavigationState();
     POINT_X = 0;
     POINT_Y = 0;

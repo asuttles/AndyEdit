@@ -19,6 +19,7 @@ See [README](README.md) for information on how to compile ae.
 * PGUp    - Page Up
 * PGDn    - Page Down
 * END     - Point to Buffer End
+* F1      - Keymap Help
 
 ### CTRL Modifier (c-k)
 * C-a     - Start of Line
@@ -55,6 +56,8 @@ See [README](README.md) for information on how to compile ae.
 * C-x k   - Kill Buffer
 * C-x C-w - Save As
 * C-x C-s - Save Buffer
+* C-x C-v - Find Alternate File
+* C-x C-f - Find File
 
 ### Alt-Key Keybindings (a-k)
 * a-f     - Forward Word
