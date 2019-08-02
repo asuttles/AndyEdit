@@ -930,6 +930,79 @@ void pageUp() {
 }
 
 /*******************************************************************************
+				    UPDATE LINE EDITS
+*******************************************************************************/
+
+/* Incorporate Edits Into Row Structure */
+void updateLine() {
+
+  int i   = 0;
+  int col = 0;
+  
+  int delta = EBINDEX - ( BUFFER[thisRow()]->rPtr -
+                          BUFFER[thisRow()]->lPtr );
+
+  int newLen = BUFFER[thisRow()]->len + delta;
+    
+  char *tmp;                        /* New Text Row */
+
+  if(( tmp = malloc(( sizeof( char ) * newLen ) + 1 )) == NULL )
+    die( "updateLine: tmp malloc failed" );
+
+  /* Copy Non-deleted Chars */
+  for( i = 0; i<(int)BUFFER[thisRow()]->lPtr; i++ ) {
+    tmp[col] = BUFFER[thisRow()]->txt[i];
+    col++;
+  }
+
+  /* Add Chars from Edit Buffer */
+  for( i = 0; i<EBINDEX; i++ ) {
+    tmp[col] = EDITBUFFER[i];
+    col++;
+  }
+
+  /* Add Rest of Chars */
+  for( i = BUFFER[thisRow()]->rPtr; i<(int)BUFFER[thisRow()]->len; i++ ) {
+    tmp[col] = BUFFER[thisRow()]->txt[i];
+    col++;
+  }
+
+  tmp[newLen] = '\0';                /* NULL Terminate New String */
+
+  free( BUFFER[thisRow()]->txt );
+  BUFFER[thisRow()]->txt  = tmp;
+  BUFFER[thisRow()]->len  = newLen;
+  BUFFER[thisRow()]->lPtr = 0;
+  BUFFER[thisRow()]->rPtr = 0;
+
+  EBINDEX = 0;
+}
+
+
+/*******************************************************************************
+                             EDITOR STATE
+*******************************************************************************/
+
+/* Cursor Movement Functions */
+void updateNavigationState() {
+
+  if( BUFFER[thisRow()]->editP )
+    updateLine();
+  
+  BUFFER[thisRow()]->editP = false;
+  
+  miniBufferClear();
+}
+
+
+/* Edit Line */
+void updateEditState() {
+
+  BUFFER[thisRow()]->editP = true;
+  STATUSFLAG = MODIFIED;
+}
+
+/*******************************************************************************
                              INSERT CHARS
 *******************************************************************************/
 
@@ -1077,76 +1150,6 @@ void openLine() {
   else
     POINT_Y++;
   NUMROWS++;                        /* Increment Num Lines */
-}
-
-
-/* Incorporate Edits Into Row Structure */
-void updateLine() {
-
-  int i   = 0;
-  int col = 0;
-  
-  int delta = EBINDEX - ( BUFFER[thisRow()]->rPtr -
-                          BUFFER[thisRow()]->lPtr );
-
-  int newLen = BUFFER[thisRow()]->len + delta;
-    
-  char *tmp;                        /* New Text Row */
-
-  if(( tmp = malloc(( sizeof( char ) * newLen ) + 1 )) == NULL )
-    die( "updateLine: tmp malloc failed" );
-
-  /* Copy Non-deleted Chars */
-  for( i = 0; i<(int)BUFFER[thisRow()]->lPtr; i++ ) {
-    tmp[col] = BUFFER[thisRow()]->txt[i];
-    col++;
-  }
-
-  /* Add Chars from Edit Buffer */
-  for( i = 0; i<EBINDEX; i++ ) {
-    tmp[col] = EDITBUFFER[i];
-    col++;
-  }
-
-  /* Add Rest of Chars */
-  for( i = BUFFER[thisRow()]->rPtr; i<(int)BUFFER[thisRow()]->len; i++ ) {
-    tmp[col] = BUFFER[thisRow()]->txt[i];
-    col++;
-  }
-
-  tmp[newLen] = '\0';                /* NULL Terminate New String */
-
-  free( BUFFER[thisRow()]->txt );
-  BUFFER[thisRow()]->txt  = tmp;
-  BUFFER[thisRow()]->len  = newLen;
-  BUFFER[thisRow()]->lPtr = 0;
-  BUFFER[thisRow()]->rPtr = 0;
-
-  EBINDEX = 0;
-}
-
-
-/*******************************************************************************
-                             EDITOR STATE
-*******************************************************************************/
-
-/* Cursor Movement Functions */
-void updateNavigationState() {
-
-  if( BUFFER[thisRow()]->editP )
-    updateLine();
-  
-  BUFFER[thisRow()]->editP = false;
-  
-  miniBufferClear();
-}
-
-
-/* Edit Line */
-void updateEditState() {
-
-  BUFFER[thisRow()]->editP = true;
-  STATUSFLAG = MODIFIED;
 }
 
 /*******************************************************************************
