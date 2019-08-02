@@ -476,7 +476,7 @@ void openBuffer( char * fn ) {
 void saveBuffer() {
 
   int row;
-  char buffer[ MSGBUFFSIZE ];
+  char buffer[ 20 + FNLENGTH ];
   FILE *fp = NULL;
 
   /* Open File for Editing */
@@ -491,7 +491,7 @@ void saveBuffer() {
   fclose( fp );
   STATUSFLAG = ORIGINAL;
 
-  snprintf( buffer, MSGBUFFSIZE, "Wrote %d lines to %s", row, FILENAME );
+  snprintf( buffer, 20 + FNLENGTH, "Wrote %d lines to %s", row, FILENAME );
   miniBufferMessage( buffer );
 }
 
@@ -929,6 +929,26 @@ void pageUp() {
   POINT_Y = 0;
 }
 
+/*******************************************************************************
+                             INSERT CHARS
+*******************************************************************************/
+
+/* Insert User Typed Chars */
+void selfInsert( int c ) {
+
+  if( BUFFER[thisRow()]->lPtr != BUFFER[thisRow()]->rPtr )
+    updateNavigationState();
+  
+  if( !BUFFER[thisRow()]->editP ) {
+    BUFFER[thisRow()]->lPtr = POINT_X;
+    BUFFER[thisRow()]->rPtr = POINT_X;
+    updateEditState();
+  }
+
+  EDITBUFFER[EBINDEX++] = c;
+  POINT_X++;
+}
+
 
 /*******************************************************************************
                            LINE MANAGEMENT
@@ -975,6 +995,36 @@ void killLine() {
     BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len] = '\0';
 
     clrtoeol();
+  }
+}
+
+/* Indent Newline to Smart Location */
+void autoIndent() {
+
+  int len;				/* Len of 'last' row */
+  
+  int i = 0;				/* Col Index */
+  int lastRow = thisRow() - 1;
+
+  /* Skip if Middle of Line or Top of Buffer */
+  if(( POINT_X != 0 ) || ( thisRow() == 0 ))
+    return;
+
+  len = BUFFER[lastRow]->len;
+
+  /* Find Tab Col Prior Row */
+  while( BUFFER[lastRow]->txt[i] == ' ' )
+    i++;
+
+  /* Skip Blank Lines */
+  if( i == len - 1 )
+    return;
+  
+  /* Insert Spaces Until Tab Mark */
+  while(( i < len ) && ( i > 0 )) {
+
+    selfInsert( ' ' );
+    i--;
   }
 }
 
@@ -1277,27 +1327,6 @@ void killRegion() {
 
 
 /*******************************************************************************
-                             INSERT CHARS
-*******************************************************************************/
-
-/* Insert User Typed Chars */
-void selfInsert( int c ) {
-
-  if( BUFFER[thisRow()]->lPtr != BUFFER[thisRow()]->rPtr )
-    updateNavigationState();
-  
-  if( !BUFFER[thisRow()]->editP ) {
-    BUFFER[thisRow()]->lPtr = POINT_X;
-    BUFFER[thisRow()]->rPtr = POINT_X;
-    updateEditState();
-  }
-
-  EDITBUFFER[EBINDEX++] = c;
-  POINT_X++;
-}
-
-
-/*******************************************************************************
                          PROCESS KEY PRESSES
 *******************************************************************************/
 
@@ -1453,6 +1482,11 @@ void processKeypress() {
   case KEY_F(10):			/* Exit */
     closeEditor();
     exit(EXIT_SUCCESS);
+    break;
+
+  case '\t':
+    miniBufferMessage( "Auto Indent" );
+    autoIndent();
     break;
     
     /* Cursor Movement */
