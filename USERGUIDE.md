@@ -19,7 +19,9 @@ See [README](README.md) for information on how to compile ae.
 * PGUp    - Page Up
 * PGDn    - Page Down
 * END     - Point to Buffer End
+* TAB     - AutoTab (works in first column)
 * F1      - Keymap Help
+* F10     - Exit
 
 ### CTRL Modifier (c-k)
 * C-a     - Start of Line
