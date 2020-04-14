@@ -1,24 +1,31 @@
-SRCDIR=src
-SOURCES=ae.c
-DEPS=ae.h
+vpath %.c src
+vpath %.h src
+
+# Source Code
+SRC=ae.c keyPress.c minibuffer.c
 CFLAGS=-Wall -Wextra -pedantic -std=c99
 
-OBJDIR=obj
-OBJS=ae.o
+# Object Files
+OBJS=$(SRC:.c=.o)
 
+# Libraries
 LIBS=-lcurses -lreadline
 
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/$(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS) 
-
-ae: $(OBJDIR)/$(OBJS)
+# Build Files
+ae: $(OBJS)
 	$(CC) -o $@ $^ $(LIBS)
+	mv *.o obj
 
-.phony: clean install
+%.o: %.c %.h ae.h
+	$(CC) -o $@ -c $(CFLAGS) $<
 
-clean:
-	rm -f $(OBJDIR)/*.o $(SRCDIR)/*~
+# Header Dependencies
+ae.o : keyPress.h minibuffer.h
+keyPress.o : ae.h
+minibuffer.o : ae.h keyPress.h
 
-install: ae clean
+# Targets
+.phony: install
+
+install: ae 
 	mv ae ~/bin

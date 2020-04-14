@@ -7,7 +7,7 @@
         /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.3
                              |___/
 
-        Copyright 2019 (andrew.suttles@gmail.com)
+        Copyright 2020 (andrew.suttles@gmail.com)
         MIT LICENSE
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
@@ -35,14 +35,15 @@
 
 #include <readline/readline.h>
 
+#include "keyPress.h"
+#include "minibuffer.h"
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
 #define MXRWS 512
-#define MINIBUFFSIZE 128
-#define FNLENGTH 128
 #define MSGBUFFSIZE 64
+#define FNLENGTH 128
 #define DEFAULTFILENAME "newfile.txt"
 #define thisRow() (ROWOFFSET + POINT_Y)
 #define thisCol() (COLOFFSET + POINT_X)
@@ -78,7 +79,6 @@ int MAXROWS    = MXRWS;			/* MAX Number of Buffer Lines */
 enum _sf STATUSFLAG \
                = ORIGINAL;		/* Is Buffer Modified? */
 row_t **BUFFER;				/* File Buffer */
-char MINIBUFFER[MINIBUFFSIZE];		/* Minibuffer Input */
 char EDITBUFFER[64];			/* Edit Buffer For Text Input */
 int  EBINDEX   =  0;			/* Edit Buffer Index */
 bool REGIONP   = false;			/* Is Region Active? */
@@ -103,6 +103,13 @@ void die( const char *s ) {
   closeEditor();
   
   exit(EXIT_FAILURE);
+}
+
+
+/* Return Window Handle */
+WINDOW *getWindowHandle() {
+
+  return WIN;
 }
 
 
@@ -136,147 +143,6 @@ void initializeTerminal() {
   timeout(100);
 }
 
-
-/*******************************************************************************
-                                  IO
-*******************************************************************************/
-
-/* Read Keypresses */
-int readKey() {
-
-  int c;                        /* 'Char' or Flags */
-
-  /* wgetch handles SIGWINCH */
-  while(( c = wgetch( WIN )) == ERR ) {
-
-    /* Handle Timeouts */
-    refresh();
-  }
-  
-  return c;
-}
-
-/*******************************************************************************
-                              MINIBUFFER
-*******************************************************************************/
-
-/* Write Message to User */
-void miniBufferMessage( const char *msg ) {
-
-  int mbRow = getmaxy( WIN ) - 1;
-  
-  /* Print Input Message */
-  mvaddstr( mbRow, 0, msg );
-  refresh();
-}
-
-/* Clear Minibuffer Messages */
-void miniBufferClear() {
-  
-  int mbRow = getmaxy( WIN ) - 1;
-  
-  /* Clear Message Buffer */
-  move( mbRow, 0 );
-  clrtoeol();
-  refresh();
-}
-
-/* Minibuffer IO */
-void miniBufferGetInput( const char *msg ) {
-
-  int c;                        /* Input Char */
-
-  int mbRow = getmaxy( WIN ) - 1;
-  
-  /* Print Input Message */
-  mvaddstr( mbRow, 0, msg );
-  refresh();
-
-  /* Read Inputs */
-  int col = strlen( msg);
-  int i = 0;
-  
-  while((( c = readKey()) != '\r' ) &&
-        ( i < MINIBUFFSIZE - 1 )) {
-
-    mvaddch( mbRow, col+i, c );
-    MINIBUFFER[i++] = c;
-    refresh();
-  }
-
-  MINIBUFFER[i] = '\0';                /* NULL Terminate String */
-  
-  move( mbRow, 0 );
-  clrtoeol();
-}
-
-
-/* Get a New Filename */
-char *miniBufferGetFilename() {
-
-  int i, nameLen;
-  
-  char *newFileName = NULL;
-  char message[ FNLENGTH + 14 ];	/* User Message */
-  
-  int yMax = getmaxx( WIN );		/* Size of Curses Window */
-
-  
-  /* End Curses & Clear garbage off of terminal */
-  endwin();
-  for( i=0; i<yMax; i++ ) printf( "\n" );
-  
-  /* Create a message for user */
-  printf( ">>>>> Enter a filename for buffer <<<<<\n\n" );
-  printf( "Press ENTER to accept default name.\n" );
-  printf( "Uses EMACS keybindings and TAB for autocompletion.\n\n" );
-
-  snprintf( message, FNLENGTH + 14, "filename [%s] : ", FILENAME );
-
-  /* Get the new filename */
-  if(( newFileName = readline( message )) == NULL )
-    die( "miniBufferGetFilename: readline failed" );
-
-  nameLen = strlen( newFileName );
-  
-  /* Save new non-default filename */
-  if( nameLen  > 0 ) {
-    
-    if( newFileName[ nameLen - 1 ] == ' ' )
-      newFileName[ nameLen - 1 ] = '\0';
-      
-    /* Set global FILENAME */
-    strncpy( FILENAME, newFileName, strlen( newFileName ) + 1 );
-  }
-
-  free( newFileName );			
-
-  initializeTerminal();			/* Restart curses */
-
-  return FILENAME;
-}
-
-/* Read Integer from Minibuffer */
-int miniBufferGetPosInteger( const char *msg ) {
-
-  miniBufferGetInput( msg );
-  return atoi( MINIBUFFER );
-}
-
-
-/* Get Y/N Answer from Minibuffer */
-bool miniBufferGetYN( const char *msg ) {
-
-  miniBufferGetInput( msg );
-
-  if( MINIBUFFER[0] == 'y' || MINIBUFFER[0] == 'Y' )
-    return true;
-
-  if( MINIBUFFER[0] != 'n' && MINIBUFFER[0] != 'N' )
-    return miniBufferGetYN( msg );
-
-  return false;
-}
 
 
 /*******************************************************************************
@@ -505,10 +371,8 @@ void saveBufferNewName() {
   char *fn = FILENAME;
 
   /* Get Filename to Write */
-  fn = miniBufferGetFilename();
+  miniBufferGetFilename( fn, FNLENGTH );
 
-  // Ensure fn is writable...
-  
   /* Open File for Editing */
   if(( fp = fopen( fn, "w" )) == NULL ) {
     die( "saveBufferNewName: fopen failed." );
@@ -518,8 +382,6 @@ void saveBufferNewName() {
     fprintf( fp, "%s", BUFFER[row]->txt );
   }
 
-  strncpy( FILENAME, fn, FNLENGTH-1 );
-  
   fclose( fp );
   STATUSFLAG = ORIGINAL;
   miniBufferMessage( "Wrote Text File." );
@@ -1429,7 +1291,8 @@ void eXtensionMenu() {
       }
     closeBuffer();
     /* Open New Buffer */
-    openBuffer( miniBufferGetFilename() );
+    miniBufferGetFilename( FILENAME, FNLENGTH );
+    openBuffer( FILENAME );
     break;
     
   case CTRL_KEY('w'):                /* Save Buffer As */
@@ -1635,7 +1498,7 @@ void displaySplash( void ) {
   
   mvaddstr( third + 0, center - 10, "Welcome to Andy Edit!" );
   mvaddstr( third + 1, center - 6, "Version 0.3" );
-  mvaddstr( third + 3, center - 9, "(c) Copyright 2019" );
+  mvaddstr( third + 3, center - 9, "(c) Copyright 2020" );
 
   refresh();
   sleep(2);

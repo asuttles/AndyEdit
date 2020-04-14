@@ -6,7 +6,7 @@
      / ___ \| | | | (_| | |_| | | |__| (_| | | |_
     /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|
                          |___/
-    Copyright 2019
+    Copyright 2020
 
 See [LICENSE](LICENSE) for licensing details.
 See [README](README.md) for information on how to compile ae.
