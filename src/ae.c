@@ -37,12 +37,12 @@
 
 #include "keyPress.h"
 #include "minibuffer.h"
+#include "statusBar.h"
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
 #define MXRWS 512
-#define MSGBUFFSIZE 64
 #define FNLENGTH 128
 #define DEFAULTFILENAME "newfile.txt"
 #define thisRow() (ROWOFFSET + POINT_Y)
@@ -387,41 +387,6 @@ void saveBufferNewName() {
   miniBufferMessage( "Wrote Text File." );
 }
 
-/*******************************************************************************
-                              STATUS BAR
-*******************************************************************************/
-
-/* Draw Status Line */
-void drawStatusLine() {
-
-  int  curCol, maxCol;
-  char status[256];
-
-  int  curRow = getmaxy( WIN ) - 2;
-  
-  
-  attron( A_REVERSE );                /* Reverse Video */
-
-  snprintf( status, (getmaxx( WIN ) > 256 ? 256 : getmaxx( WIN )) - 1,
-            "--[ %s ]-------(%s)------- Row %d of %d ------- Col %d of %d ------- F1 for Help --- F10 to Quit",
-            FILENAME,
-            _sfname[ STATUSFLAG ],
-            thisRow() + 1, NUMROWS,
-            thisCol() + 1, (int)BUFFER[thisRow()]->len );
-            
-    
-    
-  mvaddstr( curRow, 0, status );
-
-  curCol = getcurx( WIN );
-  maxCol = getmaxx( WIN ); 
-  
-  while( curCol < maxCol ) {
-    mvaddch( curRow, curCol++, '-' );
-  }
-  
-  attroff( A_REVERSE );
-}
 
 
 /*******************************************************************************
@@ -547,7 +512,10 @@ void renderText() {
     }    
   }
 
-  drawStatusLine();
+  /* Draw Status Line: Filename, Status, Row/Col info */
+  drawStatusLine( FILENAME, _sfname[ STATUSFLAG ], 
+		  thisRow(), NUMROWS,
+		  thisCol(), (int)BUFFER[thisRow()]->len );
 
   move( POINT_Y, POINT_X );        /* Set POINT */
   refresh();

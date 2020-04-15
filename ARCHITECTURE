@@ -1,16 +1,16 @@
 Split ae.c into modules for maintenance...
 
-ae (main)
-keyPress   - handle keyboard inputs
-minibuffer - print messages to user/get keyboard inputs
+ae         - Main Program Loop
+keyPress   - Handle Keyboard Inputs
+minibuffer - Print Messages to User & Get Keyboard Inputs
+statusBar  - Update Program Status Bar
 
-statusLine
-buffer
-renderer
-navigation
-state
-textLines
-region
+bufferMgmt
+rendererText
+pointAndMark (navigation and regions)
+editorState
+insertAndDelete
+
 
 Help - Cannot scroll??
 Pressing Enter leads to a memory fault!!
