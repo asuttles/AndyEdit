@@ -8,4 +8,8 @@ int getMarkY( void );
 void setMarkX( int );
 void setMarkY( int );
 
-bool swapPointAndMark( int, int );
+bool swapPointAndMark( void );
+
+void setRegionActive( bool );
+bool regionActiveP( void );
+bool inRegionP( int, int );

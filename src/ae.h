@@ -1,3 +1,5 @@
+#include <curses.h>
+
 /* Public Definitions */
 WINDOW *getWindowHandle( void ); /* Get Handle for AE Window */
 void die( const char * );	 /* Print Die Message on Failure */

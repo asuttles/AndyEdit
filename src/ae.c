@@ -28,13 +28,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <curses.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 
 #include <readline/readline.h>
 
+#include "ae.h"
 #include "keyPress.h"
 #include "minibuffer.h"
 #include "statusBar.h"
@@ -78,7 +78,6 @@ enum _sf STATUSFLAG \
 row_t **BUFFER;				/* File Buffer */
 char EDITBUFFER[64];			/* Edit Buffer For Text Input */
 int  EBINDEX   =  0;			/* Edit Buffer Index */
-bool REGIONP   = false;			/* Is Region Active? */
 
 
 /*******************************************************************************
@@ -244,7 +243,7 @@ void closeBuffer() {
   ROWOFFSET  = 0;
   COLOFFSET  = 0;
   EBINDEX   =  0;
-  REGIONP   = false;
+  setRegionActive( false );
 
   STATUSFLAG = ORIGINAL;
 
@@ -389,61 +388,6 @@ void saveBufferNewName() {
                              RENDER TEXT
 *******************************************************************************/
 
-/* Is (Row,Col) Within Active Region? */
-bool inRegion( int row, int col ) {
-
-  int MkX = getMarkX();
-  int MkY = getMarkY();
-  
-  /* Region Not Active */
-  if( !REGIONP ) return false;        
-
-  /* This Row on MARK Line */
-  if( row == MkY ) {
-
-    if( col >= MkX ) {
-
-      if( thisRow() > row )
-        return true;
-    
-      else if( col < thisCol() && thisRow() == MkY )
-        return true;
-    }
-
-    if( col <= MkX ) {
-
-      if( thisRow() < row )
-        return true;
-
-      else if( col > thisCol() && thisRow() == MkY )
-        return true;
-    }
-  }
-
-  /* POINT_Y > thisRow() > MARK_Y */
-  else if( row > MkY ) {
-
-    if( row < thisRow() )
-      return true;
-
-    else if( row == thisRow() && col < thisCol() )
-      return true;
-  }
-
-  /* POINT_Y < thisRow() < MARK_Y */
-  else if( row < MkY ) {
-
-    if( row > thisRow() )
-      return true;
-
-    else if( row == thisRow() && col > thisCol() )
-      return true;
-  }
-  
-  return false;
-}
-
-
 /* Draw and Color the Rows of Text */
 void renderText() {
 
@@ -476,7 +420,7 @@ void renderText() {
             col++;
           }
 
-          if( inRegion( nextRow, i+COLOFFSET ))
+          if( inRegionP( nextRow, i+COLOFFSET ))
             attron( A_STANDOUT );
           mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
           col++;
@@ -493,7 +437,7 @@ void renderText() {
 
         /* Insert Line Buffer Chars */
         else {
-          if( inRegion( nextRow, i+COLOFFSET ))
+          if( inRegionP( nextRow, i+COLOFFSET ))
             attron( A_STANDOUT );
           mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
           col++;
@@ -1123,7 +1067,6 @@ void backspace() {
                           REGION OPERATIONS
 *******************************************************************************/
 
-
 /* Kill Text Between Point and Mark */
 void killRegion() {
 
@@ -1134,7 +1077,7 @@ void killRegion() {
 
   /* Swap Point/Mark */
   if( MkY < PtY ) {
-    swapPointAndMark( ROWOFFSET, COLOFFSET );
+    swapPointAndMark();
   }
 
   /* Kill From POINT to EOL */
@@ -1159,7 +1102,7 @@ void killRegion() {
   if( PtY == MkY ) {
 
     if( PtX < MkX ) {
-      swapPointAndMark( ROWOFFSET, COLOFFSET );
+      swapPointAndMark();
     }
     
     BUFFER[thisRow()]->lPtr = MkX;
@@ -1172,7 +1115,7 @@ void killRegion() {
 
   setMarkX( -1 );
   setMarkY( -1 );
-  REGIONP = false;
+  setRegionActive( false );
 }
 
 
@@ -1291,7 +1234,7 @@ void eXtensionMenu() {
 
   case CTRL_KEY('x'):                /* Swap Point/Mark */
     updateNavigationState();
-    swapPointAndMark( ROWOFFSET, COLOFFSET );    
+    swapPointAndMark();
     if(( getPointY() < 0 ) ||
        ( getPointY() > ( ROWOFFSET + screenRows())))
       centerLine();
@@ -1318,8 +1261,8 @@ void processKeypress() {
     break;
 
     /* Keyboard Quit */
-  case CTRL_KEY('g'):                
-    REGIONP = false;
+  case CTRL_KEY('g'):
+    setRegionActive( false );
     setMarkY( -1 );
     setMarkX( -1 );
     break;
@@ -1412,7 +1355,7 @@ void processKeypress() {
   case CTRL_KEY(' '):                /* Set Mark */
     setMarkX( thisCol() );
     setMarkY( thisRow() );
-    REGIONP = true;
+    setRegionActive( true );
     miniBufferMessage( "Mark Set" );
     break;
 

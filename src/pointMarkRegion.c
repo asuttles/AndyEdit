@@ -28,6 +28,10 @@
 //#include <stdio.h>
 
 #include "minibuffer.h"
+#include "ae.h"
+
+/* Private State Data */
+bool REGIONP   = false;			/* Is Region Active? */
 
 /* Private Module Data */
 static int POINT_X    =  0;			/* Point X Position */
@@ -69,14 +73,12 @@ void setMarkY( int Y ) {
 
      Return TRUE if swapped
 ***/
-bool swapPointAndMark( int rwOffst, int clOffst ) {
+bool swapPointAndMark( void ) {
 
-// DEBUG
-//  char buffer[256];
-//  snprintf( buffer, 256, "X = %d, Y = %d, mX = %d, mY = %d, ro = %d, co = %d",
-//	    POINT_X, POINT_Y, MARK_X, MARK_Y, rwOffst, clOffst );
-//  miniBufferMessage( buffer );
-
+  /* Get Offsets */
+  int clOffst = getColOffset();
+  int rwOffst = getRowOffset();
+  
   /* Calculate row/col offsets for POINT */
   int tmpX = clOffst + POINT_X;
   int tmpY = rwOffst + POINT_Y;
@@ -96,3 +98,76 @@ bool swapPointAndMark( int rwOffst, int clOffst ) {
 
   return false;
 }
+
+
+/***
+			  Region Operations
+***/
+void setRegionActive( bool activeP ) {
+
+  REGIONP = activeP;
+}
+
+bool regionActiveP( void ) {
+  
+  return REGIONP;
+}
+
+/* Is (Row,Col) Within Active Region? */
+bool inRegionP( int row, int col ) {
+
+  /* Get Editor Offsets */
+  int rowOffset = getRowOffset();
+  int colOffset = getColOffset();
+
+  int thisRow   = rowOffset + POINT_Y;
+  int thisCol   = colOffset + POINT_X;
+  
+  /* Region Not Active */
+  if( !REGIONP ) return false;        
+
+  /* This Row on MARK Line */
+  if( row == MARK_Y ) {
+
+    if( col >= MARK_X ) {
+
+      if( thisRow > row )
+        return true;
+    
+      else if( col < thisCol && thisRow == MARK_Y )
+        return true;
+    }
+
+    if( col <= MARK_X ) {
+
+      if( thisRow < row )
+        return true;
+
+      else if( col > thisCol && thisRow == MARK_Y )
+        return true;
+    }
+  }
+
+  /* POINT_Y > thisRow() > MARK_Y */
+  else if( row > MARK_Y ) {
+
+    if( row < thisRow )
+      return true;
+
+    else if( row == thisRow && col < thisCol )
+      return true;
+  }
+
+  /* POINT_Y < thisRow() < MARK_Y */
+  else if( row < MARK_Y ) {
+
+    if( row > thisRow )
+      return true;
+
+    else if( row == thisRow && col > thisCol )
+      return true;
+  }
+  
+  return false;
+}
+

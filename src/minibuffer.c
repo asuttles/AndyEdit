@@ -25,8 +25,8 @@
  ***/
 #define MINIBUFFSIZE 128
 
-#include <curses.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <readline/readline.h>

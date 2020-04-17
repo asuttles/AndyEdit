@@ -1,10 +1,10 @@
 Split ae.c into modules for maintenance...
 
-ae            - Main Program Loop
-keyPress      - Handle Keyboard Inputs
-minibuffer    - Print Messages to User & Get Keyboard Inputs
-statusBar     - Update Program Status Bar
-pointAndMark  - Manage Cursor and Region Mark
+ae               - Main Program Loop
+keyPress         - Handle Keyboard Inputs
+minibuffer       - Print Messages to User & Get Keyboard Inputs
+statusBar        - Update Program Status Bar
+pointMarkRegion  - Manage Cursor, Mark and Region Operations
 
 bufferMgmt
 rendererText

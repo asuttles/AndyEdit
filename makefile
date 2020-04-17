@@ -24,7 +24,7 @@ ae.o : keyPress.h minibuffer.h statusBar.h pointMarkRegion.h
 keyPress.o : ae.h
 minibuffer.o : ae.h keyPress.h
 statusBar.o : ae.h
-pointMarkRegion.o : minibuffer.h
+pointMarkRegion.o : minibuffer.h ae.h
 
 # Targets
 .phony: install
