@@ -37,8 +37,8 @@
 #include "ae.h"
 #include "keyPress.h"
 #include "minibuffer.h"
-#include "statusBar.h"
 #include "pointMarkRegion.h"
+#include "render.h"
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -57,14 +57,6 @@ const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
 /* Empty Buffer : Default or User Named */
 enum _bn { DEFAULT, UNAMED };
 
-/* Text Line Data Structures */
-typedef struct {
-  char  *txt;				/* Editor Text Line */
-  size_t len;				/* Length of Text */
-  size_t lPtr;				/* Editor Pointers */
-  size_t rPtr;
-  bool   editP;				/* This Row Edited Predicate */
-} row_t;
 
 /* Global Data */
 char FILENAME[FNLENGTH];                /* Buffer Filename */
@@ -384,82 +376,20 @@ void saveBufferNewName() {
 }
 
 
-/*******************************************************************************
-                             RENDER TEXT
-*******************************************************************************/
+//
+buff_t getBuffer( void ) {
 
-/* Draw and Color the Rows of Text */
-void renderText() {
+  return BUFFER;
+}
 
-  int i, j, row, col, colMax, txtLen, nextRow;
-  int maxRows = getmaxy( WIN ) - 2;
-  int maxCols = getmaxx( WIN );
+int getEditBufferIndex() {
 
-  for( row = 0; row < maxRows; row++ ) {
+  return EBINDEX;
+}
 
-    nextRow = row+ROWOFFSET;
+char getEditBufferChar(int i) {
 
-    if( nextRow < NUMROWS ) {        /* Write Text */
-
-      /* Calculate what subset of the Row Fits in the Term */
-      txtLen = (int)BUFFER[nextRow]->len - COLOFFSET;
-      colMax = maxCols > txtLen ? txtLen : maxCols;
-
-      /* Write Letter at a Time */
-      col = 0;
-      for( i=0; i < colMax; i++ ) {
-
-        /* Insert Edit Buffer Chars */
-        if( nextRow == thisRow()    &&
-            BUFFER[nextRow]->editP  &&
-            ( BUFFER[nextRow]->lPtr == BUFFER[nextRow]->rPtr ) &&
-            ( i == (int)BUFFER[nextRow]->lPtr )) {
-
-          for( j = 0; j<EBINDEX; j++ ) {
-            mvaddch( row, col, EDITBUFFER[j] );
-            col++;
-          }
-
-          if( inRegionP( nextRow, i+COLOFFSET ))
-            attron( A_STANDOUT );
-          mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
-          col++;
-          attroff( A_STANDOUT );
-        }
-
-        /* Ignore Chars In Line Buffer Gap */
-        else if( nextRow == thisRow()     &&
-                 BUFFER[thisRow()]->editP &&
-                 i >= (int)BUFFER[nextRow]->lPtr && 
-                 i <  (int)BUFFER[nextRow]->rPtr ) {
-          continue;
-        }
-
-        /* Insert Line Buffer Chars */
-        else {
-          if( inRegionP( nextRow, i+COLOFFSET ))
-            attron( A_STANDOUT );
-          mvaddch( row, col, BUFFER[nextRow]->txt[i+COLOFFSET] );
-          col++;
-          attroff( A_STANDOUT );
-        }
-      }
-    } 
-
-    
-    else {                        /* vi style EOF Markers */      
-      mvaddch( row, 0, '~' );
-      clrtoeol();
-    }    
-  }
-
-  /* Draw Status Line: Filename, Status, Row/Col info */
-  drawStatusLine( FILENAME, _sfname[ STATUSFLAG ], 
-		  thisRow(), NUMROWS,
-		  thisCol(), (int)BUFFER[thisRow()]->len );
-
-  move( getPointY(), getPointX() );	/* Set POINT */
-  refresh();
+  return EDITBUFFER[i];
 }
 
 /*******************************************************************************
@@ -469,7 +399,9 @@ void renderText() {
 /* Move Point to End of Line */
 void pointToEndLine() {
 
-  int x = BUFFER[thisRow()]->len - 1; /* Text Line Length */
+  row_t **buff = getBuffer();
+  
+  int x = buff[thisRow()]->len - 1; /* Text Line Length */
   int y = getmaxx( WIN ) - 1;	      /* Terminal Length */
 
   if( x > y ) {
@@ -1434,7 +1366,7 @@ void displaySplash( void ) {
   sleep(2);
 
   clear();
-  renderText();
+  renderText( FILENAME, _sfname[ STATUSFLAG ], getmaxy(WIN)-2, getmaxx(WIN), NUMROWS );
 }
 
 
@@ -1457,7 +1389,7 @@ int main( int argc, char *argv[] ) {
   
   /* Process Key Presses */
   while( true ) {
-    renderText();
+    renderText( FILENAME, _sfname[ STATUSFLAG ], getmaxy(WIN)-2, getmaxx(WIN), NUMROWS );
     processKeypress();
   } 
 
