@@ -2,7 +2,7 @@ vpath %.c src
 vpath %.h src
 
 # Source Code
-SRC=ae.c keyPress.c minibuffer.c statusBar.c pointAndMark.c
+SRC=ae.c keyPress.c minibuffer.c statusBar.c pointMarkRegion.c
 CFLAGS=-Wall -Wextra -pedantic -std=c99
 
 # Object Files
@@ -20,11 +20,11 @@ ae: $(OBJS)
 	$(CC) -o $@ -c $(CFLAGS) $<
 
 # Header Dependencies
-ae.o : keyPress.h minibuffer.h statusBar.h
+ae.o : keyPress.h minibuffer.h statusBar.h pointMarkRegion.h
 keyPress.o : ae.h
 minibuffer.o : ae.h keyPress.h
 statusBar.o : ae.h
-pointAndMark.o : minibuffer.h
+pointMarkRegion.o : minibuffer.h
 
 # Targets
 .phony: install

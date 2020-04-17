@@ -10,7 +10,7 @@ bufferMgmt
 rendererText
 editorState
 insertAndDelete
-
+region
 
 Help - Cannot scroll??
 Pressing Enter leads to a memory fault!!

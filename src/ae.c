@@ -38,7 +38,7 @@
 #include "keyPress.h"
 #include "minibuffer.h"
 #include "statusBar.h"
-#include "pointAndMark.h"
+#include "pointMarkRegion.h"
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -398,7 +398,6 @@ bool inRegion( int row, int col ) {
   /* Region Not Active */
   if( !REGIONP ) return false;        
 
-
   /* This Row on MARK Line */
   if( row == MkY ) {
 
@@ -456,7 +455,6 @@ void renderText() {
 
     nextRow = row+ROWOFFSET;
 
-    
     if( nextRow < NUMROWS ) {        /* Write Text */
 
       /* Calculate what subset of the Row Fits in the Term */
@@ -1137,13 +1135,6 @@ void killRegion() {
   /* Swap Point/Mark */
   if( MkY < PtY ) {
     swapPointAndMark( ROWOFFSET, COLOFFSET );
-    /* if( swapPointAndMark( ROWOFFSET, COLOFFSET )) { */
-    /*   if( NUMROWS >= screenRows() ) { */
-    /* 	ROWOFFSET = getPointY(); */
-    /* 	setPointY( 0 ); */
-    /* 	centerLine(); */
-    /*   } */
-    /* } */
   }
 
   /* Kill From POINT to EOL */
@@ -1169,13 +1160,6 @@ void killRegion() {
 
     if( PtX < MkX ) {
       swapPointAndMark( ROWOFFSET, COLOFFSET );
-      /* if( swapPointAndMark( ROWOFFSET, COLOFFSET )) { */
-      /* 	if( NUMROWS >= screenRows() ) { */
-      /* 	  ROWOFFSET = getPointY(); */
-      /* 	  setPointY( 0 ); */
-      /* 	  centerLine(); */
-      /* 	} */
-      /* } */
     }
     
     BUFFER[thisRow()]->lPtr = MkX;
