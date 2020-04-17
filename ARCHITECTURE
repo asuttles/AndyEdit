@@ -1,16 +1,19 @@
 Split ae.c into modules for maintenance...
 
-ae         - Main Program Loop
-keyPress   - Handle Keyboard Inputs
-minibuffer - Print Messages to User & Get Keyboard Inputs
-statusBar  - Update Program Status Bar
+ae            - Main Program Loop
+keyPress      - Handle Keyboard Inputs
+minibuffer    - Print Messages to User & Get Keyboard Inputs
+statusBar     - Update Program Status Bar
+pointAndMark  - Manage Cursor and Region Mark
 
 bufferMgmt
 rendererText
-pointAndMark (navigation and regions)
 editorState
 insertAndDelete
 
 
 Help - Cannot scroll??
 Pressing Enter leads to a memory fault!!
+
+Typing long line at end of buffer after deleting last line causes a crash!!!
+
