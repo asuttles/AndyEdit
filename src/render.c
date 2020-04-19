@@ -26,6 +26,7 @@
 #include "ae.h"
 #include "statusBar.h"
 #include "pointMarkRegion.h"
+#include "buffer.h"
 
 /*******************************************************************************
                              RENDER TEXT
@@ -47,7 +48,7 @@ void renderText(char *fn,	    /* Filename Rendered */
 
   int rowOffset = getRowOffset();
   int colOffset = getColOffset();
-  buff_t buff = getBuffer();
+  buff_t buff = getBufferHandle();
   int ebIndex = getEditBufferIndex();
   
   for( row = 0; row < maxRows; row++ ) {

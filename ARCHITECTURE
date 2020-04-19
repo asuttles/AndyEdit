@@ -17,3 +17,5 @@ Pressing Enter leads to a memory fault!!
 
 Typing long line at end of buffer after deleting last line causes a crash!!!
 
+Opening new file and typing chars causes memory fault!
+

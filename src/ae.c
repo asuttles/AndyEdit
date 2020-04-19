@@ -24,38 +24,32 @@
 ==========================================================================================
  ***/
 
-#define _POSIX_C_SOURCE 200809L		/* getline() is POSIX */
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
-
-#include <readline/readline.h>
 
 #include "ae.h"
 #include "keyPress.h"
 #include "minibuffer.h"
 #include "pointMarkRegion.h"
 #include "render.h"
+#include "buffer.h"
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
-#define MXRWS 512
-#define FNLENGTH 128
-#define DEFAULTFILENAME "newfile.txt"
 #define thisRow() (ROWOFFSET + getPointY())
 #define thisCol() (COLOFFSET + getPointX())
 #define screenRows() (getmaxy( WIN ) - 3)
+#define DEFAULTFILENAME "newfile.txt"
+
 
 /* Buffer Status Flag */
 enum _sf { ORIGINAL, MODIFIED, READONLY };
 const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
-
-/* Empty Buffer : Default or User Named */
-enum _bn { DEFAULT, UNAMED };
 
 
 /* Global Data */
@@ -64,12 +58,10 @@ WINDOW *WIN;				/* Window Handle */
 int NUMROWS    =  0;			/* Num Rows in Text Buffer */
 int ROWOFFSET  =  0;			/* Buffer Index of Top Row */
 int COLOFFSET  =  0;			/* Buffer Index of First Col */
-int MAXROWS    = MXRWS;			/* MAX Number of Buffer Lines */
 enum _sf STATUSFLAG \
                = ORIGINAL;		/* Is Buffer Modified? */
-row_t **BUFFER;				/* File Buffer */
-char EDITBUFFER[64];			/* Edit Buffer For Text Input */
-int  EBINDEX   =  0;			/* Edit Buffer Index */
+static char EDITBUFFER[64];		/* Edit Buffer For Text Input */
+static int  EBINDEX   =  0;		/* Edit Buffer Index */
 
 
 /*******************************************************************************
@@ -132,254 +124,26 @@ void initializeTerminal() {
 }
 
 
-
-/*******************************************************************************
-                                 TABS
-*******************************************************************************/
-
-/* Convert Tabs to Spaces */
-char *removeTabs( char *line ) {
-
-  size_t i;
-
-  size_t countTabs = 0;
-  size_t len = strlen( line );
-  
-  /* Count the Number of Tabs */
-  for( i = 0; i<len; i++ ) {
-    if( line[i] == '\t' ) {
-      countTabs++;
-    }
-  }
-
-  /* Return if No Tabs Found */
-  if( countTabs == 0 ) return line;
-
-  /* Create Space for 'Newline' Without Tabs */
-  char *newline = malloc(( sizeof( char ) *
-                           ( len + ( countTabs * 7 ))) + 1 );
-  size_t j;
-  size_t index = 0;
-
-  /* Copy Line to Newline With Spaces */
-  for( i = 0; i<len; i++ ) {
-
-    if( line[i] == '\t' ) {        /* Tabs Found */
-      for( j = 0; j<8; j++ ) {
-        newline[index] = ' ';
-        index++;
-      }
-    }
-    else {                        /* Not a Tab */
-      newline[index] = line[i];
-      index++;
-    }
-  }
-
-  newline[index] = '\0';
-  free( line );                        /* Delete Old Line */
-  return newline;                /* Save New Line */
-}
-
 /*******************************************************************************
                           BUFFER MANAGEMENT
 *******************************************************************************/
 
-/* Setup Editor Data Structures */
-void initializeData() {
+/* Set un-Named File to Default Filename */
+void setDefaultFilename( void ) {
 
-  /* Reserve Heap Space for Buffer */
-  if(( BUFFER = malloc( sizeof( row_t * ) * MXRWS )) == NULL )
-    die( "initializeData: BUFFER malloc failed" );
+  strncpy( FILENAME, DEFAULTFILENAME, FNLENGTH );
+  return;
 }
 
+void setFilename( char *fn ) {
 
-/* Open AE on an Empty Buffer */
-void emptyBuffer(enum _bn bn) {
-
-  BUFFER[0] = malloc( sizeof( row_t ));
-  BUFFER[0]->txt = malloc( sizeof( char ) * 2 );
-  BUFFER[0]->txt[0] = '\n';
-  BUFFER[0]->txt[1] = '\0';
-  BUFFER[0]->len    = 1;
-  BUFFER[0]->lPtr   = 0;
-  BUFFER[0]->rPtr   = 0;
-  BUFFER[0]->editP  = false;
-
-  if( bn == DEFAULT ) {
-    strncpy( FILENAME, DEFAULTFILENAME, FNLENGTH-1 );
-  }
-  
-  NUMROWS = 1;
-}
-
-/* Close Text Buffer */
-void closeBuffer() {
-
-  int i;
-
-  for( i=0; i<NUMROWS; i++ ) {
-    free( BUFFER[i]->txt );
-    free( BUFFER[i] );
-  }
-
-  free( BUFFER );
-  BUFFER = (row_t **)NULL;
-
-  MAXROWS    = MXRWS;
-  NUMROWS    = 0;
-  setPointX( 0 );
-  setPointY( 0 );
-  setMarkX( -1 );
-  setMarkY( -1 );
-  ROWOFFSET  = 0;
-  COLOFFSET  = 0;
-  EBINDEX   =  0;
-  setRegionActive( false );
-
-  STATUSFLAG = ORIGINAL;
-
-  initializeData();
-  emptyBuffer( DEFAULT );
-  
-  clear();
-}
-
-
-/* Double Buffer Size */
-void doubleBufferSize() {
-  
-  row_t **ptr = BUFFER;
-  row_t **newPtr = NULL;
-
-  int newMaxRows = MAXROWS * 2;        /* Double Buffer Size */
-    
-  newPtr = realloc( ptr, newMaxRows * sizeof( row_t *));
-  MAXROWS = newMaxRows;
-  
-  if( newPtr == NULL ) die( "doubleBufferSize: realloc failed" );
-  if( newPtr != ptr  ) {
-
-    BUFFER = newPtr;
-    free( ptr );
-  }
-}
-
-
-/* Read A Text File from Disk */
-void openBuffer( char * fn ) {
-
-  int i = 0;
-  FILE *fp = NULL;
-  bool newFile = FALSE;
-
-  /* Check to See if File Exists and Readable */
-  if( access( fn, R_OK | F_OK ) == -1 ) {
-
-    miniBufferMessage( "Filename doesn't exist. Creating buffer for new file." );
-    emptyBuffer( UNAMED );
-    newFile = TRUE;
-  }
-
-  /* Save fn as Global */
   if( fn != FILENAME )
     strncpy( FILENAME, fn, FNLENGTH-1 );
-
-  /* If newfile, Skip Opening/Reading from Disk */
-  if( newFile ) return;
-
-  
-  /* Open File for Editing */
-  if(( fp = fopen( fn, "r" )) == NULL ) {
-    die( "openBuffer: fopen failed." );
-  }
-
-
-  /* Read File Rows into BUFFER */
-  while( true ) {
-
-    /* Check Buffer Size */
-    if( i == MAXROWS ) {        
-      doubleBufferSize();
-    }
-
-    /* Reserve Heap Space for Text Row  */
-    BUFFER[i] = malloc( sizeof( row_t ));
-    BUFFER[i]->len   = 0;
-    BUFFER[i]->lPtr  = 0;
-    BUFFER[i]->rPtr  = 0;
-    BUFFER[i]->editP = false;
-    BUFFER[i]->txt   = NULL;
-
-    /* Read Next Text Row */
-    if( getline( &BUFFER[i]->txt, &BUFFER[i]->len, fp ) == ERR ) break;
-
-    /* Clean-up Tabs and Set Length */
-    BUFFER[i]->txt = removeTabs( BUFFER[i]->txt );
-    BUFFER[i]->len = strlen( BUFFER[i]->txt );
-
-    i++;                        /* Line Counter */
-  }
-  
-  NUMROWS = i;
-
-  fclose(fp);
 }
 
+char *getBufferFilename( void ) {
 
-/* Save Buffer Lines */
-void saveBuffer() {
-
-  int row;
-  char buffer[ 20 + FNLENGTH ];
-  FILE *fp = NULL;
-
-  /* Open File for Editing */
-  if(( fp = fopen( FILENAME, "w" )) == NULL ) {
-    die( "saveBuffer: fopen failed." );
-  }
-
-  for( row = 0; row<NUMROWS; row++ ) {
-    fprintf( fp, "%s", BUFFER[row]->txt );
-  }
-
-  fclose( fp );
-  STATUSFLAG = ORIGINAL;
-
-  snprintf( buffer, 20 + FNLENGTH, "Wrote %d lines to %s", row, FILENAME );
-  miniBufferMessage( buffer );
-}
-
-
-/* Save Buffer Lines */
-void saveBufferNewName() {
-
-  int row;
-  FILE *fp = NULL;
-  char *fn = FILENAME;
-
-  /* Get Filename to Write */
-  miniBufferGetFilename( fn, FNLENGTH );
-
-  /* Open File for Editing */
-  if(( fp = fopen( fn, "w" )) == NULL ) {
-    die( "saveBufferNewName: fopen failed." );
-  }
-
-  for( row = 0; row<NUMROWS; row++ ) {
-    fprintf( fp, "%s", BUFFER[row]->txt );
-  }
-
-  fclose( fp );
-  STATUSFLAG = ORIGINAL;
-  miniBufferMessage( "Wrote Text File." );
-}
-
-
-//
-buff_t getBuffer( void ) {
-
-  return BUFFER;
+  return FILENAME;
 }
 
 int getEditBufferIndex() {
@@ -392,6 +156,16 @@ char getEditBufferChar(int i) {
   return EDITBUFFER[i];
 }
 
+void setEditBufferIndex( int x ) {
+
+  EBINDEX = x;
+}
+
+void setStatusFlagOriginal( void ) {
+
+  STATUSFLAG = ORIGINAL;
+}
+
 /*******************************************************************************
                               NAVIGATION
 *******************************************************************************/
@@ -399,10 +173,10 @@ char getEditBufferChar(int i) {
 /* Move Point to End of Line */
 void pointToEndLine() {
 
-  row_t **buff = getBuffer();
+  buff_t buff  = getBufferHandle();
   
-  int x = buff[thisRow()]->len - 1; /* Text Line Length */
-  int y = getmaxx( WIN ) - 1;	      /* Terminal Length */
+  int x = buff[thisRow()]->len - 1;	/* Text Line Length */
+  int y = getmaxx( WIN ) - 1;		/* Terminal Length */
 
   if( x > y ) {
     setPointX( y );
@@ -418,20 +192,22 @@ void pointToEndLine() {
 /* Move Point to Prior Line */
 void priorLine() {
 
-  int PtY = getPointY();
+  int PtY      = getPointY();
+  buff_t  buff = getBufferHandle();
   
   if( PtY > 0 ) setPointY( --PtY );  
   else if ( ROWOFFSET > 0 ) --ROWOFFSET;
   
   if(( getPointX() + COLOFFSET ) > 
-     ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
+     ((int)buff[thisRow()]->len - 1 )) pointToEndLine();
 }
 
 
 /* Move Point to Next Line */
 void nextLine() {
 
-  int PtY = getPointY();
+  int PtY     = getPointY();
+  buff_t buff = getBufferHandle();
   
   if( PtY + ROWOFFSET < NUMROWS - 1 ) {
 
@@ -440,7 +216,7 @@ void nextLine() {
     else ++ROWOFFSET;
     
     if(( getPointX() + COLOFFSET ) > 
-       ((int)BUFFER[thisRow()]->len - 1 )) pointToEndLine();
+       ((int)buff[thisRow()]->len - 1 )) pointToEndLine();
   }
 }
 
@@ -448,9 +224,10 @@ void nextLine() {
 /* Move Point Forward */
 void pointForward() {
 
-  int PtX = getPointX();
+  int PtX     = getPointX();
+  buff_t buff = getBufferHandle();
   
-  if( thisCol() < (int)BUFFER[thisRow()]->len - 1 ) {
+  if( thisCol() < (int)buff[thisRow()]->len - 1 ) {
     if( PtX < getmaxx( WIN ) - 1 ) setPointX( ++PtX );
     else COLOFFSET++;
   }
@@ -473,21 +250,23 @@ void pointBackward() {
 
 /* Forward Word */
 void forwardWord() {
+
+  buff_t buff = getBufferHandle();
   
-  if( thisCol() == (int)BUFFER[thisRow()]->len-1 ) /* At EOL? */
+  if( thisCol() == (int)buff[thisRow()]->len-1 ) /* At EOL? */
     return;
 
   pointForward();
 
  /* Move Past Spaces */
-  while( BUFFER[thisRow()]->txt[ thisCol() ] == ' ' ) 
+  while( buff[thisRow()]->txt[ thisCol() ] == ' ' ) 
     pointForward();
 
  /* Move to End of Word */
- while( BUFFER[thisRow()]->txt[ thisCol() ] != '\n' &&
-        BUFFER[thisRow()]->txt[ thisCol() ] != ' '  &&
-        BUFFER[thisRow()]->txt[ thisCol() ] != ')'  &&
-        BUFFER[thisRow()]->txt[ thisCol() ] != ']' )
+ while( buff[thisRow()]->txt[ thisCol() ] != '\n' &&
+        buff[thisRow()]->txt[ thisCol() ] != ' '  &&
+        buff[thisRow()]->txt[ thisCol() ] != ')'  &&
+        buff[thisRow()]->txt[ thisCol() ] != ']' )
 
    pointForward();
 }
@@ -498,32 +277,34 @@ void backwardWord() {
 
   if( thisCol() == 0 ) return;        /* At BOL? */
 
+
+  buff_t buff     = getBufferHandle();
   int old_POINT_X = getPointX();
   pointBackward();
   
  /* Move Past Spaces */
-  while(( BUFFER[thisRow()]->txt[ thisCol() ] == ' '   ||
-          BUFFER[thisRow()]->txt[ thisCol() ] == ')'   ||
-          BUFFER[thisRow()]->txt[ thisCol() ] == ';'   ||
-          BUFFER[thisRow()]->txt[ thisCol() ] == ']' ) &&
+  while(( buff[thisRow()]->txt[ thisCol() ] == ' '   ||
+          buff[thisRow()]->txt[ thisCol() ] == ')'   ||
+          buff[thisRow()]->txt[ thisCol() ] == ';'   ||
+          buff[thisRow()]->txt[ thisCol() ] == ']' ) &&
         thisCol() > 0 )
     pointBackward();
 
   /* If POINT_X is a Space, No Prior Word this Line */
-  if( BUFFER[thisRow()]->txt[ thisCol() ] == ' ' ) {
+  if( buff[thisRow()]->txt[ thisCol() ] == ' ' ) {
     setPointX( old_POINT_X );
     return;
   }
   
  /* Move to Beginning of Word */
   while( thisCol() > 0                              &&
-        BUFFER[thisRow()]->txt[ thisCol() ] != ' '  &&
-        BUFFER[thisRow()]->txt[ thisCol() ] != '('  &&
-        BUFFER[thisRow()]->txt[ thisCol() ] != '[' )
+        buff[thisRow()]->txt[ thisCol() ] != ' '  &&
+        buff[thisRow()]->txt[ thisCol() ] != '('  &&
+        buff[thisRow()]->txt[ thisCol() ] != '[' )
     pointBackward();
 
  /* Don't Leave POINT on a Space */
-  if( BUFFER[thisRow()]->txt[ thisCol() ] == ' ' )
+  if( buff[thisRow()]->txt[ thisCol() ] == ' ' )
     pointForward();
 }
 
@@ -657,11 +438,13 @@ void updateLine() {
 
   int i   = 0;
   int col = 0;
-  
-  int delta = EBINDEX - ( BUFFER[thisRow()]->rPtr -
-                          BUFFER[thisRow()]->lPtr );
 
-  int newLen = BUFFER[thisRow()]->len + delta;
+  buff_t buff = getBufferHandle();
+  
+  int delta = EBINDEX - ( buff[thisRow()]->rPtr -
+                          buff[thisRow()]->lPtr );
+
+  int newLen = buff[thisRow()]->len + delta;
     
   char *tmp;                        /* New Text Row */
 
@@ -669,8 +452,8 @@ void updateLine() {
     die( "updateLine: tmp malloc failed" );
 
   /* Copy Non-deleted Chars */
-  for( i = 0; i<(int)BUFFER[thisRow()]->lPtr; i++ ) {
-    tmp[col] = BUFFER[thisRow()]->txt[i];
+  for( i = 0; i<(int)buff[thisRow()]->lPtr; i++ ) {
+    tmp[col] = buff[thisRow()]->txt[i];
     col++;
   }
 
@@ -681,18 +464,18 @@ void updateLine() {
   }
 
   /* Add Rest of Chars */
-  for( i = BUFFER[thisRow()]->rPtr; i<(int)BUFFER[thisRow()]->len; i++ ) {
-    tmp[col] = BUFFER[thisRow()]->txt[i];
+  for( i = buff[thisRow()]->rPtr; i<(int)buff[thisRow()]->len; i++ ) {
+    tmp[col] = buff[thisRow()]->txt[i];
     col++;
   }
 
   tmp[newLen] = '\0';                /* NULL Terminate New String */
 
-  free( BUFFER[thisRow()]->txt );
-  BUFFER[thisRow()]->txt  = tmp;
-  BUFFER[thisRow()]->len  = newLen;
-  BUFFER[thisRow()]->lPtr = 0;
-  BUFFER[thisRow()]->rPtr = 0;
+  free( buff[thisRow()]->txt );
+  buff[thisRow()]->txt  = tmp;
+  buff[thisRow()]->len  = newLen;
+  buff[thisRow()]->lPtr = 0;
+  buff[thisRow()]->rPtr = 0;
 
   EBINDEX = 0;
 }
@@ -705,10 +488,12 @@ void updateLine() {
 /* Cursor Movement Functions */
 void updateNavigationState() {
 
-  if( BUFFER[thisRow()]->editP )
+  buff_t buff = getBufferHandle();
+  
+  if( buff[thisRow()]->editP )
     updateLine();
   
-  BUFFER[thisRow()]->editP = false;
+  buff[thisRow()]->editP = false;
   
   miniBufferClear();
 }
@@ -717,7 +502,9 @@ void updateNavigationState() {
 /* Edit Line */
 void updateEditState() {
 
-  BUFFER[thisRow()]->editP = true;
+  buff_t buff = getBufferHandle();
+  
+  buff[thisRow()]->editP = true;
   STATUSFLAG = MODIFIED;
 }
 
@@ -732,7 +519,21 @@ int getColOffset( void ) {
 void setRowOffset( int ro ) {
   ROWOFFSET = ro;
 }
+void setColOffset( int co ) {
+  ROWOFFSET = co;
+}
 
+
+/* Update the Number of Lines in Buffer File */
+void setNumRows( int x ) {
+
+  NUMROWS = x;
+}
+
+int getBufferNumRows( void ) {
+
+  return NUMROWS;
+}
 
 /*******************************************************************************
                              INSERT CHARS
@@ -741,14 +542,16 @@ void setRowOffset( int ro ) {
 /* Insert User Typed Chars */
 void selfInsert( int c ) {
 
-  int PtX = getPointX();
+  int PtX     = getPointX();
+  buff_t buff = getBufferHandle();
+
   
-  if( BUFFER[thisRow()]->lPtr != BUFFER[thisRow()]->rPtr )
+  if( buff[thisRow()]->lPtr != buff[thisRow()]->rPtr )
     updateNavigationState();
   
-  if( !BUFFER[thisRow()]->editP ) {
-    BUFFER[thisRow()]->lPtr = PtX;
-    BUFFER[thisRow()]->rPtr = PtX;
+  if( !buff[thisRow()]->editP ) {
+    buff[thisRow()]->lPtr = PtX;
+    buff[thisRow()]->rPtr = PtX;
     updateEditState();
   }
 
@@ -764,12 +567,14 @@ void selfInsert( int c ) {
 /* Free row_t */
 void freeLine() {
 
-  free( BUFFER[thisRow()]->txt );
-  free( BUFFER[thisRow()] );
+  buff_t buff = getBufferHandle();
+  
+  free( buff[thisRow()]->txt );
+  free( buff[thisRow()] );
     
   for( int i=thisRow(); i<NUMROWS-1; i++ ) {
 
-    BUFFER[i] = BUFFER[i+1];
+    buff[i] = buff[i+1];
   }
 
   --NUMROWS;
@@ -779,9 +584,10 @@ void freeLine() {
 void killLine() {
 
   int PtX = getPointX();
-
+  buff_t buff = getBufferHandle();
+  
   /* Line Empty - Delete it */
-  if( BUFFER[thisRow()]->len == 1 ) {
+  if( buff[thisRow()]->len == 1 ) {
 
     if( thisRow() == NUMROWS - 1 ) return; /* Cant Delete if Nothing Follows */
 
@@ -794,14 +600,14 @@ void killLine() {
     /* Heap Space for Trimmed String */
     char *tmp = malloc( sizeof( char ) * ( PtX + 2 ));
     if( PtX > 0 )
-      strncpy( tmp, BUFFER[thisRow()]->txt, PtX );
-    free( BUFFER[thisRow()]->txt );
+      strncpy( tmp, buff[thisRow()]->txt, PtX );
+    free( buff[thisRow()]->txt );
 
     /* Fix Up row_t For This Row */
-    BUFFER[thisRow()]->txt = tmp;
-    BUFFER[thisRow()]->len = PtX + 1;
-    BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len-1] = '\n';
-    BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len] = '\0';
+    buff[thisRow()]->txt = tmp;
+    buff[thisRow()]->len = PtX + 1;
+    buff[thisRow()]->txt[buff[thisRow()]->len-1] = '\n';
+    buff[thisRow()]->txt[buff[thisRow()]->len] = '\0';
 
     clrtoeol();
   }
@@ -814,15 +620,17 @@ void autoIndent() {
   
   int i = 0;				/* Col Index */
   int lastRow = thisRow() - 1;
+  buff_t buff = getBufferHandle();
 
+  
   /* Skip if Middle of Line or Top of Buffer */
   if(( getPointX() != 0 ) || ( thisRow() == 0 ))
     return;
 
-  len = BUFFER[lastRow]->len;
+  len = buff[lastRow]->len;
 
   /* Find Tab Col Prior Row */
-  while( BUFFER[lastRow]->txt[i] == ' ' )
+  while( buff[lastRow]->txt[i] == ' ' )
     i++;
 
   /* Skip Blank Lines */
@@ -844,42 +652,45 @@ void openLine() {
   int PtY = getPointY();
   int PtX = getPointX();
 
+  buff_t buff = getBufferHandle();
   
-  /* Check Buffer Size */
-  if( NUMROWS == MAXROWS ) {        
+  /* Double Buffer, If Full */
+  if( bufferFullP() ) {
     doubleBufferSize();
+    buff = getBufferHandle();		/* New Double-Sized BUFFER */
   }
 
+  
   /* Move Lines Down */
   int i;
   
   for( i=NUMROWS; i>thisRow()+1; i-- ) {
-    BUFFER[i] = BUFFER[i-1];
+    buff[i] = buff[i-1];
   }
 
   /* Create New Line */
-  BUFFER[i] = malloc( sizeof( row_t ));
-  BUFFER[i]->len = BUFFER[thisRow()]->len - PtX;
-  BUFFER[i]->txt = malloc( sizeof( char ) * ( BUFFER[i]->len + 1 ));
+  buff[i] = malloc( sizeof( row_t ));
+  buff[i]->len = buff[thisRow()]->len - PtX;
+  buff[i]->txt = malloc( sizeof( char ) * ( buff[i]->len + 1 ));
 
   /* Copy Text Into New Line */
-  if( strncpy( BUFFER[i]->txt, 
-               BUFFER[thisRow()]->txt + PtX,
-               BUFFER[i]->len ) == NULL ) die( "openLine: strncpy failed." );
+  if( strncpy( buff[i]->txt, 
+               buff[thisRow()]->txt + PtX,
+               buff[i]->len ) == NULL ) die( "openLine: strncpy failed." );
 
-  BUFFER[i]->txt[BUFFER[i]->len] = '\0';
+  buff[i]->txt[buff[i]->len] = '\0';
 
   /* Heap Space for Trimmed String */
   char *tmp = malloc( sizeof( char ) * ( PtX + 2 ));
   if( PtX > 0 )
-    strncpy( tmp, BUFFER[thisRow()]->txt, PtX );
-  free( BUFFER[thisRow()]->txt );
+    strncpy( tmp, buff[thisRow()]->txt, PtX );
+  free( buff[thisRow()]->txt );
 
   /* Fix Up row_t For This Row */
-  BUFFER[thisRow()]->txt = tmp;
-  BUFFER[thisRow()]->len = PtX + 1;
-  BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len-1] = '\n';
-  BUFFER[thisRow()]->txt[BUFFER[thisRow()]->len] = '\0';
+  buff[thisRow()]->txt = tmp;
+  buff[thisRow()]->len = PtX + 1;
+  buff[thisRow()]->txt[buff[thisRow()]->len-1] = '\n';
+  buff[thisRow()]->txt[buff[thisRow()]->len] = '\0';
 
   clrtoeol();
   
@@ -900,15 +711,16 @@ void openLine() {
 void killWord() {
 
   int currPointX = getPointX();		/* Save Current Point */
-
+  buff_t buff = getBufferHandle();
+  
   forwardWord();			/* Find End Next Word */
 
   if( getPointX() == currPointX )	/* No Word to Kill */
     return;
 
   /* Mark Word for Deletion and Restore Point */
-  BUFFER[thisRow()]->lPtr = currPointX;
-  BUFFER[thisRow()]->rPtr = getPointX();
+  buff[thisRow()]->lPtr = currPointX;
+  buff[thisRow()]->rPtr = getPointX();
   setPointX( currPointX );
   updateEditState();
   updateNavigationState();
@@ -920,11 +732,13 @@ void combineLineWithPrior() {
   if( thisRow() == 0 )
     return;
 
+  buff_t buff = getBufferHandle();
+  
   char *tmp;
         
   /* Allocate Memory for Combined String */
-  int preLineLen = BUFFER[thisRow()-1]->len;
-  int nxtLineLen = BUFFER[thisRow()]->len;
+  int preLineLen = buff[thisRow()-1]->len;
+  int nxtLineLen = buff[thisRow()]->len;
   int size       = preLineLen + nxtLineLen + 1;
 
   if(( tmp = malloc( sizeof( char ) * size )) == NULL )
@@ -932,16 +746,16 @@ void combineLineWithPrior() {
 
   /* Copy Old/New Text Into New Line */
   strncpy( tmp, 
-           BUFFER[thisRow()-1]->txt,
+           buff[thisRow()-1]->txt,
            preLineLen );
   strncpy( tmp + preLineLen,
-           BUFFER[thisRow()]->txt,
+           buff[thisRow()]->txt,
            nxtLineLen );
-  BUFFER[thisRow()-1]->len = size - 1;
+  buff[thisRow()-1]->len = size - 1;
         
   /* Free Old Memory and Set Pointer */
-  free( BUFFER[thisRow()-1]->txt );
-  BUFFER[thisRow()-1]->txt = tmp;
+  free( buff[thisRow()-1]->txt );
+  buff[thisRow()-1]->txt = tmp;
 
   /* Destroy Next Line */
   freeLine();
@@ -952,22 +766,23 @@ void combineLineWithPrior() {
 
 void backspace() {
 
-  int PtX = getPointX();
+  int PtX     = getPointX();
+  buff_t buff = getBufferHandle();
   
   /* Continue Editing This Line? */
-  if( BUFFER[thisRow()]->editP ) {
+  if( buff[thisRow()]->editP ) {
 
     /* If Deleting Chars After Inserting Chars? */
     /* Then, Save Insertions Befor Making Deletions */ 
-    if( BUFFER[thisRow()]->lPtr == BUFFER[thisRow()]->rPtr ) {
+    if( buff[thisRow()]->lPtr == buff[thisRow()]->rPtr ) {
       updateLine();
-      BUFFER[thisRow()]->lPtr = PtX;
-      BUFFER[thisRow()]->rPtr = PtX;
+      buff[thisRow()]->lPtr = PtX;
+      buff[thisRow()]->rPtr = PtX;
     }
 
     /* Continue Deleting Chars to BOL */
     if( PtX > 0 ) {
-      BUFFER[thisRow()]->lPtr--;
+      buff[thisRow()]->lPtr--;
       setPointX( --PtX );
     }
 
@@ -982,8 +797,8 @@ void backspace() {
   else {
 
     if( PtX > 0 ) {
-      BUFFER[thisRow()]->lPtr = PtX - 1;
-      BUFFER[thisRow()]->rPtr = PtX;
+      buff[thisRow()]->lPtr = PtX - 1;
+      buff[thisRow()]->rPtr = PtX;
       updateEditState();
       setPointX( --PtX );
     }
@@ -1007,6 +822,8 @@ void killRegion() {
   int MkY = getMarkY();
   int MkX = getMarkX();
 
+  buff_t buff = getBufferHandle();
+  
   /* Swap Point/Mark */
   if( MkY < PtY ) {
     swapPointAndMark();
@@ -1037,8 +854,8 @@ void killRegion() {
       swapPointAndMark();
     }
     
-    BUFFER[thisRow()]->lPtr = MkX;
-    BUFFER[thisRow()]->rPtr = PtX;
+    buff[thisRow()]->lPtr = MkX;
+    buff[thisRow()]->rPtr = PtX;
     updateLine();
   }
   
@@ -1151,7 +968,7 @@ void eXtensionMenu() {
     closeBuffer();
     /* Open New Buffer */
     miniBufferGetFilename( FILENAME, FNLENGTH );
-    openBuffer( FILENAME );
+    openBufferFile( FILENAME );
     break;
     
   case CTRL_KEY('w'):                /* Save Buffer As */
@@ -1178,7 +995,8 @@ void eXtensionMenu() {
 /* Process Keypresses */
 void processKeypress() {
 
-  int c = readKey();
+  int c       = readKey();
+  buff_t buff = getBufferHandle();
   
   switch(c) {
     
@@ -1296,26 +1114,26 @@ void processKeypress() {
   case KEY_DC:
 
     /* Continue Editing This Line? */
-    if( BUFFER[thisRow()]->editP ) {
+    if( buff[thisRow()]->editP ) {
 
       /* Start Deleting Chars After Inserting Chars? */
-      if( BUFFER[thisRow()]->lPtr == BUFFER[thisRow()]->rPtr ) {
+      if( buff[thisRow()]->lPtr == buff[thisRow()]->rPtr ) {
         updateLine();
-        BUFFER[thisRow()]->lPtr = getPointX();
-        BUFFER[thisRow()]->rPtr = getPointX();
+        buff[thisRow()]->lPtr = getPointX();
+        buff[thisRow()]->rPtr = getPointX();
       }
         
       /* Continue Deleting Chars Up to EOL  */
-      if( BUFFER[thisRow()]->rPtr < BUFFER[thisRow()]->len )
-        BUFFER[thisRow()]->rPtr++;
+      if( buff[thisRow()]->rPtr < buff[thisRow()]->len )
+        buff[thisRow()]->rPtr++;
     }
     
     /* *New* Edit To This Line? */
     else {
       int PtX = getPointX();
-      if( (size_t)PtX < BUFFER[thisRow()]->len - 1 ) {
-        BUFFER[thisRow()]->lPtr = PtX;
-        BUFFER[thisRow()]->rPtr = PtX+1;
+      if( (size_t)PtX < buff[thisRow()]->len - 1 ) {
+        buff[thisRow()]->lPtr = PtX;
+        buff[thisRow()]->rPtr = PtX+1;
         updateEditState();
       }
     }
@@ -1376,14 +1194,15 @@ int main( int argc, char *argv[] ) {
 
   /* Initialize */
   initializeTerminal();
-  initializeData();
+  initializeBuffer();
   
   /* Open File or Display Splash */
   if( argc > 1 ) {
-    openBuffer( argv[argc-1] );
+    setFilename( argv[argc-1] ); 
+    openBufferFile( FILENAME );
   }
   else {
-    emptyBuffer( DEFAULT );
+    openEmptyBuffer( DEFAULT );
     displaySplash();
   }
   
