@@ -102,9 +102,6 @@ void initializeBuffer( void ) {
   /* Reserve Heap Space for Buffer */
   if(( BUFFER = malloc( sizeof( row_t * ) * MXRWS )) == NULL )
     die( "initializeData: BUFFER malloc failed" );
-
-  //
-  printf( "Get buffer address: %p\n", (void *)BUFFER ); fflush ( stdout );
 }
 
 
@@ -120,9 +117,6 @@ buff_t getBufferHandle( void ) {
 void openEmptyBuffer( enum _bn bn ) {
 
 
-  //
-  printf( "Get buffer address: %p\n", (void *)BUFFER ); fflush ( stdout );
-  
   BUFFER[0] = malloc( sizeof( row_t ));
   BUFFER[0]->txt = malloc( sizeof( char ) * 2 );
   BUFFER[0]->txt[0] = '\n';
@@ -132,10 +126,6 @@ void openEmptyBuffer( enum _bn bn ) {
   BUFFER[0]->rPtr   = 0;
   BUFFER[0]->editP  = false;
 
-  //
-  printf( "Setup buffer data\n\n" ); fflush ( stdout );
-
-  
   if( bn == DEFAULT )
     setDefaultFilename();
 
@@ -317,6 +307,29 @@ void closeBuffer( void ) {
   clear();
 }
 
+
+/*******************************************************************************
+				    BUFFER Properties
+*******************************************************************************/
+int getBufferLineLen( int row ) {
+
+  return BUFFER[row]->len;
+}
+
+char getBufferChar( int row, int col ) {
+
+  return BUFFER[ row ]->txt[ col ];
+}
+
+bool bufferRowEditedP( int row ) {
+
+  return BUFFER[row]->editP;
+}
+
+void setBufferRowEdited( int row, bool pred ) {
+
+  BUFFER[row]->editP = pred;
+}
 
 /***
     Local Variables:

@@ -14,3 +14,8 @@ void saveBufferNewName( void );
 void doubleBufferSize( void );
 bool bufferFullP( void );
 void closeBuffer( void );
+
+/* Buffer Information */
+int getBufferLineLen( int ); 
+char getBufferChar( int, int );
+bool bufferRowEditedP( int );

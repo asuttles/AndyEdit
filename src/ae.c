@@ -173,10 +173,8 @@ void setStatusFlagOriginal( void ) {
 /* Move Point to End of Line */
 void pointToEndLine() {
 
-  buff_t buff  = getBufferHandle();
-  
-  int x = buff[thisRow()]->len - 1;	/* Text Line Length */
-  int y = getmaxx( WIN ) - 1;		/* Terminal Length */
+  int x = getBufferLineLen( thisRow() ) - 1; /* Text Line Length */
+  int y = getmaxx( WIN ) - 1;		     /* Terminal Length */
 
   if( x > y ) {
     setPointX( y );
@@ -193,13 +191,12 @@ void pointToEndLine() {
 void priorLine() {
 
   int PtY      = getPointY();
-  buff_t  buff = getBufferHandle();
   
   if( PtY > 0 ) setPointY( --PtY );  
   else if ( ROWOFFSET > 0 ) --ROWOFFSET;
   
-  if(( getPointX() + COLOFFSET ) > 
-     ((int)buff[thisRow()]->len - 1 )) pointToEndLine();
+  if(( getPointX() + COLOFFSET ) >
+     getBufferLineLen( thisRow() ) ) pointToEndLine();
 }
 
 
@@ -207,7 +204,6 @@ void priorLine() {
 void nextLine() {
 
   int PtY     = getPointY();
-  buff_t buff = getBufferHandle();
   
   if( PtY + ROWOFFSET < NUMROWS - 1 ) {
 
@@ -215,8 +211,8 @@ void nextLine() {
     if( PtY < screenRows() ) setPointY( ++PtY );
     else ++ROWOFFSET;
     
-    if(( getPointX() + COLOFFSET ) > 
-       ((int)buff[thisRow()]->len - 1 )) pointToEndLine();
+    if(( getPointX() + COLOFFSET ) >
+       getBufferLineLen( thisRow() ) ) pointToEndLine();
   }
 }
 
@@ -225,9 +221,8 @@ void nextLine() {
 void pointForward() {
 
   int PtX     = getPointX();
-  buff_t buff = getBufferHandle();
   
-  if( thisCol() < (int)buff[thisRow()]->len - 1 ) {
+  if( thisCol() < getBufferLineLen( thisRow() ) - 1 ) {
     if( PtX < getmaxx( WIN ) - 1 ) setPointX( ++PtX );
     else COLOFFSET++;
   }
@@ -251,60 +246,71 @@ void pointBackward() {
 /* Forward Word */
 void forwardWord() {
 
-  buff_t buff = getBufferHandle();
+  char c;
   
-  if( thisCol() == (int)buff[thisRow()]->len-1 ) /* At EOL? */
+  if( thisCol() == getBufferLineLen( thisRow() ) - 1 ) /* At EOL? */
     return;
 
   pointForward();
 
  /* Move Past Spaces */
-  while( buff[thisRow()]->txt[ thisCol() ] == ' ' ) 
+  while(( c = getBufferChar( thisRow(), thisCol() )) == ' ' ) 
     pointForward();
 
- /* Move to End of Word */
- while( buff[thisRow()]->txt[ thisCol() ] != '\n' &&
-        buff[thisRow()]->txt[ thisCol() ] != ' '  &&
-        buff[thisRow()]->txt[ thisCol() ] != ')'  &&
-        buff[thisRow()]->txt[ thisCol() ] != ']' )
+  /* Move to End of Word */
+  while( c != '\n' &&
+	 c != ' '  &&
+	 c != ')'  &&
+	 c != ']' ) {
 
-   pointForward();
+    pointForward();
+    c = getBufferChar( thisRow(), thisCol() );
+  }
+
+  return;
 }
 
 
 /* Backward Word */
 void backwardWord() {
 
+  char c;
+  
   if( thisCol() == 0 ) return;        /* At BOL? */
 
-
-  buff_t buff     = getBufferHandle();
   int old_POINT_X = getPointX();
   pointBackward();
   
  /* Move Past Spaces */
-  while(( buff[thisRow()]->txt[ thisCol() ] == ' '   ||
-          buff[thisRow()]->txt[ thisCol() ] == ')'   ||
-          buff[thisRow()]->txt[ thisCol() ] == ';'   ||
-          buff[thisRow()]->txt[ thisCol() ] == ']' ) &&
-        thisCol() > 0 )
+  c = getBufferChar( thisRow(), thisCol() );
+  while(( c == ' '   ||
+          c == ')'   ||
+          c == ';'   ||
+          c == ']' ) &&
+        thisCol() > 0 ) {
+    
     pointBackward();
+    c = getBufferChar( thisRow(), thisCol() );
+  }
 
   /* If POINT_X is a Space, No Prior Word this Line */
-  if( buff[thisRow()]->txt[ thisCol() ] == ' ' ) {
+  if( c == ' ' ) {
     setPointX( old_POINT_X );
     return;
   }
   
  /* Move to Beginning of Word */
-  while( thisCol() > 0                              &&
-        buff[thisRow()]->txt[ thisCol() ] != ' '  &&
-        buff[thisRow()]->txt[ thisCol() ] != '('  &&
-        buff[thisRow()]->txt[ thisCol() ] != '[' )
+  c = getBufferChar( thisRow(), thisCol() );
+  while( thisCol() > 0                            &&
+	 c != ' '  &&
+         c != '('  &&
+	 c != '[' ) {
     pointBackward();
+    c = getBufferChar( thisRow(), thisCol() );
+  }
 
  /* Don't Leave POINT on a Space */
-  if( buff[thisRow()]->txt[ thisCol() ] == ' ' )
+  if( c == ' ' )
     pointForward();
 }
 
@@ -488,12 +494,10 @@ void updateLine() {
 /* Cursor Movement Functions */
 void updateNavigationState() {
 
-  buff_t buff = getBufferHandle();
-  
-  if( buff[thisRow()]->editP )
+  if( bufferRowEditedP( thisRow() ))
     updateLine();
-  
-  buff[thisRow()]->editP = false;
+
+  setBufferRowEdited( thisRow(), false );
   
   miniBufferClear();
 }
@@ -503,8 +507,8 @@ void updateNavigationState() {
 void updateEditState() {
 
   buff_t buff = getBufferHandle();
-  
-  buff[thisRow()]->editP = true;
+
+  setBufferRowEdited( thisRow(), true );
   STATUSFLAG = MODIFIED;
 }
 
@@ -1221,7 +1225,7 @@ int main( int argc, char *argv[] ) {
 /***
     Local Variables:
     mode: c
-    comment-column: 40
+    comment-column: 45
     fill-column: 90
     End:
 
