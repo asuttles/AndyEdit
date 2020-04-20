@@ -18,4 +18,13 @@ void closeBuffer( void );
 /* Buffer Information */
 int getBufferLineLen( int ); 
 char getBufferChar( int, int );
+bool bufferLineModifiedP( int );
 bool bufferRowEditedP( int );
+void setBufferRowEdited( int, bool );
+
+/* Modify Buffer Lines */
+void freeBufferLine( int );
+  
+/* Edit Buffer Information */
+void setEditBufferPtrs( int, int, int );
+

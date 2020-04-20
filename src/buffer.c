@@ -321,6 +321,11 @@ char getBufferChar( int row, int col ) {
   return BUFFER[ row ]->txt[ col ];
 }
 
+bool bufferLineModifiedP( int row ) {
+
+  return ( BUFFER[row]->lPtr != BUFFER[row]->rPtr );
+}
+
 bool bufferRowEditedP( int row ) {
 
   return BUFFER[row]->editP;
@@ -330,6 +335,37 @@ void setBufferRowEdited( int row, bool pred ) {
 
   BUFFER[row]->editP = pred;
 }
+
+
+/*******************************************************************************
+				   Modify BUFFER Lines
+*******************************************************************************/
+
+/* Free row_t */
+void freeBufferLine( int row ) {
+
+  int nRows = getBufferNumRows();
+  
+  free( BUFFER[row]->txt );
+  free( BUFFER[row] );
+    
+  for( int i=row; i<nRows-1; i++ ) {
+
+    BUFFER[i] = BUFFER[i+1];
+  }
+
+  setNumRows( --nRows );
+}
+
+/*******************************************************************************
+				  EDIT BUFFER Properties
+*******************************************************************************/
+void setEditBufferPtrs( int row, int left, int right ) {
+
+  BUFFER[row]->lPtr = left;
+  BUFFER[row]->rPtr = right;
+}
+
 
 /***
     Local Variables:

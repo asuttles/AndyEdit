@@ -502,24 +502,20 @@ void updateNavigationState() {
   miniBufferClear();
 }
 
-
 /* Edit Line */
 void updateEditState() {
-
-  buff_t buff = getBufferHandle();
 
   setBufferRowEdited( thisRow(), true );
   STATUSFLAG = MODIFIED;
 }
 
-/* Return row/col offset for Nav Functions */
+/* Get/Set Row/Col Offset for Nav Functions */
 int getRowOffset( void ) {
   return ROWOFFSET;
 }
 int getColOffset( void ) {
   return COLOFFSET;
 }
-
 void setRowOffset( int ro ) {
   ROWOFFSET = ro;
 }
@@ -547,15 +543,14 @@ int getBufferNumRows( void ) {
 void selfInsert( int c ) {
 
   int PtX     = getPointX();
-  buff_t buff = getBufferHandle();
 
-  
-  if( buff[thisRow()]->lPtr != buff[thisRow()]->rPtr )
+  /* Save Prior Unsaved Changes to Text Row */ 
+  if( bufferRowEditedP( thisRow() ))
     updateNavigationState();
-  
-  if( !buff[thisRow()]->editP ) {
-    buff[thisRow()]->lPtr = PtX;
-    buff[thisRow()]->rPtr = PtX;
+
+  /* Text Insertion Now Begins at POINT_X */  
+  if( !bufferRowEditedP( thisRow() )) {
+    setEditBufferPtrs( thisRow(), PtX, PtX );
     updateEditState();
   }
 
@@ -568,22 +563,6 @@ void selfInsert( int c ) {
                            LINE MANAGEMENT
 *******************************************************************************/
 
-/* Free row_t */
-void freeLine() {
-
-  buff_t buff = getBufferHandle();
-  
-  free( buff[thisRow()]->txt );
-  free( buff[thisRow()] );
-    
-  for( int i=thisRow(); i<NUMROWS-1; i++ ) {
-
-    buff[i] = buff[i+1];
-  }
-
-  --NUMROWS;
-}
-
 /* Kill Line at Point */
 void killLine() {
 
@@ -591,11 +570,11 @@ void killLine() {
   buff_t buff = getBufferHandle();
   
   /* Line Empty - Delete it */
-  if( buff[thisRow()]->len == 1 ) {
+  if( getBufferLineLen( thisRow() ) == 1 ) {
 
     if( thisRow() == NUMROWS - 1 ) return; /* Cant Delete if Nothing Follows */
 
-    freeLine();
+    freeBufferLine( thisRow() );
   }
 
   /* Delete from POINT to EOL */
@@ -626,7 +605,6 @@ void autoIndent() {
   int lastRow = thisRow() - 1;
   buff_t buff = getBufferHandle();
 
-  
   /* Skip if Middle of Line or Top of Buffer */
   if(( getPointX() != 0 ) || ( thisRow() == 0 ))
     return;
@@ -715,7 +693,6 @@ void openLine() {
 void killWord() {
 
   int currPointX = getPointX();		/* Save Current Point */
-  buff_t buff = getBufferHandle();
   
   forwardWord();			/* Find End Next Word */
 
@@ -723,8 +700,7 @@ void killWord() {
     return;
 
   /* Mark Word for Deletion and Restore Point */
-  buff[thisRow()]->lPtr = currPointX;
-  buff[thisRow()]->rPtr = getPointX();
+  setEditBufferPtrs( thisRow(), currPointX, getPointX() );
   setPointX( currPointX );
   updateEditState();
   updateNavigationState();
@@ -762,7 +738,7 @@ void combineLineWithPrior() {
   buff[thisRow()-1]->txt = tmp;
 
   /* Destroy Next Line */
-  freeLine();
+  freeBufferLine( thisRow() );
 
   setPointY( getPointY() - 1 );
   setPointX( preLineLen );
@@ -847,7 +823,7 @@ void killRegion() {
   /* Kill Lines Between POINT/MARK */
   while( PtY < MkY ) {
 
-    freeLine();
+    freeBufferLine( thisRow() );
     setMarkY( --MkY );
   }
   

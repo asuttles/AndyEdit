@@ -5,9 +5,9 @@ keyPress         - Handle Keyboard Inputs
 minibuffer       - Print Messages to User & Get Keyboard Inputs
 statusBar        - Update Program Status Bar
 pointMarkRegion  - Manage Cursor, Mark and Region Operations
+buffer           - Manage the text buffer, add/delete lines, etc.
+render           - Display the text file in editor.
 
-bufferMgmt
-rendererText
 editorState
 insertAndDelete
 region
