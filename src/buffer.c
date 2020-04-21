@@ -155,7 +155,7 @@ void openBufferFile( char * fn ) {
   while( true ) {
 
     /* Check Buffer Size */
-    if( i == MAXROWS ) {        
+    if( i == MAXROWS-1 ) {        
       doubleBufferSize();
     }
 
@@ -168,7 +168,11 @@ void openBufferFile( char * fn ) {
     BUFFER[i]->txt   = NULL;
 
     /* Read Next Text Row */
-    if( getline( &BUFFER[i]->txt, &BUFFER[i]->len, fp ) == ERR ) break;
+    if( getline( &BUFFER[i]->txt, &BUFFER[i]->len, fp ) == ERR ) {
+      free( BUFFER[i]->txt );		     /* Free Unused i'th BUFFER */
+      free( BUFFER[i] );		     
+      break;
+    }
 
     /* Clean-up Tabs and Set Length */
     BUFFER[i]->txt = removeTabs( BUFFER[i]->txt );
@@ -273,6 +277,7 @@ bool bufferFullP( void ) {
   return false;
 }
 
+
 /* Close Text Buffer */
 void closeBuffer( void ) {
 
@@ -300,13 +305,24 @@ void closeBuffer( void ) {
   setRegionActive( false );
   setStatusFlagOriginal();
 
-  initializeBuffer();
+}
 
+/***
+    Close Current Buffer 
+    and Open Empty Buffer
+ ***/
+
+void killBuffer( void ) {
+
+  closeBuffer();
+
+  initializeBuffer();
+  
   openEmptyBuffer( DEFAULT );
   
   clear();
-}
 
+}
 
 /*******************************************************************************
 				    BUFFER Properties

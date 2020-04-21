@@ -924,7 +924,7 @@ void eXtensionMenu() {
 	updateNavigationState();
 	saveBuffer();
       }
-    closeBuffer();
+    killBuffer();
     break;
     
   case CTRL_KEY('s'):                /* Save Buffer */
@@ -945,7 +945,7 @@ void eXtensionMenu() {
 	updateNavigationState();
 	saveBuffer();
       }
-    closeBuffer();
+    killBuffer();
     /* Open New Buffer */
     miniBufferGetFilename( FILENAME, FNLENGTH );
     openBufferFile( FILENAME );
@@ -1175,7 +1175,7 @@ int main( int argc, char *argv[] ) {
   /* Initialize */
   initializeTerminal();
   initializeBuffer();
-  
+
   /* Open File or Display Splash */
   if( argc > 1 ) {
     setFilename( argv[argc-1] ); 

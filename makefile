@@ -20,6 +20,10 @@ ae: $(OBJS)
 %.o: %.c %.h ae.h
 	$(CC) -o $@ -c $(CFLAGS) $<
 
+# Debugging
+debug: CFLAGS += -g -O0
+debug: ae
+
 # Header Dependencies
 ae.o : keyPress.h minibuffer.h pointMarkRegion.h render.h buffer.h
 keyPress.o : ae.h

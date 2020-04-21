@@ -4,3 +4,4 @@ ae.core
 src/TAGS
 obj/*
 *~
+.valgrind

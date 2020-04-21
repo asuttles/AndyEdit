@@ -14,6 +14,7 @@ void saveBufferNewName( void );
 void doubleBufferSize( void );
 bool bufferFullP( void );
 void closeBuffer( void );
+void killBuffer( void );
 
 /* Buffer Information */
 int getBufferLineLen( int ); 
