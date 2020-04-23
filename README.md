@@ -34,7 +34,7 @@ The AndyEdit editor requires the ncurses library be installed for terminal rende
 
 AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems.
 
-AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 on OpenBSD 6.5.
+AndyEdit is being developed using the LLVM CLANG compiler and ncurses 5.7 on OpenBSD 6.6.
 
      ________________ 
     < AE on OpenBSD! >
@@ -66,9 +66,9 @@ AndyEdit is being developed using the LLVM CLANG 6.0.0 compiler and ncurses 5.7 
 
 ## Versioning
 
-Latest Release: 0.2
+Latest Release: 0.3 (23APR20)
 
-### Release 0.3 (IN WORK)
+### Release 0.3
   - Kill Word
   - Highlight Region Between Point/Mark
   - Kill Buffer
