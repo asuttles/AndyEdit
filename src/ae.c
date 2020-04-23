@@ -642,10 +642,9 @@ void openLine() {
     buff = getBufferHandle();		/* New Double-Sized BUFFER */
   }
 
-  
   /* Move Lines Down */
   int i;
-  
+
   for( i=NUMROWS; i>thisRow()+1; i-- ) {
     buff[i] = buff[i-1];
   }
@@ -654,6 +653,10 @@ void openLine() {
   buff[i] = malloc( sizeof( row_t ));
   buff[i]->len = buff[thisRow()]->len - PtX;
   buff[i]->txt = malloc( sizeof( char ) * ( buff[i]->len + 1 ));
+  buff[i]->lPtr   = 0;
+  buff[i]->rPtr   = 0;
+  buff[i]->editP  = false;
+
 
   /* Copy Text Into New Line */
   if( strncpy( buff[i]->txt, 
@@ -661,6 +664,7 @@ void openLine() {
                buff[i]->len ) == NULL ) die( "openLine: strncpy failed." );
 
   buff[i]->txt[buff[i]->len] = '\0';
+
 
   /* Heap Space for Trimmed String */
   char *tmp = malloc( sizeof( char ) * ( PtX + 2 ));

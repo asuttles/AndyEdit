@@ -47,7 +47,7 @@ void drawStatusLine( char *fn, const char *status,
 
   snprintf( statusLine, maxX > 256 ? 256 : maxX  - 1,
             "--[ %s ]-------(%s)------- Row %d of %d ------- Col %d of %d ------- F1 for Help --- F10 to Quit",
-            fn, status, row+1, numRows, col, numCols );
+            fn, status, row+1, numRows, col+1, numCols );
 
   mvaddstr( curRow, 0, statusLine );
 
