@@ -1,21 +1,16 @@
-Split ae.c into modules for maintenance...
+AndyEdit Source Code Modules Architecture
 
 ae               - Main Program Loop
 keyPress         - Handle Keyboard Inputs
-minibuffer       - Print Messages to User & Get Keyboard Inputs
+minibuffer       - Print Messages to User & Get User Command Inputs
 statusBar        - Update Program Status Bar
 pointMarkRegion  - Manage Cursor, Mark and Region Operations
-buffer           - Manage the text buffer, add/delete lines, etc.
-render           - Display the text file in editor.
+buffer           - Manage the Text Buffer, Add/Delete Lines, etc.
+render           - Display the Text File in Editor Window
 
 editorState
-insertAndDelete
-region
 
-Help - Cannot scroll??
-Pressing Enter leads to a memory fault!!
 
-Typing long line at end of buffer after deleting last line causes a crash!!!
-
-Opening new file and typing chars causes memory fault!
-
+TODO
+Update License or remove getline()
+Convert size_t to int
