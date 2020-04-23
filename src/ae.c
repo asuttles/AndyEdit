@@ -794,57 +794,105 @@ void backspace() {
                           REGION OPERATIONS
 *******************************************************************************/
 
+static void _removeText( int strt_Col, int strt_Row,
+			 int stop_Col, int stop_Row ) {
+
+  buff_t buff = getBufferHandle();
+
+
+  /* Loop Over Rows in Region */ 
+  int row = strt_Row;
+  do {
+
+    /* Handle Lines Between Start/End */
+    if(( row > strt_Row ) && ( row < stop_Row )) {
+      freeBufferLine( row );
+      --stop_Row;
+    }
+
+    /* Handle First Line */
+    else if( row == strt_Row ) {
+
+      /* Delete Entire Line */
+      if(( strt_Col == 0 ) && ( stop_Row > strt_Row )) {
+	freeBufferLine( row );
+	--stop_Row;
+	--strt_Row;
+      }
+
+      /* Delete Mark to Point OR End of Line */
+      else {
+	buff[row]->lPtr = strt_Col;
+	buff[row]->rPtr = ( stop_Row > strt_Row ) ? 
+	  buff[row]->len - 1 :		     /* Delete Rest of Line */
+	  (size_t)stop_Col;		     /* Delete Part of Line */
+
+	updateLine();
+	++row;
+      }
+    }
+
+    /* Handle Last Line */
+    else {
+
+      /* Delete Entire Last Line */
+      if( stop_Col == (int)( buff[row]->len - 1 )) {
+	freeBufferLine( row );
+	--stop_Row;
+	++row;
+      }
+
+      /* Ignore if Stop on First Col */
+      else if( stop_Col == 0 ) {
+	++row;
+      }
+
+      /* Delete Part of Last Line */
+      else {
+	buff[row]->lPtr = 0;
+	buff[row]->rPtr = stop_Col;
+	updateLine();
+	++row;
+      }
+    }
+
+  } while( row <= stop_Row );
+  
+  return;
+}
+
+
 /* Kill Text Between Point and Mark */
 void killRegion() {
 
-  int PtY = getPointY();
-  int PtX = getPointX();
-  int MkY = getMarkY();
-  int MkX = getMarkX();
-
-  buff_t buff = getBufferHandle();
+  int temp_X, temp_Y;
   
-  /* Swap Point/Mark */
-  if( MkY < PtY ) {
-    swapPointAndMark();
+  int strt_X = getPointX() + getColOffset(); 
+  int strt_Y = getPointY() + getRowOffset();
+  int stop_X = getMarkX();
+  int stop_Y = getMarkY();
+
+  /* Define Start/Stop Deletion Region */
+  if((  stop_Y <  strt_Y ) ||
+     (( stop_Y == strt_Y ) && ( stop_X < strt_X ))) {
+
+    temp_X = strt_X;
+    temp_Y = strt_Y;
+    strt_X = stop_X;
+    strt_Y = stop_Y;
+    stop_X = temp_X;
+    stop_Y = temp_Y;
   }
 
-  /* Kill From POINT to EOL */
-  if( PtY < MkY && PtX > 0 ) {
-    
-    updateEditState();
-    killLine();
-    updateNavigationState();
-    nextLine();
+  /* Remove Text/Textlines */
+  _removeText( strt_X, strt_Y, stop_X, stop_Y );
 
-    setPointX( 0 );
-  }
-
-  /* Kill Lines Between POINT/MARK */
-  while( PtY < MkY ) {
-
-    freeBufferLine( thisRow() );
-    setMarkY( --MkY );
-  }
-  
-  /* Kill Last Line Up to MARK */
-  if( PtY == MkY ) {
-
-    if( PtX < MkX ) {
-      swapPointAndMark();
-    }
-    
-    buff[thisRow()]->lPtr = MkX;
-    buff[thisRow()]->rPtr = PtX;
-    updateLine();
-  }
-  
-  setPointX( 0 );
-  backspace();
-
-  setMarkX( -1 );
-  setMarkY( -1 );
+  /* Reset Point */
+  setPointX( strt_X - getColOffset() );
+  setPointY( strt_Y - getRowOffset() );
   setRegionActive( false );
+
+  return;
 }
 
 

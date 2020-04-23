@@ -305,6 +305,7 @@ void closeBuffer( void ) {
   setRegionActive( false );
   setStatusFlagOriginal();
 
+  clear();
 }
 
 /***
