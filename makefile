@@ -3,7 +3,8 @@ vpath %.h src
 
 # Source Code
 SRC=ae.c keyPress.c minibuffer.c statusBar.c \
-    pointMarkRegion.c render.c buffer.c
+    pointMarkRegion.c render.c buffer.c \
+    window.c navigation.c
 CFLAGS=-Wall -Wextra -pedantic -std=c99
 
 # Object Files
@@ -25,16 +26,22 @@ debug: CFLAGS += -g -O0
 debug: ae
 
 # Header Dependencies
-ae.o : keyPress.h minibuffer.h pointMarkRegion.h render.h buffer.h
+ae.o : keyPress.h minibuffer.h pointMarkRegion.h render.h \
+       buffer.h window.h
 keyPress.o : ae.h
 minibuffer.o : ae.h keyPress.h
 statusBar.o : ae.h
 pointMarkRegion.o : minibuffer.h ae.h
 render.o : ae.h statusBar.h pointMarkRegion.h buffer.h
-buffer.o : ae.h buffer.h minibuffer.h pointMarkRegion.h
+buffer.o : ae.h minibuffer.h pointMarkRegion.h
+window.o : ae.h
+navigation.o : ae.h buffer.h window.h pointMarkRegion.h
 
 # Targets
-.phony: install
+.phony: install tags
+
+tags:
+	find src/ -name "*.[ch]" -print | etags -
 
 install: ae 
 	mv ae ~/bin

@@ -28,11 +28,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <curses.h>
 
 #include <readline/readline.h>
 
 #include "ae.h"
 #include "keyPress.h"
+#include "window.h"
 
 char MINIBUFFER[MINIBUFFSIZE];		/* Minibuffer Input */
 
@@ -44,7 +46,7 @@ char MINIBUFFER[MINIBUFFSIZE];		/* Minibuffer Input */
 /* Write Message to User */
 void miniBufferMessage( const char *msg ) {
 
-  int mbRow = getmaxy( getWindowHandle() ) - 1;
+  int mbRow = getWinNumRows() - 1;
   
   /* Print Input Message */
   mvaddstr( mbRow, 0, msg );
@@ -54,7 +56,7 @@ void miniBufferMessage( const char *msg ) {
 /* Clear Minibuffer Messages */
 void miniBufferClear() {
   
-  int mbRow = getmaxy( getWindowHandle() ) - 1;
+  int mbRow = getWinNumRows() - 1;
   
   /* Clear Message Buffer */
   move( mbRow, 0 );
@@ -67,7 +69,7 @@ void miniBufferGetInput( const char *msg ) {
 
   int c;                        /* Input Char */
 
-  int mbRow = getmaxy( getWindowHandle() ) - 1;
+  int mbRow = getWinNumRows() - 1;
   
   /* Print Input Message */
   mvaddstr( mbRow, 0, msg );
@@ -100,7 +102,7 @@ void miniBufferGetFilename( char *fn, int fnLength ) {
   char *newFileName = NULL;
   char message[ fnLength + 14 ];	/* User Message */
   
-  int yMax = getmaxx( getWindowHandle() ); /* Size of Curses Window */
+  int yMax = getWinNumCols();	        /* Size of Curses Window */
 
   
   /* End Curses & Clear garbage off of terminal */
@@ -159,3 +161,12 @@ bool miniBufferGetYN( const char *msg ) {
 
   return false;
 }
+
+
+/***
+    Local Variables:
+    mode: c
+    comment-column: 45
+    fill-column: 90
+    End:
+ ***/

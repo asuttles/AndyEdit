@@ -4,7 +4,7 @@
            / \   _ __   __| |_   _  | ____|__| (_) |_
           / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
          / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.3
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta
                              |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
@@ -23,7 +23,11 @@
 
 ==========================================================================================
  ***/
-#include "ae.h"
+#include <curses.h>
+
+//#include "ae.h"
+#include "window.h"
+
 
 /* Private Data */
 static char statusLine[256];
@@ -38,10 +42,12 @@ void drawStatusLine( char *fn, const char *status,
 		     int row, int numRows,
 		     int col, int numCols ) {
 
+  //return;
+  
   int  curCol, maxCol;
 
-  int  maxX   = getmaxx( getWindowHandle());
-  int  curRow = getmaxy( getWindowHandle()) - 2;
+  int  maxX   = getWinNumCols();
+  int  curRow = getWinNumRows() - 2;
   
   attron( A_REVERSE );                /* Reverse Video */
 
@@ -51,8 +57,8 @@ void drawStatusLine( char *fn, const char *status,
 
   mvaddstr( curRow, 0, statusLine );
 
-  curCol = getcurx( getWindowHandle());
-  maxCol = getmaxx( getWindowHandle());
+  curCol =  getWinThisCol();
+  maxCol = getWinNumCols();
   
   while( curCol < maxCol ) {
     mvaddch( curRow, curCol++, '-' );
@@ -60,3 +66,12 @@ void drawStatusLine( char *fn, const char *status,
   
   attroff( A_REVERSE );
 }
+
+
+/***
+    Local Variables:
+    mode: c
+    comment-column: 45
+    fill-column: 90
+    End:
+ ***/

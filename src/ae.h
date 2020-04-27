@@ -1,4 +1,5 @@
 #include <curses.h>
+#include <stdbool.h>
 
 #define FNLENGTH 128
 
@@ -12,9 +13,7 @@ typedef struct {
 } row_t;
 
 /* Public Definitions */
-WINDOW *getWindowHandle( void ); /* Get Handle for AE Window */
 void die( const char * );	 /* Print Die Message on Failure */
-void initializeTerminal( void ); /* (re)Initialize Editor Screen */
 int getRowOffset( void );
 int getColOffset( void );
 void setRowOffset( int );
@@ -30,3 +29,6 @@ void setStatusFlagOriginal( void );
 void setDefaultFilename( void );
 void setFilename( char * );
 char *getBufferFilename( void );
+
+//
+void updateLine( void );

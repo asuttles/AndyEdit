@@ -1,4 +1,4 @@
-# Andy Edit v0.3 User Guide
+# Andy Edit v0.4-beta User Guide
 
         _              _         _____    _ _ _
        / \   _ __   __| |_   _  | ____|__| (_) |_

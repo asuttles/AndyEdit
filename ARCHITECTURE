@@ -7,6 +7,7 @@ statusBar        - Update Program Status Bar
 pointMarkRegion  - Manage Cursor, Mark and Region Operations
 buffer           - Manage the Text Buffer, Add/Delete Lines, etc.
 render           - Display the Text File in Editor Window
+window           - Update Curses Window
 
 editorState
 

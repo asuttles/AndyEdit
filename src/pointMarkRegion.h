@@ -13,3 +13,4 @@ bool swapPointAndMark( void );
 void setRegionActive( bool );
 bool regionActiveP( void );
 bool inRegionP( int, int );
+void killRegion( void );

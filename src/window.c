@@ -4,7 +4,7 @@
            / \   _ __   __| |_   _  | ____|__| (_) |_
           / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
          / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.3
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta [Draft]
                              |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
@@ -23,36 +23,75 @@
 
 ==========================================================================================
  ***/
-
-#include <stdio.h>
+#include <curses.h>
 
 #include "ae.h"
-#include "window.h"
 
-/*******************************************************************************
-			    READ KEY INPUT
-*******************************************************************************/
+static WINDOW *WIN;				/* Window Handle */
 
-/* Read Keypresses */
-int readKey() {
+/* Restore tty */
+void closeEditor() {
 
-  int c;                        /* 'Char' or Flags */
+  endwin();
+}
 
-  /* wgetch handles SIGWINCH */
-  while(( c = wgetch( getWindowHandle() )) == ERR ) {
 
-    /* Handle Timeouts */
-    refresh();
+/* Needed For 'wgetch' in KeyPress Module */ 
+WINDOW *getWindowHandle() {
+
+  return WIN;
+}
+
+
+/* Prepare tty for Raw nCurses Input */
+void initializeTerminal() {
+
+  if(( WIN = initscr() ) == NULL ) { /* Setup ncurses */
+    die( "initializeTerminal: initscr failed" );
   }
-  
-  return c;
+
+  if( cbreak() == ERR ) {        /* Unbuffered Input */
+    die( "initializeTerminal: cbreak failed" );
+  }
+
+  if( noecho() == ERR ) {        /* Do NOT local echo */
+    die( "initializeTerminal: noecho failed" );
+  }
+
+  if( nonl() == ERR ) {                /* \n != \r\n */
+    die( "initializeTerminal: nonl failed" );
+  }
+
+  if( keypad( stdscr, TRUE ) == ERR ) { /* Enable keypad */
+    die( "initializeterminal: keypad failed" );
+  }
+
+  if( raw() == ERR ) {                /* Set ICANON, ISIG, IXON off */
+    die( "initializeterminal: raw" );
+  }
+
+  timeout(100);
+}
+
+
+int getWinNumCols( void ) {
+
+  return getmaxx( WIN );
+}
+int getWinNumRows( void ) {
+
+  return getmaxy( WIN );
+}
+int getWinThisCol( void ) {
+
+  return getcurx( WIN );
 }
 
 
 /***
     Local Variables:
     mode: c
-    comment-column: 40
+    comment-column: 45
     fill-column: 90
     End:
-***/
+ ***/

@@ -4,7 +4,7 @@
            / \   _ __   __| |_   _  | ____|__| (_) |_
           / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
          / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.3
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta
                              |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
@@ -23,12 +23,17 @@
 
 ==========================================================================================
  ***/
-#include <stdbool.h>
 
-//#include <stdio.h>
+// TODO
+// Remove references to buff_t
+// Update gettr and settr functions in buffer.c to elim references to buff_t here.
+//
+
+#include <stdbool.h>
 
 #include "minibuffer.h"
 #include "ae.h"
+#include "buffer.h"
 
 /* Private State Data */
 bool REGIONP   = false;			/* Is Region Active? */
@@ -39,6 +44,11 @@ static int POINT_Y    =  0;			/* Point Y Position */
 static int MARK_X     = -1;			/* Mark X Position */
 static int MARK_Y     = -1;			/* Mark Y Position */
 
+
+
+/*******************************************************************************
+			    POINT AND MARK
+*******************************************************************************/
 
 /* Gett'rs and Sett'rs for POINT */
 int getPointX( void ) {
@@ -69,10 +79,7 @@ void setMarkY( int Y ) {
 }
 
 
-/*** Swap Point and Mark 
-
-     Return TRUE if swapped
-***/
+/* Swap Point and Mark */
 bool swapPointAndMark( void ) {
 
   /* Get Offsets */
@@ -91,18 +98,15 @@ bool swapPointAndMark( void ) {
     MARK_X = tmpX;
     MARK_Y = tmpY;
 
-    //miniBufferMessage( "Mark Set" );
-
     return true;
   }
 
   return false;
 }
 
-
-/***
-			  Region Operations
-***/
+/*******************************************************************************
+			     REGION STATE
+*******************************************************************************/
 void setRegionActive( bool activeP ) {
 
   REGIONP = activeP;
@@ -171,3 +175,118 @@ bool inRegionP( int row, int col ) {
   return false;
 }
 
+
+/*******************************************************************************
+			     KILL REGION
+*******************************************************************************/
+
+static void _removeText( int strt_Col, int strt_Row,
+			 int stop_Col, int stop_Row ) {
+
+  buff_t buff = getBufferHandle();
+
+
+  /* Loop Over Rows in Region */ 
+  int row = strt_Row;
+  do {
+
+    /* Handle Lines Between Start/End */
+    if(( row > strt_Row ) && ( row < stop_Row )) {
+      freeBufferLine( row );
+      --stop_Row;
+    }
+
+    /* Handle First Line */
+    else if( row == strt_Row ) {
+
+      /* Delete Entire Line */
+      if(( strt_Col == 0 ) && ( stop_Row > strt_Row )) {
+	freeBufferLine( row );
+	--stop_Row;
+	--strt_Row;
+      }
+
+      /* Delete Mark to Point OR End of Line */
+      else {
+	buff[row]->lPtr = strt_Col;
+	buff[row]->rPtr = ( stop_Row > strt_Row ) ? 
+	  buff[row]->len - 1 :		     /* Delete Rest of Line */
+	  (size_t)stop_Col;		     /* Delete Part of Line */
+
+	updateLine();
+	++row;
+      }
+    }
+
+    /* Handle Last Line */
+    else {
+
+      /* Delete Entire Last Line */
+      if( stop_Col == (int)( buff[row]->len - 1 )) {
+	freeBufferLine( row );
+	--stop_Row;
+	++row;
+      }
+
+      /* Ignore if Stop on First Col */
+      else if( stop_Col == 0 ) {
+	++row;
+      }
+
+      /* Delete Part of Last Line */
+      else {
+	buff[row]->lPtr = 0;
+	buff[row]->rPtr = stop_Col;
+	updateLine();
+	++row;
+      }
+    }
+
+  } while( row <= stop_Row );
+  
+  return;
+}
+
+
+/* Kill Text Between Point and Mark */
+void killRegion() {
+
+  int temp_X, temp_Y;
+  
+  int strt_X = getPointX() + getColOffset(); 
+  int strt_Y = getPointY() + getRowOffset();
+  int stop_X = getMarkX();
+  int stop_Y = getMarkY();
+
+  /* Define Start/Stop Deletion Region */
+  if((  stop_Y <  strt_Y ) ||
+     (( stop_Y == strt_Y ) && ( stop_X < strt_X ))) {
+
+    temp_X = strt_X;
+    temp_Y = strt_Y;
+    strt_X = stop_X;
+    strt_Y = stop_Y;
+    stop_X = temp_X;
+    stop_Y = temp_Y;
+  }
+
+  /* Remove Text/Textlines */
+  _removeText( strt_X, strt_Y, stop_X, stop_Y );
+
+  /* Reset Point */
+  setPointX( strt_X - getColOffset() );
+  setPointY( strt_Y - getRowOffset() );
+  setRegionActive( false );
+
+  return;
+}
+
+
+
+/***
+    Local Variables:
+    mode: c
+    comment-column: 45
+    fill-column: 90
+    End:
+ ***/

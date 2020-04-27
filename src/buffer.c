@@ -155,7 +155,7 @@ void openBufferFile( char * fn ) {
   while( true ) {
 
     /* Check Buffer Size */
-    if( i == MAXROWS-1 ) {        
+    if( i == MAXROWS ) {        
       doubleBufferSize();
     }
 
@@ -250,20 +250,12 @@ void saveBufferNewName( void ) {
 /* Double Buffer Size */
 void doubleBufferSize( void ) {
   
-  buff_t newBuff = NULL;
-
   int newMaxRows = MAXROWS * 2;        /* Double Buffer Size */
     
-  newBuff = realloc( BUFFER, newMaxRows * sizeof( row_t *));
+  if(( BUFFER = realloc( BUFFER, newMaxRows * sizeof( row_t *))) == NULL )
+    die( "doubleBufferSize: realloc failed" );
+
   MAXROWS = newMaxRows;
-  
-  if( newBuff == NULL ) die( "doubleBufferSize: realloc failed" );
-  if( newBuff != BUFFER  ) {
-
-    free( BUFFER );
-  }
-
-  BUFFER = newBuff;
 }
 
 
