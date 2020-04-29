@@ -22,7 +22,7 @@ ae: $(OBJS)
 	$(CC) -o $@ -c $(CFLAGS) $<
 
 # Debugging
-debug: CFLAGS += -g -O0
+debug: CFLAGS += -g -O0 -DDEBUG
 debug: ae
 
 # Header Dependencies
@@ -43,5 +43,6 @@ navigation.o : ae.h buffer.h window.h pointMarkRegion.h
 tags:
 	find src/ -name "*.[ch]" -print | etags -
 
+install: CFLAGS += -O2 -DNDEBUG
 install: ae 
 	mv ae ~/bin

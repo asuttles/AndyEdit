@@ -1,64 +1,52 @@
 
-src/ae.c,1718
-#define CTRL_KEY(43,1496
-#define ALT_KEY 44,1529
-#define thisRow(45,1548
-#define thisCol(46,1592
-#define screenRows(47,1636
-#define DEFAULTFILENAME 48,1679
-enum _sf 52,1744
-enum _sf { ORIGINAL,52,1744
-enum _sf { ORIGINAL, MODIFIED,52,1744
-enum _sf { ORIGINAL, MODIFIED, READONLY 52,1744
-const char _sfname[_sfname53,1787
-char FILENAME[FILENAME57,1874
-int NUMROWS 58,1936
-int ROWOFFSET 59,1989
-int COLOFFSET 60,2042
-enum _sf STATUSFLAG 61,2097
-static char EDITBUFFER[EDITBUFFER63,2173
-static int  EBINDEX 64,2235
-void die(72,2511
-void setDefaultFilename(86,2857
-void setFilename(92,2955
-char *getBufferFilename(getBufferFilename98,3054
-int getEditBufferIndex(103,3111
-char getEditBufferChar(108,3160
-void setEditBufferIndex(113,3220
-void setStatusFlagOriginal(118,3274
-void pointToEndLine(128,3576
-void priorLine(145,3879
-void nextLine(158,4138
-void pointForward(175,4459
-void pointBackward(187,4682
-void forwardWord(201,4858
-void backwardWord(229,5304
-void pointToEndBuffer(273,6209
-void centerLine(291,6566
-void jumpToLine(323,7137
-void pageDown(341,7429
-void pageUp(366,7902
-void updateLine(397,8552
-void updateNavigationState(449,9848
-void updateEditState(460,10021
-int getRowOffset(467,10163
-int getColOffset(470,10212
-void setRowOffset(473,10261
-void setColOffset(476,10311
-void setNumRows(482,10411
-int getBufferNumRows(487,10457
-void selfInsert(497,10745
-void killLine(521,11365
-void autoIndent(554,12186
-void openLine(586,12764
-void killWord(651,14385
-void combineLineWithPrior(668,14766
-void backspace(705,15647
-void metaMenu(756,16797
-void eXtensionMenu(804,17752
-void processKeypress(876,19391
-void displaySplash(1054,23628
-int main(1073,24074
+src/ae.c,1382
+#define CTRL_KEY(43,1499
+#define ALT_KEY 44,1532
+#define thisRow(45,1551
+#define thisCol(46,1595
+#define screenRows(47,1639
+#define DEFAULTFILENAME 48,1682
+enum _sf 52,1747
+enum _sf { ORIGINAL,52,1747
+enum _sf { ORIGINAL, MODIFIED,52,1747
+enum _sf { ORIGINAL, MODIFIED, READONLY 52,1747
+const char _sfname[_sfname53,1790
+char FILENAME[FILENAME57,1877
+int NUMROWS 58,1939
+int ROWOFFSET 59,1992
+int COLOFFSET 60,2045
+enum _sf STATUSFLAG 61,2100
+static char EDITBUFFER[EDITBUFFER63,2176
+static int  EBINDEX 64,2238
+void die(72,2514
+void setDefaultFilename(86,2860
+void setFilename(92,2958
+char *getBufferFilename(getBufferFilename98,3057
+int getEditBufferIndex(103,3114
+char getEditBufferChar(108,3163
+void setEditBufferIndex(113,3223
+void setStatusFlagOriginal(118,3277
+void updateLine(128,3575
+void updateNavigationState(180,4871
+void updateEditState(191,5044
+int getRowOffset(198,5186
+int getColOffset(201,5235
+void setRowOffset(204,5284
+void setColOffset(207,5334
+void setNumRows(213,5434
+int getBufferNumRows(218,5480
+void selfInsert(228,5768
+void killLine(252,6388
+void autoIndent(285,7209
+void openLine(317,7787
+void killWord(382,9408
+void combineLineWithPrior(399,9789
+void backspace(436,10670
+void metaMenu(487,11820
+void eXtensionMenu(535,12775
+void processKeypress(607,14414
+void displaySplash(785,18651
+int main(804,19102
 
 src/buffer.c,680
 #define _POSIX_C_SOURCE 26,1197
@@ -70,19 +58,19 @@ void initializeBuffer(100,3048
 buff_t getBufferHandle(109,3273
 void openEmptyBuffer(117,3362
 void openBufferFile(136,3756
-void saveBuffer(191,5013
-void saveBufferNewName(218,5537
-void doubleBufferSize(251,6175
-bool bufferFullP(271,6575
-void closeBuffer(282,6717
-void killBuffer(316,7241
-int getBufferLineLen(331,7547
-char getBufferChar(336,7612
-bool bufferLineModifiedP(341,7693
-bool bufferRowEditedP(346,7788
-void setBufferRowEdited(351,7856
-void freeBufferLine(362,8145
-void setEditBufferPtrs(380,8563
+void saveBuffer(191,5011
+void saveBufferNewName(218,5535
+void doubleBufferSize(251,6173
+bool bufferFullP(263,6464
+void closeBuffer(274,6606
+void killBuffer(308,7130
+int getBufferLineLen(323,7436
+char getBufferChar(328,7501
+bool bufferLineModifiedP(333,7582
+bool bufferRowEditedP(338,7677
+void setBufferRowEdited(343,7745
+void freeBufferLine(354,8034
+void setEditBufferPtrs(372,8452
 
 src/pointMarkRegion.c,492
 bool REGIONP 39,1437
@@ -115,11 +103,11 @@ int readKey(37,1462
 src/window.c,221
 static WINDOW *WIN;WIN30,1248
 void closeEditor(33,1310
-WINDOW *getWindowHandle(getWindowHandle40,1370
-void initializeTerminal(47,1457
-int getWinNumCols(77,2170
-int getWinNumRows(81,2226
-int getWinThisCol(85,2282
+WINDOW *getWindowHandle(getWindowHandle40,1394
+void initializeTerminal(47,1481
+int getWinNumCols(77,2194
+int getWinNumRows(81,2250
+int getWinThisCol(85,2306
 
 src/minibuffer.c,266
 #define MINIBUFFSIZE 26,1197
@@ -131,6 +119,23 @@ void miniBufferGetFilename(98,2568
 int miniBufferGetPosInteger(143,3734
 bool miniBufferGetYN(152,3884
 
+src/navigation.c,396
+#define screenRows(36,1393
+#define thisRow(37,1436
+#define thisCol(38,1485
+void centerLine(42,1554
+void pointToEndLine(75,2159
+void priorLine(92,2496
+void nextLine(106,2802
+void pointForward(124,3187
+void pointBackward(137,3450
+void forwardWord(151,3655
+void backwardWord(179,4107
+void pointToEndBuffer(223,5018
+void pageDown(243,5401
+void pageUp(269,5907
+void jumpToLine(298,6398
+
 src/render.c,25
 void renderText(36,1528
 
@@ -140,18 +145,18 @@ enum _bn 5,94
 enum _bn { DEFAULT,5,94
 enum _bn { DEFAULT, UNAMED 5,94
 
-src/ae.h,148
-#define FNLENGTH 3,21
-  char  *txt;txt7,92
-  size_t len;8,132
-  size_t lPtr;9,170
-  size_t rPtr;10,210
-  bool   editP;11,225
-} row_t;12,276
-
-src/term.c,0
+src/ae.h,150
+#define FNLENGTH 4,42
+  char  *txt;txt8,113
+  size_t len;9,153
+  size_t lPtr;10,191
+  size_t rPtr;11,231
+  bool   editP;12,246
+} row_t;13,297
 
 src/window.h,0
+
+src/navigation.h,0
 
 src/keyPress.h,0
 

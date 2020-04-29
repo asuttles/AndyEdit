@@ -809,7 +809,7 @@ int main( int argc, char *argv[] ) {
 
   /* Open File or Display Splash */
   if( argc > 1 ) {
-    setFilename( argv[argc-1] ); 
+    setFilename( argv[1] ); 
     openBufferFile( FILENAME );
   }
   else {

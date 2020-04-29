@@ -42,19 +42,24 @@ void renderText(char *fn,	    /* Filename Rendered */
 
   int i, j;			/* Iteration indices */
   int row, col;			/* Row/Col being processed */
-  int thisRow, thisCol;		/* Row/Col of POINT */
   int nextRow;			/* The next row to process */
   int colMax, txtLen;
 
-  int rowOffset = getRowOffset();
-  int colOffset = getColOffset();
+  /* Initialized Data */
   buff_t buff = getBufferHandle();
   int ebIndex = getEditBufferIndex();
-  
+
+  int rowOffset = getRowOffset();
+  int colOffset = getColOffset();
+
+  int thisRow = rowOffset+getPointY(); /* Row Containing POINT */
+  int thisCol = colOffset+getPointX();
+
+
   for( row = 0; row < maxRows; row++ ) {
 
-    thisRow = rowOffset+getPointY(); /* Row Containing POINT */
-    thisCol = colOffset+getPointX();
+    //thisRow = rowOffset+getPointY(); /* Row Containing POINT */
+    //thisCol = colOffset+getPointX();
     nextRow = row+rowOffset;	     /* Next Row to Process */
 
     if( nextRow < fileRows ) {        /* Write Buffer Text */
