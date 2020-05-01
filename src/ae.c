@@ -38,6 +38,7 @@
 #include "buffer.h"
 #include "window.h"
 #include "navigation.h"
+#include "files.h"
 
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -45,7 +46,6 @@
 #define thisRow() (ROWOFFSET + getPointY())
 #define thisCol() (COLOFFSET + getPointX())
 #define screenRows() (getWinNumRows() - 3)
-#define DEFAULTFILENAME "newfile.txt"
 
 
 /* Buffer Status Flag */
@@ -54,7 +54,6 @@ const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
 
 
 /* Global Data */
-char FILENAME[FNLENGTH];                /* Buffer Filename */
 int NUMROWS    =  0;			/* Num Rows in Text Buffer */
 int ROWOFFSET  =  0;			/* Buffer Index of Top Row */
 int COLOFFSET  =  0;			/* Buffer Index of First Col */
@@ -82,23 +81,6 @@ void die( const char *s ) {
                           BUFFER STATUS
 *******************************************************************************/
 
-/* Set un-Named File to Default Filename */
-void setDefaultFilename( void ) {
-
-  strncpy( FILENAME, DEFAULTFILENAME, FNLENGTH );
-  return;
-}
-
-void setFilename( char *fn ) {
-
-  if( fn != FILENAME )
-    strncpy( FILENAME, fn, FNLENGTH-1 );
-}
-
-char *getBufferFilename( void ) {
-
-  return FILENAME;
-}
 
 int getEditBufferIndex() {
 
@@ -578,8 +560,8 @@ void eXtensionMenu() {
       }
     killBuffer();
     /* Open New Buffer */
-    miniBufferGetFilename( FILENAME, FNLENGTH );
-    openBufferFile( FILENAME );
+    openFile();
+    readBufferFile( getBufferFilename() );
     break;
     
   case CTRL_KEY('w'):                /* Save Buffer As */
@@ -795,7 +777,7 @@ void displaySplash( void ) {
   sleep(2);
 
   clear();
-  renderText( FILENAME, _sfname[ STATUSFLAG ], getWinNumRows()-2, getWinNumCols(), NUMROWS );
+  renderText( getBufferFilename(), _sfname[ STATUSFLAG ], getWinNumRows()-2, getWinNumCols(), NUMROWS );
 }
 
 
@@ -810,7 +792,7 @@ int main( int argc, char *argv[] ) {
   /* Open File or Display Splash */
   if( argc > 1 ) {
     setFilename( argv[1] ); 
-    openBufferFile( FILENAME );
+    readBufferFile( getBufferFilename() );
   }
   else {
     openEmptyBuffer( DEFAULT );
@@ -819,7 +801,7 @@ int main( int argc, char *argv[] ) {
   
   /* Process Key Presses */
   while( true ) {
-    renderText( FILENAME, _sfname[ STATUSFLAG ], getWinNumRows()-2, getWinNumCols(), NUMROWS );
+    renderText( getBufferFilename(), _sfname[ STATUSFLAG ], getWinNumRows()-2, getWinNumCols(), NUMROWS );
     processKeypress();
   } 
 

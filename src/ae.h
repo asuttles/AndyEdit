@@ -1,8 +1,6 @@
 #include <curses.h>
 #include <stdbool.h>
 
-#define FNLENGTH 128
-
 /* Text Line Data Structures */
 typedef struct {
   char  *txt;				/* Editor Text Line */
@@ -25,10 +23,6 @@ int getEditBufferIndex( void );
 char getEditBufferChar(int);
 void setEditBufferIndex( int );
 void setStatusFlagOriginal( void );
-
-void setDefaultFilename( void );
-void setFilename( char * );
-char *getBufferFilename( void );
 
 //
 void updateLine( void );

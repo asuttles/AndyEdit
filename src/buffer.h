@@ -8,7 +8,7 @@ enum _bn { DEFAULT, UNAMED };
 void initializeBuffer( void );
 buff_t getBufferHandle( void );
 void openEmptyBuffer( enum _bn );
-void openBufferFile( char * );
+void readBufferFile( char * );
 void saveBuffer( void );
 void saveBufferNewName( void );
 void doubleBufferSize( void );

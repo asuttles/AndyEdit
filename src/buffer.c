@@ -34,6 +34,7 @@
 #include "buffer.h"
 #include "minibuffer.h"
 #include "pointMarkRegion.h"
+#include "files.h"
 
 /* Module Constants */
 #define MXRWS 512			     /* Initial Buffer Size = 512 Rows */
@@ -133,7 +134,7 @@ void openEmptyBuffer( enum _bn bn ) {
 }
 
 /* Read A Text File from Disk */
-void openBufferFile( char * fn ) {
+void readBufferFile( char * fn ) {
 
   int i = 0;
   FILE *fp = NULL;
@@ -227,7 +228,7 @@ void saveBufferNewName( void ) {
 
   
   /* Get Filename to Write */
-  miniBufferGetFilename( fn, FNLENGTH );
+  miniBufferGetFilename();
 
   /* Open File for Editing */
   if(( fp = fopen( fn, "w" )) == NULL ) {

@@ -4,7 +4,7 @@
            / \   _ __   __| |_   _  | ____|__| (_) |_
           / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
          / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.3
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta
                              |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
@@ -30,11 +30,10 @@
 #include <stdlib.h>
 #include <curses.h>
 
-#include <readline/readline.h>
-
 #include "ae.h"
 #include "keyPress.h"
 #include "window.h"
+#include "files.h"
 
 char MINIBUFFER[MINIBUFFSIZE];		/* Minibuffer Input */
 
@@ -76,13 +75,13 @@ void miniBufferGetInput( const char *msg ) {
   refresh();
 
   /* Read Inputs */
-  int col = strlen( msg);
+  int strtCol = strlen( msg);
   int i = 0;
   
   while((( c = readKey()) != '\r' ) &&
         ( i < MINIBUFFSIZE - 1 )) {
 
-    mvaddch( mbRow, col+i, c );
+    mvaddch( mbRow, strtCol+i, c );
     MINIBUFFER[i++] = c;
     refresh();
   }
@@ -95,47 +94,11 @@ void miniBufferGetInput( const char *msg ) {
 
 
 /* Get a New Filename */
-void miniBufferGetFilename( char *fn, int fnLength ) {
+void miniBufferGetFilename( void ) {
 
-  int i, nameLen;
+  miniBufferGetInput( "Enter a New File Name: " );
+  setFilename( (char *)MINIBUFFER );
   
-  char *newFileName = NULL;
-  char message[ fnLength + 14 ];	/* User Message */
-  
-  int yMax = getWinNumCols();	        /* Size of Curses Window */
-
-  
-  /* End Curses & Clear garbage off of terminal */
-  endwin();
-  for( i=0; i<yMax; i++ ) printf( "\n" );
-  
-  /* Create a message for user */
-  printf( ">>>>> Enter a filename for buffer <<<<<\n\n" );
-  printf( "Press ENTER to accept default name.\n" );
-  printf( "Uses EMACS keybindings and TAB for autocompletion.\n\n" );
-
-  snprintf( message, fnLength + 14, "filename [%s] : ", fn );
-
-  /* Get the new filename */
-  if(( newFileName = readline( message )) == NULL )
-    die( "miniBufferGetFilename: readline failed" );
-
-  nameLen = strlen( newFileName );
-  
-  /* Save new non-default filename */
-  if( nameLen  > 0 ) {
-    
-    if( newFileName[ nameLen - 1 ] == ' ' )
-      newFileName[ nameLen - 1 ] = '\0';
-      
-    /* Set global FILENAME */
-    strncpy( fn, newFileName, strlen( newFileName ) + 1 );
-  }
-
-  free( newFileName );			
-
-  initializeTerminal();			/* Restart curses */
-
   return;
 }
 
