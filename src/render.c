@@ -58,8 +58,6 @@ void renderText(char *fn,	    /* Filename Rendered */
 
   for( row = 0; row < maxRows; row++ ) {
 
-    //thisRow = rowOffset+getPointY(); /* Row Containing POINT */
-    //thisCol = colOffset+getPointX();
     nextRow = row+rowOffset;	     /* Next Row to Process */
 
     if( nextRow < fileRows ) {        /* Write Buffer Text */
@@ -84,10 +82,12 @@ void renderText(char *fn,	    /* Filename Rendered */
           }
 
           if( inRegionP( nextRow, i+colOffset ))
-            attron( A_STANDOUT );
+            //attron( A_STANDOUT );
+	    attron( COLOR_PAIR( HIGHLT_BACKGROUND ));
           mvaddch( row, col, buff[nextRow]->txt[i+colOffset] );
           col++;
-          attroff( A_STANDOUT );
+	  attroff( COLOR_PAIR( HIGHLT_BACKGROUND ));
+          //attroff( A_STANDOUT );
         }
 
         /* Ignore Chars In Line Buffer Gap */
@@ -95,16 +95,19 @@ void renderText(char *fn,	    /* Filename Rendered */
                  buff[thisRow]->editP &&
                  i >= (int)buff[nextRow]->lPtr && 
                  i <  (int)buff[nextRow]->rPtr ) {
-          continue;
+
+	  continue;
         }
 
         /* Insert Line Buffer Chars */
         else {
           if( inRegionP( nextRow, i+colOffset ))
-            attron( A_STANDOUT );
+	    //attron( A_STANDOUT );
+	    attron( COLOR_PAIR( HIGHLT_BACKGROUND ));
           mvaddch( row, col, buff[nextRow]->txt[i+colOffset] );
           col++;
-          attroff( A_STANDOUT );
+          //attroff( A_STANDOUT );
+	  attroff( COLOR_PAIR( HIGHLT_BACKGROUND ));
         }
       }
     } 

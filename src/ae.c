@@ -388,7 +388,7 @@ void combineLineWithPrior() {
   char *tmp;
         
   /* Allocate Memory for Combined String */
-  int preLineLen = buff[thisRow()-1]->len;
+  int preLineLen = buff[thisRow()-1]->len - 1;
   int nxtLineLen = buff[thisRow()]->len;
   int size       = preLineLen + nxtLineLen + 1;
 
@@ -415,7 +415,7 @@ void combineLineWithPrior() {
   setPointX( preLineLen );
 }
 
-void backspace() {
+void backspace( void ) {
 
   int PtX     = getPointX();
   buff_t buff = getBufferHandle();

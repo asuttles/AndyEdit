@@ -43,6 +43,18 @@ WINDOW *getWindowHandle() {
 }
 
 
+static void _initColor( void ) {
+
+  start_color();
+
+  init_pair( NORMAL_BACKGROUND, COLOR_WHITE, COLOR_BLACK );
+  init_pair( HIGHLT_BACKGROUND, COLOR_WHITE, COLOR_BLUE );
+  
+  return;
+}
+
+
+
 /* Prepare tty for Raw nCurses Input */
 void initializeTerminal() {
 
@@ -70,6 +82,13 @@ void initializeTerminal() {
     die( "initializeterminal: raw" );
   }
 
+  if( has_colors() == FALSE ) {
+    die( "Teminal Does Not Support Color" );
+  }
+  else {
+    _initColor();
+  }
+  
   timeout(100);
 }
 

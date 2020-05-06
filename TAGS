@@ -36,12 +36,12 @@ void autoIndent(267,6831
 void openLine(299,7409
 void killWord(364,9030
 void combineLineWithPrior(381,9411
-void backspace(418,10292
-void metaMenu(469,11442
-void eXtensionMenu(517,12397
-void processKeypress(589,14014
-void displaySplash(767,18251
-int main(786,18713
+void backspace(418,10296
+void metaMenu(469,11452
+void eXtensionMenu(517,12407
+void processKeypress(589,14024
+void displaySplash(767,18261
+int main(786,18723
 
 src/files.c,278
 #define DEFAULTFILENAME 39,1428
@@ -96,7 +96,7 @@ void setRegionActive(110,2992
 bool regionActiveP(115,3056
 bool inRegionP(121,3150
 static void _removeText(183,4371
-void killRegion(252,5697
+void killRegion(258,5840
 
 src/statusBar.c,72
 static char statusLine[statusLine33,1282
@@ -105,24 +105,25 @@ void drawStatusLine(41,1540
 src/keyPress.c,21
 int readKey(37,1462
 
-src/window.c,221
+src/window.c,255
 static WINDOW *WIN;WIN30,1248
 void closeEditor(33,1310
 WINDOW *getWindowHandle(getWindowHandle40,1394
-void initializeTerminal(47,1481
-int getWinNumCols(77,2194
-int getWinNumRows(81,2250
-int getWinThisCol(85,2306
+static void _initColor(46,1441
+void initializeTerminal(59,1670
+int getWinNumCols(96,2498
+int getWinNumRows(100,2554
+int getWinThisCol(104,2610
 
 src/minibuffer.c,266
 #define MINIBUFFSIZE 26,1202
-char MINIBUFFER[MINIBUFFER40,1418
-void miniBufferMessage(48,1686
-void miniBufferClear(58,1874
-void miniBufferGetInput(69,2039
-void miniBufferGetFilename(99,2600
-int miniBufferGetPosInteger(148,4006
-bool miniBufferGetYN(157,4156
+char MINIBUFFER[MINIBUFFER38,1386
+void miniBufferMessage(46,1654
+void miniBufferClear(56,1842
+void miniBufferGetInput(67,2007
+void miniBufferGetFilename(97,2568
+int miniBufferGetPosInteger(106,2745
+bool miniBufferGetYN(115,2895
 
 src/navigation.c,396
 #define screenRows(36,1393
@@ -150,13 +151,15 @@ enum _bn 5,94
 enum _bn { DEFAULT,5,94
 enum _bn { DEFAULT, UNAMED 5,94
 
-src/ae.h,124
-  char  *txt;txt6,91
-  size_t len;7,131
-  size_t lPtr;8,169
-  size_t rPtr;9,209
-  bool   editP;10,224
-} row_t;11,275
+src/ae.h,193
+#define NORMAL_BACKGROUND 4,42
+#define HIGHLT_BACKGROUND 5,70
+  char  *txt;txt11,150
+  size_t len;12,190
+  size_t lPtr;13,228
+  size_t rPtr;14,268
+  bool   editP;15,283
+} row_t;16,334
 
 src/files.h,22
 #define FNLENGTH 1,0

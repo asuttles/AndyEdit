@@ -1,6 +1,11 @@
 #include <curses.h>
 #include <stdbool.h>
 
+#define NORMAL_BACKGROUND 0
+#define HIGHLT_BACKGROUND 1
+
+
+
 /* Text Line Data Structures */
 typedef struct {
   char  *txt;				/* Editor Text Line */
@@ -26,3 +31,4 @@ void setStatusFlagOriginal( void );
 
 //
 void updateLine( void );
+void combineLineWithPrior( void );

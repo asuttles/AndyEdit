@@ -237,7 +237,13 @@ static void _removeText( int strt_Col, int strt_Row,
       else {
 	buff[row]->lPtr = 0;
 	buff[row]->rPtr = stop_Col;
+
+	/* Delete Line Up to Mark */
+	setPointY( row );
 	updateLine();
+
+	/* Combine With First Line, IFF Not Deleted */
+	if( strt_Col > 0 ) combineLineWithPrior();
 	++row;
       }
     }
