@@ -39,19 +39,19 @@ void combineLineWithPrior(381,9411
 void backspace(418,10296
 void metaMenu(469,11452
 void eXtensionMenu(517,12407
-void processKeypress(589,14024
-void displaySplash(767,18261
-int main(786,18723
+void processKeypress(589,14031
+void displaySplash(767,18268
+int main(786,18730
 
 src/files.c,278
-#define DEFAULTFILENAME 39,1428
-static char FILENAME[FILENAME42,1468
-void setDefaultFilename(50,1786
-void setFilename(56,1884
-char *getBufferFilename(getBufferFilename62,1989
-int _getMenuChoice(72,2257
-static void _checkFileOrDirectory(103,2810
-void openFile(126,3232
+#define DEFAULTFILENAME 40,1448
+static char FILENAME[FILENAME43,1488
+void setDefaultFilename(51,1806
+void setFilename(57,1904
+char *getBufferFilename(getBufferFilename63,2009
+int _getMenuChoice(73,2277
+static void _checkFileOrDirectory(104,2830
+bool openFile(140,3509
 
 src/buffer.c,680
 #define _POSIX_C_SOURCE 26,1197

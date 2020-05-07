@@ -4,4 +4,4 @@ void setDefaultFilename( void );
 void setFilename( const char * );
 char *getBufferFilename( void );
 
-void openFile( void );
+bool openFile( void );

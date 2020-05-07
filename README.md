@@ -23,9 +23,9 @@ To download:
 > git clone https://github.com/asuttles/AndyEdit.git
 
 
-From the top-level directory, simply type 'make' to compile the editor:
+From the top-level directory, simply type 'make' to install the editor:
 
-> make
+> make install
 
 
 ## Prerequisites
@@ -34,35 +34,35 @@ The AndyEdit editor requires the ncurses library be installed for terminal rende
 
 AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems.
 
-AndyEdit is being developed using the LLVM CLANG compiler and ncurses 5.7 on OpenBSD 6.6.
+AndyEdit is being developed using the LLVM clang compiler and ncurses 5.7 on OpenBSD 6.6.
+AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void Linux 5.4
 
-     ________________ 
-    < AE on OpenBSD! >
-      --------------- 
-       \
-        \
-                   |    . 
-               .   |L  /|
-           _ . |\ _| \--+._/| .  
-          / ||\| Y J  )   / |/| ./    
-         J  |)'( |        ` F`.'/
-       -<|  F         __     .-<    
-         | /       .-'. `.  /-. L___ 
-         J \      <    \  | | O\|.-' 
-       _J \  .-    \/ O | | \  |F    
-      '-F  -<_.     \   .-'  `-' L__ 
-     __J  _   _.     >-'  )._.   |-' 
-     `-|.'   /_.           \_|   F 
-       /.-   .                _.<  
-      /'    /.'             .'  `\
-       /L  /'   |/      _.-'-\      
-      /'J       ___.---'\|             
-        |\  .--' V  | `. `          
-        |/`. `-.     `._)           
-           / .-.\                      
-           \ (  `\                  
-            `.\                     
-
+   ________________                    
+  < AE on OpenBSD! >              
+    ---------------                 
+     \                              
+      \
+                 |    . 
+             .   |L  /|
+         _ . |\ _| \--+._/| .       
+        / ||\| Y J  )   / |/| ./    
+       J  |)'( |        ` F`.'/     
+     -<|  F         __     .-<      
+       | /       .-'. `.  /-. L___  
+       J \      <    \  | | O\|.-'  
+     _J \  .-    \/ O | | \  |F     
+    '-F  -<_.     \   .-'  `-' L__  
+   __J  _   _.     >-'  )._.   |-'  
+   `-|.'   /_.           \_|   F    
+     /.-   .                _.<     
+    /'    /.'             .'  `\    
+     /L  /'   |/      _.-'-\        
+    /'J       ___.---'\|            
+      |\  .--' V  | `. `            
+      |/`. `-.     `._)             
+         / .-.\                     
+         \ (  `\                    
+          `.\                     
 
 ## Versioning
 

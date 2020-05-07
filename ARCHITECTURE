@@ -8,10 +8,11 @@ pointMarkRegion  - Manage Cursor, Mark and Region Operations
 buffer           - Manage the Text Buffer, Add/Delete Lines, etc.
 render           - Display the Text File in Editor Window
 window           - Update Curses Window
+navigation       - Move the point around in the buffer window
+files            - Open/Close/Save Files
 
 editorState
 
 
 TODO
-Update License or remove getline()
-Convert size_t to int
+Replace size_t with int

@@ -560,8 +560,8 @@ void eXtensionMenu() {
       }
     killBuffer();
     /* Open New Buffer */
-    openFile();
-    readBufferFile( getBufferFilename() );
+    if( openFile() )
+      readBufferFile( getBufferFilename() );
     break;
     
   case CTRL_KEY('w'):                /* Save Buffer As */

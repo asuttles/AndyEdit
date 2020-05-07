@@ -31,9 +31,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "keyPress.h"
-#include "minibuffer.h"
 #include "ae.h"
+#include "keyPress.h"
+#include "buffer.h"
+#include "minibuffer.h"
 #include "files.h"
 
 #define DEFAULTFILENAME "newfile.txt"
@@ -115,7 +116,7 @@ static void _checkFileOrDirectory( void ) {
     if( chdir( FILENAME ) == ERR ) {
       die( "Cannot Chdir" );
     }
-      
+    
     openFile();
   }
 
@@ -123,7 +124,20 @@ static void _checkFileOrDirectory( void ) {
 }
 
 
-void openFile( void ) {
+/**
+   OpenFile
+   Display a menu:
+
+   Options:
+      + New File = Create a New File
+      + File     = Open File
+      + Dir      = Navigate to DIR
+
+   Return:
+      Returns TRUE if a new file needs to be read
+      into a text buffer; false otherwise.
+ **/
+bool openFile( void ) {
 
   int i, choice, countFiles;
   ITEM **items;
@@ -143,24 +157,22 @@ void openFile( void ) {
   rewinddir( dp );
 
   /* Allocate NULL-initialized Heap Space for Item Array */
-  items = (ITEM **)calloc( countFiles+1, sizeof( ITEM * ));
+  items = (ITEM **)calloc( countFiles+2, sizeof( ITEM * ));
 
-  // Create NEW File Option with line break...
+  /* Create NEW File */
+  items[0] = new_item( "New File", "Create a New Text File" );
   
   /* Save Each Menu Item Into Menu Structure */
-  for( i=0; i<countFiles; i++ ) {
+  for( i=1; i<countFiles+1; i++ ) {
     entry = readdir( dp );
     items[i] = new_item( entry->d_name, NULL ); // entry->d_name );
   }
-  items[countFiles] = (ITEM *)NULL;
+  items[countFiles+1] = (ITEM *)NULL;
 
   /* Create the Menu */
   menu = new_menu( (ITEM **)items );
   set_menu_mark( menu, "->" );
 
-  // Decoreate Menu
-  // http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/menus.html
-  
   /* Display it */
   post_menu( menu );
   refresh();
@@ -168,10 +180,11 @@ void openFile( void ) {
   /* Read Menu Inputs */
   choice = _getMenuChoice( menu );
 
-  setFilename( item_name( items[choice] ));
+  if( choice > 0 ) 
+    setFilename( item_name( items[choice] ));
   
   /* Free Menu Memory */
-  for( i=0; i<=countFiles; i++ ) {
+  for( i=0; i<=countFiles+1; i++ ) {
     free_item( items[i] );
   }
   free_menu( menu );
@@ -179,9 +192,20 @@ void openFile( void ) {
   closedir( dp );
 
   clear();
-  
-  _checkFileOrDirectory();
+
+  if( choice < 0 ) {			     /* Cancel Selection */
+    return false;
+  }
+  else if( choice > 0 ) {		     /* Open File */
+    _checkFileOrDirectory();
+    return true;
+  }
+  else {				     /* Create New File */
+    killBuffer();
+    return false;
+  }
 }
+
 
 
 /***
