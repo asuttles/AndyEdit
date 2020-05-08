@@ -1,11 +1,11 @@
 /***
 ==========================================================================================
-            _              _         _____    _ _ _
-           / \   _ __   __| |_   _  | ____|__| (_) |_
-          / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
-         / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.3
-                             |___/
+                      _              _         _____    _ _ _
+                     / \   _ __   __| |_   _  | ____|__| (_) |_
+                    / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
+                   / ___ \| | | | (_| | |_| | | |__| (_| | | |_
+                  /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta
+                                       |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
         MIT LICENSE
@@ -42,11 +42,29 @@
 /* Module Private Data */
 row_t **BUFFER = NULL;			     /* File Buffer */
 static int MAXROWS  = MXRWS;		     /* MAX Number of Buffer Lines */
+static int NUMROWS  = 0;		     /* Num Rows in Text Buffer */
 
 
-/*******************************************************************************
-				       TAB Handling
-*******************************************************************************/
+/*****************************************************************************************
+				       BUFFER ROWS
+*****************************************************************************************/
+
+/* Update the Number of Lines in Buffer File */
+void setBufferNumRows( int x ) {
+
+  NUMROWS = x;
+}
+
+/* Get Number of Rows In Buffer File */
+int getBufferNumRows( void ) {
+
+  return NUMROWS;
+}
+
+
+/*****************************************************************************************
+				       TAB HANDLING
+*****************************************************************************************/
 
 /* Convert Tabs to Spaces */
 static char *removeTabs( char *line ) {
@@ -93,9 +111,9 @@ static char *removeTabs( char *line ) {
   return newline;		       /* Save New Line */
 }
 
-/*******************************************************************************
-				    Buffer Management
- *******************************************************************************/
+/*****************************************************************************************
+				    BUFFER MANAGEMENT
+ *****************************************************************************************/
 
 /* Setup Buffer Data Structure */
 void initializeBuffer( void ) {
@@ -130,7 +148,7 @@ void openEmptyBuffer( enum _bn bn ) {
   if( bn == DEFAULT )
     setDefaultFilename();
 
-  setNumRows( 1 );
+  setBufferNumRows( 1 );
 }
 
 /* Read A Text File from Disk */
@@ -182,7 +200,7 @@ void readBufferFile( char * fn ) {
     i++;                        /* Line Counter */
   }
   
-  setNumRows( i );
+  setBufferNumRows( i );
 
   fclose(fp);
 }
@@ -287,7 +305,7 @@ void closeBuffer( void ) {
   BUFFER = (buff_t)NULL;
 
   MAXROWS    = MXRWS;
-  setNumRows( 0 );
+  setBufferNumRows( 0 );
   setPointX( 0 );
   setPointY( 0 );
   setMarkX( -1 );
@@ -318,9 +336,9 @@ void killBuffer( void ) {
 
 }
 
-/*******************************************************************************
-				    BUFFER Properties
-*******************************************************************************/
+/*****************************************************************************************
+				    BUFFER PROPERTIES
+*****************************************************************************************/
 int getBufferLineLen( int row ) {
 
   return BUFFER[row]->len;
@@ -346,10 +364,24 @@ void setBufferRowEdited( int row, bool pred ) {
   BUFFER[row]->editP = pred;
 }
 
+int getBufferGapRightIndex( int row ) {
 
-/*******************************************************************************
-				   Modify BUFFER Lines
-*******************************************************************************/
+  return BUFFER[row]->rPtr;
+}
+
+int getBufferGapLeftIndex( int row ) {
+
+  return BUFFER[row]->lPtr;
+}
+
+int getBufferGapSize( int row ) {
+  
+  return BUFFER[row]->rPtr - BUFFER[row]->lPtr;
+}
+
+/*****************************************************************************************
+				   MODIFY BUFFER LINES
+*****************************************************************************************/
 
 /* Free row_t */
 void freeBufferLine( int row ) {
@@ -364,12 +396,25 @@ void freeBufferLine( int row ) {
     BUFFER[i] = BUFFER[i+1];
   }
 
-  setNumRows( --nRows );
+  setBufferNumRows( --nRows );
 }
 
-/*******************************************************************************
-				  EDIT BUFFER Properties
-*******************************************************************************/
+/* Replace Text String in Buffer Line */
+void replaceBufferLineText( int row, int newLen, char *newTxt ) {
+
+  free( BUFFER[row]->txt );
+  BUFFER[row]->txt  = newTxt;
+  BUFFER[row]->len  = newLen;
+  BUFFER[row]->lPtr = 0;
+  BUFFER[row]->rPtr = 0;
+
+  return;
+}
+
+
+/*****************************************************************************************
+				  EDIT BUFFER PROPERTIES
+*****************************************************************************************/
 void setEditBufferPtrs( int row, int left, int right ) {
 
   BUFFER[row]->lPtr = left;

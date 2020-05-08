@@ -21,8 +21,8 @@ int getRowOffset( void );
 int getColOffset( void );
 void setRowOffset( int );
 void setColOffset( int );
-void setNumRows( int );
-int getBufferNumRows( void );
+void setBufferNumRows( int );
+int  getBufferNumRows( void );
 
 int getEditBufferIndex( void );
 char getEditBufferChar(int);
@@ -30,5 +30,4 @@ void setEditBufferIndex( int );
 void setStatusFlagOriginal( void );
 
 //
-void updateLine( void );
 void combineLineWithPrior( void );

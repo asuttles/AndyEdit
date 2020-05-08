@@ -101,7 +101,7 @@ int _getMenuChoice( MENU *menu ) {
 }
 
 
-static void _checkFileOrDirectory( void ) {
+static bool _checkFileOrDirectory( void ) {
 
   struct stat sb;
 
@@ -117,14 +117,16 @@ static void _checkFileOrDirectory( void ) {
       die( "Cannot Chdir" );
     }
     
-    openFile();
+    return openFile();
   }
 
-  return;
+  /* FILENAME is NOT a Dir */
+  return true;
 }
 
 
-/**
+/***
+   -------------------------------------------------------- 
    OpenFile
    Display a menu:
 
@@ -136,7 +138,8 @@ static void _checkFileOrDirectory( void ) {
    Return:
       Returns TRUE if a new file needs to be read
       into a text buffer; false otherwise.
- **/
+   --------------------------------------------------------
+***/
 bool openFile( void ) {
 
   int i, choice, countFiles;
@@ -163,9 +166,11 @@ bool openFile( void ) {
   items[0] = new_item( "New File", "Create a New Text File" );
   
   /* Save Each Menu Item Into Menu Structure */
-  for( i=1; i<countFiles+1; i++ ) {
+  for( i=1; i<=countFiles; i++ ) {
     entry = readdir( dp );
-    items[i] = new_item( entry->d_name, NULL ); // entry->d_name );
+    items[i] = new_item( entry->d_name, 
+			 (( i == 1) || ( i == countFiles )) ?
+			 " - " : " . " );
   }
   items[countFiles+1] = (ITEM *)NULL;
 
@@ -197,8 +202,7 @@ bool openFile( void ) {
     return false;
   }
   else if( choice > 0 ) {		     /* Open File */
-    _checkFileOrDirectory();
-    return true;
+    return _checkFileOrDirectory();
   }
   else {				     /* Create New File */
     killBuffer();

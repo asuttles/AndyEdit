@@ -34,6 +34,7 @@
 #include "minibuffer.h"
 #include "ae.h"
 #include "buffer.h"
+#include "state.h"
 
 /* Private State Data */
 bool REGIONP   = false;			/* Is Region Active? */

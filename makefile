@@ -4,7 +4,7 @@ vpath %.h src
 # Source Code
 SRC=ae.c keyPress.c minibuffer.c statusBar.c \
     pointMarkRegion.c render.c buffer.c \
-    window.c navigation.c files.c
+    window.c navigation.c files.c state.c
 CFLAGS=-Wall -Wextra -pedantic -std=c99
 
 # Object Files
@@ -27,16 +27,18 @@ debug: ae tags
 
 # Header Dependencies
 ae.o : keyPress.h minibuffer.h pointMarkRegion.h render.h \
-       buffer.h window.h files.h
-keyPress.o : ae.h
-minibuffer.o : ae.h keyPress.h
-statusBar.o : ae.h
-pointMarkRegion.o : minibuffer.h ae.h
+       buffer.h window.h navigation.h files.h state.h \
+       state.h
+keyPress.o : ae.h window.h
+minibuffer.o : ae.h keyPress.h window.h files.h
+statusBar.o : window.h
+pointMarkRegion.o : minibuffer.h ae.h buffer.h state.h
 render.o : ae.h statusBar.h pointMarkRegion.h buffer.h
-buffer.o : ae.h minibuffer.h pointMarkRegion.h
+buffer.o : ae.h minibuffer.h pointMarkRegion.h files.h
 window.o : ae.h
-navigation.o : ae.h buffer.h window.h pointMarkRegion.h
-files.o : ae.h keyPress.h minibuffer.h 
+navigation.o : ae.h buffer.h window.h pointMarkRegion.h minibuffer.h
+files.o : ae.h keyPress.h buffer.h minibuffer.h files.h
+state.o : ae.h pointMarkRegion.h buffer.h
 
 # Targets
 .phony: install tags
