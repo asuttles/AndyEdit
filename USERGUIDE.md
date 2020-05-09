@@ -23,7 +23,7 @@ See [README](README.md) for information on how to compile ae.
 * F1      - Keymap Help
 * F10     - Exit
 
-### CTRL Modifier (c-k)
+### CTRL Modifier (control+key)
 * C-a     - Start of Line
 * C-b     - Back Char
 * C-c     -
@@ -52,7 +52,7 @@ See [README](README.md) for information on how to compile ae.
 * C-z     - 
 * C-SPACE - Set Mark
 
-### eXtension Keybindings (c-x k)
+### eXtension Keybindings (control+x key)
 * C-x C-x - Swap Point and Mark
 * C-x C-c - Close AE
 * C-x k   - Kill Buffer
@@ -61,7 +61,7 @@ See [README](README.md) for information on how to compile ae.
 * C-x C-v - Find Alternate File
 * C-x C-f - Find File
 
-### Alt-Key Keybindings (a-k)
+### Alt-Key Keybindings (alt+key)-
 * a-f     - Forward Word
 * a-b     - Backward Word
 * a-d     - Delete Word

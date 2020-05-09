@@ -37,36 +37,16 @@ AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems
 AndyEdit is being developed using the LLVM clang compiler and ncurses 5.7 on OpenBSD 6.6.
 AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void Linux 5.4
 
-   ________________                    
-  < AE on OpenBSD! >              
-    ---------------                 
-     \                              
-      \
-                 |    . 
-             .   |L  /|
-         _ . |\ _| \--+._/| .       
-        / ||\| Y J  )   / |/| ./    
-       J  |)'( |        ` F`.'/     
-     -<|  F         __     .-<      
-       | /       .-'. `.  /-. L___  
-       J \      <    \  | | O\|.-'  
-     _J \  .-    \/ O | | \  |F     
-    '-F  -<_.     \   .-'  `-' L__  
-   __J  _   _.     >-'  )._.   |-'  
-   `-|.'   /_.           \_|   F    
-     /.-   .                _.<     
-    /'    /.'             .'  `\    
-     /L  /'   |/      _.-'-\        
-    /'J       ___.---'\|            
-      |\  .--' V  | `. `            
-      |/`. `-.     `._)             
-         / .-.\                     
-         \ (  `\                    
-          `.\                     
-
 ## Versioning
 
 Latest Release: 0.3 (23APR20)
+
+### Release 0.4 [IN WORK]
+  - Removed GPL-licensed getline() utility
+  - Updated file open/close menu functionality
+  - Fully modularized the source tree for maintenance
+    See [ARCHITECTURE](ARCHITECTURE) for details on the architecture
+  - Cleaned up all memory leaks
 
 ### Release 0.3
   - Kill Word
