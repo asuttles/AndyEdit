@@ -17,12 +17,6 @@ typedef struct {
 
 /* Public Definitions */
 void die( const char * );	 /* Print Die Message on Failure */
-int getRowOffset( void );
-int getColOffset( void );
-void setRowOffset( int );
-void setColOffset( int );
-void setBufferNumRows( int );
-int  getBufferNumRows( void );
 
 int getEditBufferIndex( void );
 char getEditBufferChar(int);

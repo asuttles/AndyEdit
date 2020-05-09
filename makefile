@@ -13,6 +13,16 @@ OBJS=$(SRC:.c=.o)
 # Libraries
 LIBS=-lcurses -lreadline -lmenu
 
+# Header Dependencies
+default: .depend debug
+
+.depend: $(SRC)
+	rm -f ./.depend
+	$(CC) $(CFLAGS) -MM $^>>./.depend
+
+include .depend
+
+
 # Build Files
 ae: $(OBJS)
 	$(CC) -o $@ $^ $(LIBS)
@@ -23,22 +33,7 @@ ae: $(OBJS)
 
 # Debugging
 debug: CFLAGS += -g -O0 -DDEBUG
-debug: ae tags
-
-# Header Dependencies
-ae.o : keyPress.h minibuffer.h pointMarkRegion.h render.h \
-       buffer.h window.h navigation.h files.h state.h \
-       state.h
-keyPress.o : ae.h window.h
-minibuffer.o : ae.h keyPress.h window.h files.h
-statusBar.o : window.h
-pointMarkRegion.o : minibuffer.h ae.h buffer.h state.h
-render.o : ae.h statusBar.h pointMarkRegion.h buffer.h
-buffer.o : ae.h minibuffer.h pointMarkRegion.h files.h state.h
-window.o : ae.h
-navigation.o : ae.h buffer.h window.h pointMarkRegion.h minibuffer.h
-files.o : ae.h keyPress.h buffer.h minibuffer.h files.h
-state.o : ae.h pointMarkRegion.h buffer.h minibuffer.h
+debug: ae tags .depend
 
 # Targets
 .phony: install tags
@@ -50,5 +45,5 @@ tags:
 	@ls -l TAGS
 
 install: CFLAGS += -O2 -DNDEBUG
-install: ae 
+install: ae .depend
 	mv ae ~/bin

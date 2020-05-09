@@ -44,13 +44,11 @@
 /* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
-#define thisRow() (ROWOFFSET + getPointY())
-#define thisCol() (COLOFFSET + getPointX())
+#define thisRow() (getRowOffset() + getPointY())
+#define thisCol() (getColOffset() + getPointX())
 #define screenRows() (getWinNumRows() - 3)
 
-/* Global Data */
-int ROWOFFSET  =  0;			/* Buffer Index of Top Row */
-int COLOFFSET  =  0;			/* Buffer Index of First Col */
+/* EDIT BUFFER */
 static char EDITBUFFER[64];		/* Edit Buffer For Text Input */
 static int  EBINDEX   =  0;		/* Edit Buffer Index */
 
@@ -87,25 +85,6 @@ void setEditBufferIndex( int x ) {
 
   EBINDEX = x;
 }
-
-/*****************************************************************************************
-				       EDITOR STATE
-*****************************************************************************************/
-
-/* Get/Set Row/Col Offset for Nav Functions */
-int getRowOffset( void ) {
-  return ROWOFFSET;
-}
-int getColOffset( void ) {
-  return COLOFFSET;
-}
-void setRowOffset( int ro ) {
-  ROWOFFSET = ro;
-}
-void setColOffset( int co ) {
-  COLOFFSET = co;
-}
-
 
 /*****************************************************************************************
 				       INSERT CHARS
@@ -256,7 +235,7 @@ void openLine() {
   /* Move Point */
   setPointX( 0 );
   if( PtY == screenRows() )
-    ROWOFFSET++;
+    setRowOffset( getRowOffset() + 1 );
   else
     setPointY( ++PtY );
 
@@ -407,8 +386,8 @@ void metaMenu() {
     updateNavigationState();
     setPointY( 0 );
     setPointX( 0 );
-    COLOFFSET = 0;
-    ROWOFFSET = 0;
+    setColOffset( 0 );
+    setRowOffset( 0 );
     break;
 
   case '>':                           /* End of Buffer */
@@ -484,7 +463,7 @@ void eXtensionMenu() {
     updateNavigationState();
     swapPointAndMark();
     if(( getPointY() < 0 ) ||
-       ( getPointY() > ( ROWOFFSET + screenRows())))
+       ( getPointY() > ( getRowOffset() + screenRows())))
       centerLine();
     break;
   }
@@ -539,8 +518,8 @@ void processKeypress() {
     updateNavigationState();
     setPointY( 0 );
     setPointX( 0 );
-    COLOFFSET = 0;
-    ROWOFFSET = 0;
+    setColOffset( 0 );
+    setRowOffset( 0 );
     break;
   case CTRL_KEY('l'):			     /* Center Line */
     updateNavigationState();
@@ -554,7 +533,7 @@ void processKeypress() {
   case CTRL_KEY('a'):			     /* Point BOL */
     updateNavigationState();
     setPointX( 0 );
-    COLOFFSET = 0;
+    setColOffset( 0 );
     break;
   case CTRL_KEY('f'):			     /* Point Forward */
   case KEY_RIGHT:

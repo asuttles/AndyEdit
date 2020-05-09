@@ -1,0 +1,20 @@
+ae.o: src/ae.c src/ae.h src/keyPress.h src/minibuffer.h \
+ src/pointMarkRegion.h src/render.h src/buffer.h src/window.h \
+ src/navigation.h src/files.h src/state.h
+keyPress.o: src/keyPress.c src/ae.h src/window.h
+minibuffer.o: src/minibuffer.c src/ae.h src/keyPress.h src/window.h \
+ src/files.h
+statusBar.o: src/statusBar.c src/window.h
+pointMarkRegion.o: src/pointMarkRegion.c src/minibuffer.h src/ae.h \
+ src/buffer.h src/state.h
+render.o: src/render.c src/ae.h src/state.h src/statusBar.h \
+ src/pointMarkRegion.h src/buffer.h
+buffer.o: src/buffer.c src/ae.h src/buffer.h src/minibuffer.h \
+ src/pointMarkRegion.h src/files.h src/state.h
+window.o: src/window.c src/ae.h
+navigation.o: src/navigation.c src/ae.h src/state.h src/buffer.h \
+ src/window.h src/pointMarkRegion.h src/minibuffer.h
+files.o: src/files.c src/ae.h src/keyPress.h src/buffer.h \
+ src/minibuffer.h src/files.h
+state.o: src/state.c src/ae.h src/pointMarkRegion.h src/buffer.h \
+ src/minibuffer.h

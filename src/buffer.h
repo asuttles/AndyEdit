@@ -8,7 +8,6 @@ enum _bn { DEFAULT, UNAMED };
 void setBufferNumRows( int );
 int getBufferNumRows( void );
 
-
 /* Buffer Management */
 void initializeBuffer( void );
 buff_t getBufferHandle( void );

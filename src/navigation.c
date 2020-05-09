@@ -24,8 +24,10 @@
 ==========================================================================================
  ***/
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "ae.h"
+#include "state.h"
 #include "buffer.h"
 #include "window.h"
 #include "pointMarkRegion.h"

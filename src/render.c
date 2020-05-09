@@ -24,6 +24,7 @@
 ==========================================================================================
  ***/
 #include "ae.h"
+#include "state.h"
 #include "statusBar.h"
 #include "pointMarkRegion.h"
 #include "buffer.h"

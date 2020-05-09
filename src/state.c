@@ -35,6 +35,9 @@
 #define thisRow() (getRowOffset() + getPointY())
 #define thisCol() (getColOffset() + getPointX())
 
+/* Global Data */
+static int ROWOFFSET  =  0;		     /* Buffer Index of Top Row */
+static int COLOFFSET  =  0;		     /* Buffer Index of First Col */
 
 /* Buffer Status Flag */
 enum _sf { ORIGINAL, MODIFIED, READONLY };
@@ -42,7 +45,6 @@ static const char _sfname[3][9] = { "ORIGINAL", "MODIFIED", "READONLY" };
 
 /* Is Buffer Modified? */
 static enum _sf STATUSFLAG = ORIGINAL;		
-
 
 /*****************************************************************************************
 				  GET/SET BUFFER STATUS
@@ -67,6 +69,23 @@ char *getStatusFlagName( void ) {
   return (char *)_sfname[ STATUSFLAG ];
 }
 
+/*****************************************************************************************
+				 GET/SET ROW/COL OFFSETS
+*****************************************************************************************/
+
+/* Get/Set Row/Col Offset for Nav Functions */
+int getRowOffset( void ) {
+  return ROWOFFSET;
+}
+int getColOffset( void ) {
+  return COLOFFSET;
+}
+void setRowOffset( int ro ) {
+  ROWOFFSET = ro;
+}
+void setColOffset( int co ) {
+  COLOFFSET = co;
+}
 
 /*****************************************************************************************
 				    UPDATE LINE EDITS
@@ -120,7 +139,8 @@ void updateLine( void ) {
   setEditBufferIndex( 0 );
 }
 
-/* Edit Line */
+
+/* Update Edit Line State */
 void updateEditState( void ) {
 
   setBufferRowEdited( thisRow(), true );
@@ -129,7 +149,7 @@ void updateEditState( void ) {
 
 
 /*****************************************************************************************
-				 UPDATE NAVIGATION STATE
+			    UPDATE LINE EDITS AFTER NAVIGATION
 *****************************************************************************************/
 
 /* Cursor Movement Functions */
