@@ -29,6 +29,7 @@
 #include "ae.h"
 #include "pointMarkRegion.h"
 #include "buffer.h"
+#include "minibuffer.h"
 
 /* Useful Macros */
 #define thisRow() (getRowOffset() + getPointY())
@@ -119,10 +120,34 @@ void updateLine( void ) {
   setEditBufferIndex( 0 );
 }
 
+/* Edit Line */
+void updateEditState( void ) {
+
+  setBufferRowEdited( thisRow(), true );
+  setStatusFlagModified();
+}
+
+
+/*****************************************************************************************
+				 UPDATE NAVIGATION STATE
+*****************************************************************************************/
+
+/* Cursor Movement Functions */
+void updateNavigationState( void ) {
+
+  if( bufferRowEditedP( thisRow() ))
+    updateLine();
+
+  setBufferRowEdited( thisRow(), false );
+  
+  miniBufferClear();
+}
+
 
 /***
     Local Variables:
     mode: c
+    tags-file-name: "~/ae/TAGS"
     comment-column: 45
     fill-column: 90
     End:

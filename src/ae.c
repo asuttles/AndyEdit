@@ -92,24 +92,6 @@ void setEditBufferIndex( int x ) {
 				       EDITOR STATE
 *****************************************************************************************/
 
-/* Cursor Movement Functions */
-void updateNavigationState() {
-
-  if( bufferRowEditedP( thisRow() ))
-    updateLine();
-
-  setBufferRowEdited( thisRow(), false );
-  
-  miniBufferClear();
-}
-
-/* Edit Line */
-void updateEditState() {
-
-  setBufferRowEdited( thisRow(), true );
-  setStatusFlagModified();
-}
-
 /* Get/Set Row/Col Offset for Nav Functions */
 int getRowOffset( void ) {
   return ROWOFFSET;
@@ -738,6 +720,7 @@ int main( int argc, char *argv[] ) {
 /***
     Local Variables:
     mode: c
+    tags-file-name: "~/ae/TAGS"
     comment-column: 45
     fill-column: 90
     End:

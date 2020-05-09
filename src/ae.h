@@ -27,7 +27,6 @@ int  getBufferNumRows( void );
 int getEditBufferIndex( void );
 char getEditBufferChar(int);
 void setEditBufferIndex( int );
-void setStatusFlagOriginal( void );
 
 //
 void combineLineWithPrior( void );

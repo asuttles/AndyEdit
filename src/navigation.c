@@ -312,10 +312,10 @@ void jumpToLine( void ) {
   }
 }
 
-
 /***
     Local Variables:
     mode: c
+    tags-file-name: "~/ae/TAGS"
     comment-column: 45
     fill-column: 90
     End:

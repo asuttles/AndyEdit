@@ -35,6 +35,7 @@
 #include "minibuffer.h"
 #include "pointMarkRegion.h"
 #include "files.h"
+#include "state.h"
 
 /* Module Constants */
 #define MXRWS 512			     /* Initial Buffer Size = 512 Rows */
@@ -425,6 +426,7 @@ void setEditBufferPtrs( int row, int left, int right ) {
 /***
     Local Variables:
     mode: c
+    tags-file-name: "~/ae/TAGS"
     comment-column: 45
     fill-column: 90
     End:

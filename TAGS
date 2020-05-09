@@ -1,5 +1,5 @@
 
-src/ae.c,860
+src/ae.c,791
 #define CTRL_KEY(45,1577
 #define ALT_KEY 46,1610
 #define thisRow(47,1629
@@ -10,27 +10,25 @@ int COLOFFSET 53,1832
 static char EDITBUFFER[EDITBUFFER54,1887
 static int  EBINDEX 55,1949
 void die(63,2246
-int getEditBufferIndex(76,2552
-char getEditBufferChar(81,2601
-void setEditBufferIndex(86,2661
-void updateNavigationState(96,2954
-void updateEditState(107,3127
-int getRowOffset(114,3271
-int getColOffset(117,3320
-void setRowOffset(120,3369
-void setColOffset(123,3419
-void selfInsert(133,3708
-void killLine(157,4330
-void autoIndent(190,5162
-void openLine(222,5740
-void killWord(287,7384
-void combineLineWithPrior(304,7765
-void backspace(341,8650
-void metaMenu(392,9808
-void eXtensionMenu(440,10667
-void processKeypress(512,12286
-void displaySplash(690,16358
-int main(709,16829
+int getEditBufferIndex(76,2555
+char getEditBufferChar(81,2604
+void setEditBufferIndex(86,2664
+int getRowOffset(96,2972
+int getColOffset(99,3021
+void setRowOffset(102,3070
+void setColOffset(105,3120
+void selfInsert(116,3432
+void killLine(140,4054
+void autoIndent(173,4886
+void openLine(205,5464
+void killWord(270,7108
+void combineLineWithPrior(287,7489
+void backspace(324,8374
+void metaMenu(375,9532
+void eXtensionMenu(423,10391
+void processKeypress(495,12010
+void displaySplash(673,16082
+int main(692,16553
 
 src/files.c,278
 #define DEFAULTFILENAME 40,1448
@@ -44,34 +42,34 @@ bool openFile(143,3673
 
 src/buffer.c,910
 #define _POSIX_C_SOURCE 26,1262
-#define MXRWS 40,1538
-row_t **BUFFER BUFFER43,1627
-static int MAXROWS 44,1675
-static int NUMROWS 45,1743
-void setBufferNumRows(53,2060
-int getBufferNumRows(59,2152
-static char *removeTabs(removeTabs70,2442
-void initializeBuffer(119,3633
-buff_t getBufferHandle(128,3858
-void openEmptyBuffer(136,3947
-void readBufferFile(155,4347
-void saveBuffer(210,5608
-void saveBufferNewName(237,6132
-void doubleBufferSize(270,6756
-bool bufferFullP(282,7047
-void closeBuffer(293,7189
-void killBuffer(327,7719
-int getBufferLineLen(342,8045
-char getBufferChar(347,8110
-bool bufferLineModifiedP(352,8191
-bool bufferRowEditedP(357,8286
-void setBufferRowEdited(362,8354
-int getBufferGapRightIndex(367,8435
-int getBufferGapLeftIndex(372,8507
-int getBufferGapSize(377,8578
-void freeBufferLine(387,8893
-void replaceBufferLineText(403,9167
-void setEditBufferPtrs(418,9598
+#define MXRWS 41,1557
+row_t **BUFFER BUFFER44,1646
+static int MAXROWS 45,1694
+static int NUMROWS 46,1762
+void setBufferNumRows(54,2079
+int getBufferNumRows(60,2171
+static char *removeTabs(removeTabs71,2461
+void initializeBuffer(120,3652
+buff_t getBufferHandle(129,3877
+void openEmptyBuffer(137,3966
+void readBufferFile(156,4366
+void saveBuffer(211,5627
+void saveBufferNewName(238,6151
+void doubleBufferSize(271,6775
+bool bufferFullP(283,7066
+void closeBuffer(294,7208
+void killBuffer(328,7738
+int getBufferLineLen(343,8064
+char getBufferChar(348,8129
+bool bufferLineModifiedP(353,8210
+bool bufferRowEditedP(358,8305
+void setBufferRowEdited(363,8373
+int getBufferGapRightIndex(368,8454
+int getBufferGapLeftIndex(373,8526
+int getBufferGapSize(378,8597
+void freeBufferLine(388,8912
+void replaceBufferLineText(404,9186
+void setEditBufferPtrs(419,9617
 
 src/pointMarkRegion.c,492
 bool REGIONP 40,1456
@@ -94,20 +92,22 @@ bool inRegionP(122,3169
 static void _removeText(184,4390
 void killRegion(259,5859
 
-src/state.c,446
-#define thisRow(34,1390
-#define thisCol(35,1439
-enum _sf 39,1515
-enum _sf { ORIGINAL,39,1515
-enum _sf { ORIGINAL, MODIFIED,39,1515
-enum _sf { ORIGINAL, MODIFIED, READONLY 39,1515
-static const char _sfname[_sfname40,1558
-static enum _sf STATUSFLAG 43,1659
-void setStatusFlagOriginal(50,1913
-void setStatusFlagModified(55,1979
-bool statusFlagModifiedP(59,2044
-char *getStatusFlagName(getStatusFlagName64,2120
-void updateLine(75,2451
+src/state.c,514
+#define thisRow(35,1414
+#define thisCol(36,1463
+enum _sf 40,1539
+enum _sf { ORIGINAL,40,1539
+enum _sf { ORIGINAL, MODIFIED,40,1539
+enum _sf { ORIGINAL, MODIFIED, READONLY 40,1539
+static const char _sfname[_sfname41,1582
+static enum _sf STATUSFLAG 44,1683
+void setStatusFlagOriginal(51,1937
+void setStatusFlagModified(56,2003
+bool statusFlagModifiedP(60,2068
+char *getStatusFlagName(getStatusFlagName65,2144
+void updateLine(76,2475
+void updateEditState(124,3675
+void updateNavigationState(136,4023
 
 src/statusBar.c,72
 static char statusLine[statusLine33,1282

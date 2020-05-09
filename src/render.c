@@ -127,3 +127,12 @@ void renderText(char *fn,	    /* Filename Rendered */
   move( getPointY(), getPointX() );	/* Set POINT */
   refresh();
 }
+
+/***
+    Local Variables:
+    mode: c
+    tags-file-name: "~/ae/TAGS"
+    comment-column: 45
+    fill-column: 90
+    End:
+ ***/

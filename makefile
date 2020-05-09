@@ -34,17 +34,20 @@ minibuffer.o : ae.h keyPress.h window.h files.h
 statusBar.o : window.h
 pointMarkRegion.o : minibuffer.h ae.h buffer.h state.h
 render.o : ae.h statusBar.h pointMarkRegion.h buffer.h
-buffer.o : ae.h minibuffer.h pointMarkRegion.h files.h
+buffer.o : ae.h minibuffer.h pointMarkRegion.h files.h state.h
 window.o : ae.h
 navigation.o : ae.h buffer.h window.h pointMarkRegion.h minibuffer.h
 files.o : ae.h keyPress.h buffer.h minibuffer.h files.h
-state.o : ae.h pointMarkRegion.h buffer.h
+state.o : ae.h pointMarkRegion.h buffer.h minibuffer.h
 
 # Targets
 .phony: install tags
 
 tags:
+	@echo "\nUpdating TAGS file..."
 	find src/ -name "*.[ch]" -print | etags -
+	@echo "\n"
+	@ls -l TAGS
 
 install: CFLAGS += -O2 -DNDEBUG
 install: ae 

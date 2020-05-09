@@ -52,7 +52,8 @@ int readKey() {
 /***
     Local Variables:
     mode: c
-    comment-column: 40
+    tags-file-name: "~/ae/TAGS"
+    comment-column: 45
     fill-column: 90
     End:
-***/
+ ***/
