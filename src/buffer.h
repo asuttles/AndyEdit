@@ -1,3 +1,14 @@
+#include <stddef.h>
+
+/* Text Line Data Structures */
+typedef struct {
+  char  *txt;				/* Editor Text Line */
+  size_t len;				/* Length of Text */
+  size_t lPtr;				/* Editor Pointers */
+  size_t rPtr;
+  bool   editP;				/* This Row Edited Predicate */
+} row_t;
+
 /* Buffer Pointer Type */
 typedef row_t** buff_t;
 
@@ -34,8 +45,11 @@ int getBufferGapSize( int );
 
 /* Modify Buffer Lines */
 void freeBufferLine( int );
+void freeBufferPointToEOL( int, int );
 void replaceBufferLineText( int, int, char * );
+void openLine( void );
 
 /* Edit Buffer Information */
-void setEditBufferPtrs( int, int, int );
-
+void setBufferGapPtrs( int, int, int );
+void increaseBufferGap( int );
+void combineLineWithPrior( void );

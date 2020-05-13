@@ -26,6 +26,7 @@
 #include <curses.h>
 
 #include "ae.h"
+#include "window.h"
 
 static WINDOW *WIN;				/* Window Handle */
 
@@ -105,6 +106,12 @@ int getWinThisCol( void ) {
 
   return getcurx( WIN );
 }
+int getScreenRows( void ) {
+
+  return getmaxy( WIN ) - 3;
+}
+
+
 
 /***
     Local Variables:

@@ -30,6 +30,8 @@
 #include "pointMarkRegion.h"
 #include "buffer.h"
 #include "minibuffer.h"
+#include "state.h"
+#include "edit.h"
 
 /* Useful Macros */
 #define thisRow() (getRowOffset() + getPointY())

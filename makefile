@@ -4,7 +4,8 @@ vpath %.h src
 # Source Code
 SRC=ae.c keyPress.c minibuffer.c statusBar.c \
     pointMarkRegion.c render.c buffer.c \
-    window.c navigation.c files.c state.c
+    window.c navigation.c files.c state.c \
+    edit.c
 CFLAGS=-Wall -Wextra -pedantic -std=c99
 
 # Object Files

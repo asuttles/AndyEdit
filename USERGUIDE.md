@@ -65,6 +65,7 @@ See [README](README.md) for information on how to compile ae.
 * a-f     - Forward Word
 * a-b     - Backward Word
 * a-d     - Delete Word
+* a-g     - Goto Line
 * a-w     - Copy Region (TODO)
 * a-v     - Vertical Scroll Up
 * a-<     - Top of Buffer

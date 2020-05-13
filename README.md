@@ -35,6 +35,7 @@ The AndyEdit editor requires the ncurses library be installed for terminal rende
 AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems.
 
 AndyEdit is being developed using the LLVM clang compiler and ncurses 5.7 on OpenBSD 6.6.
+
 AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void Linux 5.4
 
 ## Versioning
@@ -44,9 +45,8 @@ Latest Release: 0.3 (23APR20)
 ### Release 0.4 [IN WORK]
   - Removed GPL-licensed getline() utility
   - Updated file open/close menu functionality
-  - Fully modularized the source tree for maintenance
-    See [ARCHITECTURE](ARCHITECTURE) for details on the architecture
-  - Cleaned up all memory leaks
+  - Fully modularized the source tree for ease of maintenance and development. See [ARCHITECTURE](ARCHITECTURE) for rudimentary details on the modules that make up the system.
+  - Cleaned up several memory leaks
 
 ### Release 0.3
   - Kill Word

@@ -23,11 +23,16 @@
 
 ==========================================================================================
  ***/
+#include <curses.h>
+#include <stdbool.h>
+
 #include "ae.h"
 #include "state.h"
 #include "statusBar.h"
 #include "pointMarkRegion.h"
 #include "buffer.h"
+#include "edit.h"
+#include "window.h"
 
 /*******************************************************************************
                              RENDER TEXT

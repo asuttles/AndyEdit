@@ -25,6 +25,7 @@
  ***/
 #include <stdlib.h>
 #include <stdbool.h>
+#include <curses.h>
 
 #include "ae.h"
 #include "state.h"

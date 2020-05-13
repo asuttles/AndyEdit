@@ -25,6 +25,8 @@
  ***/
 #define _POSIX_C_SOURCE 200809L		     /* getline() is POSIX */
 
+#include <stdbool.h>
+#include <curses.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,12 +38,14 @@
 #include "pointMarkRegion.h"
 #include "files.h"
 #include "state.h"
+#include "edit.h"
+#include "window.h"
 
 /* Module Constants */
 #define MXRWS 512			     /* Initial Buffer Size = 512 Rows */
 
 /* Module Private Data */
-row_t **BUFFER = NULL;			     /* File Buffer */
+static row_t **BUFFER = NULL;		     /* File Buffer */
 static int MAXROWS  = MXRWS;		     /* MAX Number of Buffer Lines */
 static int NUMROWS  = 0;		     /* Num Rows in Text Buffer */
 
@@ -61,7 +65,6 @@ int getBufferNumRows( void ) {
 
   return NUMROWS;
 }
-
 
 /*****************************************************************************************
 				       TAB HANDLING
@@ -130,7 +133,6 @@ buff_t getBufferHandle( void ) {
 
   return BUFFER;
 }
-
 
 
 /* Open AE on an Empty Buffer */
@@ -380,6 +382,18 @@ int getBufferGapSize( int row ) {
   return BUFFER[row]->rPtr - BUFFER[row]->lPtr;
 }
 
+void setBufferGapPtrs( int row, int left, int right ) {
+
+  BUFFER[row]->lPtr = left;
+  BUFFER[row]->rPtr = right;
+}
+
+void increaseBufferGap( int row ) {
+
+  if( BUFFER[row]->rPtr < BUFFER[row]->len - 1 )
+    BUFFER[row]->rPtr++;
+}
+
 /*****************************************************************************************
 				   MODIFY BUFFER LINES
 *****************************************************************************************/
@@ -400,6 +414,25 @@ void freeBufferLine( int row ) {
   setBufferNumRows( --nRows );
 }
 
+/* Delete Point (thisRow,thisCol) to End of Line */
+void freeBufferPointToEOL( int thisRow, int thisCol ) {
+
+  /* Create Heap Space for New 'Trimmed' String */
+  char *tmp = malloc( sizeof( char ) * ( thisCol + 2 ));
+  if( thisCol > 0 )
+    strncpy( tmp, BUFFER[thisRow]->txt, thisCol );
+  free( BUFFER[thisRow]->txt );
+
+  /* Fix Up thisRow_t For This ThisRow */
+  BUFFER[thisRow]->txt = tmp;
+  BUFFER[thisRow]->len = thisCol + 1;
+  BUFFER[thisRow]->txt[BUFFER[thisRow]->len-1] = '\n';
+  BUFFER[thisRow]->txt[BUFFER[thisRow]->len] = '\0';
+
+  return;
+}
+
+
 /* Replace Text String in Buffer Line */
 void replaceBufferLineText( int row, int newLen, char *newTxt ) {
 
@@ -412,14 +445,102 @@ void replaceBufferLineText( int row, int newLen, char *newTxt ) {
   return;
 }
 
+/* Open a New Line */
+void openLine( void ) {
 
-/*****************************************************************************************
-				  EDIT BUFFER PROPERTIES
-*****************************************************************************************/
-void setEditBufferPtrs( int row, int left, int right ) {
+  int PtY = getPointY();
+  int PtX = getPointX();
 
-  BUFFER[row]->lPtr = left;
-  BUFFER[row]->rPtr = right;
+  int thisRow = getRowOffset() + getPointY();
+  
+  /* Double Buffer, If Full */
+  if( bufferFullP() )
+    doubleBufferSize();
+
+  /* Move Lines Down */
+  int i;
+
+  for( i=getBufferNumRows(); i>thisRow+1; i-- ) {
+    BUFFER[i] = BUFFER[i-1];
+  }
+
+  /* Create New Line */
+  BUFFER[i] = malloc( sizeof( row_t ));
+  BUFFER[i]->len = BUFFER[thisRow]->len - PtX;
+  BUFFER[i]->txt = malloc( sizeof( char ) * ( BUFFER[i]->len + 1 ));
+  BUFFER[i]->lPtr   = 0;
+  BUFFER[i]->rPtr   = 0;
+  BUFFER[i]->editP  = false;
+
+
+  /* Copy Text Into New Line */
+  if( strncpy( BUFFER[i]->txt, 
+               BUFFER[thisRow]->txt + PtX,
+               BUFFER[i]->len ) == NULL ) die( "openLine: strncpy failed." );
+
+  BUFFER[i]->txt[BUFFER[i]->len] = '\0';
+
+
+  /* Heap Space for Trimmed String */
+  char *tmp = malloc( sizeof( char ) * ( PtX + 2 ));
+  if( PtX > 0 )
+    strncpy( tmp, BUFFER[thisRow]->txt, PtX );
+  free( BUFFER[thisRow]->txt );
+
+  /* Fix Up row_t For This Row */
+  BUFFER[thisRow]->txt = tmp;
+  BUFFER[thisRow]->len = PtX + 1;
+  BUFFER[thisRow]->txt[BUFFER[thisRow]->len-1] = '\n';
+  BUFFER[thisRow]->txt[BUFFER[thisRow]->len] = '\0';
+
+  clrtoeol();
+  
+  /* Move Point */
+  setPointX( 0 );
+  if( PtY == getScreenRows() )
+    setRowOffset( getRowOffset() + 1 );
+  else
+    setPointY( ++PtY );
+
+  setBufferNumRows( getBufferNumRows() + 1 ); /* Increment Num Lines */
+}
+
+/* Combine 'This' Text Line With Prior Text Line */
+void combineLineWithPrior( void ) {
+
+  int thisRow = getRowOffset() + getPointY();
+  
+  if( thisRow == 0 )
+    return;
+
+  char *tmp;				     /* New Text String */
+        
+  /* Allocate Memory for Combined String */
+  int preLineLen = BUFFER[thisRow-1]->len - 1;
+  int nxtLineLen = BUFFER[thisRow]->len;
+  int size       = preLineLen + nxtLineLen + 1;
+
+  if(( tmp = malloc( sizeof( char ) * size )) == NULL )
+    die( "BUFFER: tmp malloc failed" );
+
+  /* Copy Old/New Text Into New Line */
+  strncpy( tmp, 
+           BUFFER[thisRow-1]->txt,
+           preLineLen );
+  strncpy( tmp + preLineLen,
+           BUFFER[thisRow]->txt,
+           nxtLineLen );
+  BUFFER[thisRow-1]->len = size - 1;
+        
+  /* Free Old Memory and Set Pointer */
+  free( BUFFER[thisRow-1]->txt );
+  BUFFER[thisRow-1]->txt = tmp;
+
+  /* Destroy Next Line */
+  freeBufferLine( thisRow );
+
+  setPointY( getPointY() - 1 );
+  setPointX( preLineLen );
 }
 
 
