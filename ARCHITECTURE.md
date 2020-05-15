@@ -1,4 +1,4 @@
-# AndyEdit Source Code Modules Architecture
+# AndyEdit Source Code Modules
 
 * ae               - Main Program Loop
 * keyPress         - Handle Keyboard Inputs
