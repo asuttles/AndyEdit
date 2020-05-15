@@ -9,7 +9,7 @@ statusBar.o: src/statusBar.c src/window.h
 pointMarkRegion.o: src/pointMarkRegion.c src/minibuffer.h src/ae.h \
  src/buffer.h src/state.h
 render.o: src/render.c src/ae.h src/state.h src/statusBar.h \
- src/pointMarkRegion.h src/buffer.h src/edit.h src/window.h
+ src/pointMarkRegion.h src/buffer.h src/edit.h src/window.h src/files.h
 buffer.o: src/buffer.c src/ae.h src/buffer.h src/minibuffer.h \
  src/pointMarkRegion.h src/files.h src/state.h src/edit.h src/window.h
 window.o: src/window.c src/ae.h src/window.h

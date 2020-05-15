@@ -33,74 +33,81 @@
 #include "buffer.h"
 #include "edit.h"
 #include "window.h"
+#include "files.h"
+
+#define DISPLAY_ROWS ( getWinNumRows() - 2 )
 
 /*******************************************************************************
                              RENDER TEXT
 *******************************************************************************/
 
 /* Draw and Color the Rows of Text */
-void renderText(char *fn,	    /* Filename Rendered */
-		const char *status, /* File Status */
-		int maxRows,	    /* Max Rows/Cols on Screen */
-		int maxCols,
-		int fileRows	    /* Number Rows in File */
-		) {
+void renderText( void ) {
 
-  int i, j;			/* Iteration indices */
-  int row, col;			/* Row/Col being processed */
-  int nextRow;			/* The next row to process */
-  int colMax, txtLen;
+  int i, j;				     /* Iteration Indices */
+  int row, col;				     /* Row/Col Being Processed */
+  int nextRow;				     /* The Next Row to Process */
+  int colMax;				     /* Last Col Index Dispalyed in Window */
+  int txtLen;				     /* Length of Text to Display on Line */
 
-  /* Initialized Data */
-  buff_t buff = getBufferHandle();
-  int ebIndex = getEditBufferIndex();
-
-  int rowOffset = getRowOffset();
+  /* Row/Column Initializations */
   int colOffset = getColOffset();
+  int rowOffset = getRowOffset();
+  int thisRow = rowOffset + getPointY(); /* Row Containing POINT */
+  int thisCol = colOffset + getPointX();
 
-  int thisRow = rowOffset+getPointY(); /* Row Containing POINT */
-  int thisCol = colOffset+getPointX();
+  /* File Initializations */
+  int fileRows = getBufferNumRows();
+  int maxCols  = getWinNumCols();
 
+  /* Iter Across Each Row of Visible Screen */
+  for( row = 0; row < DISPLAY_ROWS; row++ ) {
 
-  for( row = 0; row < maxRows; row++ ) {
+    nextRow = row+rowOffset;		     /* Index of Next Row to Process */
 
-    nextRow = row+rowOffset;	     /* Next Row to Process */
+    if( nextRow < fileRows ) {		     /* Write Buffer Text */
 
-    if( nextRow < fileRows ) {        /* Write Buffer Text */
+      /* Calc How Much of the Text Row Should Be Displayed */
+      txtLen = getBufferLineLen( nextRow ) - colOffset;
 
-      /* Calculate what subset of the Row Fits in the Term */
-      txtLen = (int)buff[nextRow]->len - colOffset;
+      /* Calculate what subset of that Text Row Fits in the Term Window */
       colMax = maxCols > txtLen ? txtLen : maxCols;
 
       /* Write Letter at a Time */
       col = 0;
       for( i=0; i < colMax; i++ ) {
 
-        /* Insert Edit Buffer Chars */
-        if( nextRow == thisRow    &&
-            buff[nextRow]->editP  &&
-            ( buff[nextRow]->lPtr == buff[nextRow]->rPtr ) &&
-            ( i == (int)buff[nextRow]->lPtr )) {
+        /* Insert EDIT BUFFER Chars */
+        if( nextRow == thisRow                   &&
+	    bufferRowEditedP( nextRow )          &&
+	    ( getBufferGapSize( nextRow ) == 0 ) &&
+            ( i == getBufferGapLeftIndex( nextRow ))) {
 
-          for( j = 0; j<ebIndex; j++ ) {
+	  /* Highlight, If Rendering Active Region */
+          if( inRegionP( nextRow, i+colOffset ))
+	    attron( COLOR_PAIR( HIGHLT_BACKGROUND ));
+
+	  /* Insert EEDIT BUFFER Chars */
+          for( j = 0; j<getEditBufferIndex(); j++ ) {
             mvaddch( row, col, getEditBufferChar(j) );
             col++;
           }
 
-          if( inRegionP( nextRow, i+colOffset ))
-            //attron( A_STANDOUT );
-	    attron( COLOR_PAIR( HIGHLT_BACKGROUND ));
-          mvaddch( row, col, buff[nextRow]->txt[i+colOffset] );
+	  // NOT SURE IF THIS DOES ANYTHING...
+	  /* Highlight, If Rendering Active Region */
+          //if( inRegionP( nextRow, i+colOffset ))
+	  //attron( COLOR_PAIR( HIGHLT_BACKGROUND ));
+
+          mvaddch( row, col, getBufferChar( nextRow, i+colOffset ));
           col++;
 	  attroff( COLOR_PAIR( HIGHLT_BACKGROUND ));
-          //attroff( A_STANDOUT );
         }
 
         /* Ignore Chars In Line Buffer Gap */
-        else if( nextRow == thisRow     &&
-                 buff[thisRow]->editP &&
-                 i >= (int)buff[nextRow]->lPtr && 
-                 i <  (int)buff[nextRow]->rPtr ) {
+        else if( nextRow == thisRow                    &&
+		 bufferRowEditedP( nextRow )           &&
+		 i >= getBufferGapLeftIndex( nextRow ) &&
+		 i <  getBufferGapRightIndex(nextRow )) {
 
 	  continue;
         }
@@ -108,11 +115,11 @@ void renderText(char *fn,	    /* Filename Rendered */
         /* Insert Line Buffer Chars */
         else {
           if( inRegionP( nextRow, i+colOffset ))
-	    //attron( A_STANDOUT );
 	    attron( COLOR_PAIR( HIGHLT_BACKGROUND ));
-          mvaddch( row, col, buff[nextRow]->txt[i+colOffset] );
+
+          mvaddch( row, col, getBufferChar( nextRow, i+colOffset ));
           col++;
-          //attroff( A_STANDOUT );
+
 	  attroff( COLOR_PAIR( HIGHLT_BACKGROUND ));
         }
       }
@@ -126,11 +133,12 @@ void renderText(char *fn,	    /* Filename Rendered */
   }
 
   /* Draw Status Line: Filename, Status, Row/Col info */
-  drawStatusLine( fn, status,
+  drawStatusLine( getBufferFilename(),
+		  getStatusFlagName(),
 		  thisRow, fileRows,
-		  thisCol, (int)buff[thisRow]->len );
+		  thisCol, getBufferLineLen( thisRow ));
 
-  move( getPointY(), getPointX() );	/* Set POINT */
+  move( getPointY(), getPointX() );	     /* Set POINT */
   refresh();
 }
 

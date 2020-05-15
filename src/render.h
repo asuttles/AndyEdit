@@ -1,1 +1,1 @@
-void renderText(char *, const char *, int, int, int ); 
+void renderText( void );

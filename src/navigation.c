@@ -252,8 +252,11 @@ void pageDown( void ) {
   if( PtY < sr ) {
 
     /* Last Line of Buffer Already Visible - No scroll */
-    if(( getBufferNumRows() - thisRow()) < getWinNumRows() - 2)
+    if(( getBufferNumRows() - thisRow()) < getWinNumRows() - 2) {
+
+      pointToEndBuffer();
       return;
+    }
 
     /* Scroll to Bottom of Terminal */
     setPointY( sr );

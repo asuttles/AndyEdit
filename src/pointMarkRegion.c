@@ -27,7 +27,7 @@
 // TODO
 // Remove references to buff_t
 // Update gettr and settr functions in buffer.c to elim references to buff_t here.
-//
+
 
 #include <stdbool.h>
 
@@ -191,13 +191,17 @@ static void _removeText( int strt_Col, int strt_Row,
   int row = strt_Row;
   do {
 
+    /* ------------------------------ */
     /* Handle Lines Between Start/End */
+    /* ------------------------------ */
     if(( row > strt_Row ) && ( row < stop_Row )) {
       freeBufferLine( row );
       --stop_Row;
     }
 
+    /* ----------------- */
     /* Handle First Line */
+    /* ----------------- */
     else if( row == strt_Row ) {
 
       /* Delete Entire Line */
@@ -219,7 +223,9 @@ static void _removeText( int strt_Col, int strt_Row,
       }
     }
 
+    /* ---------------- */
     /* Handle Last Line */
+    /* ---------------- */
     else {
 
       /* Delete Entire Last Line */
@@ -240,7 +246,7 @@ static void _removeText( int strt_Col, int strt_Row,
 	buff[row]->rPtr = stop_Col;
 
 	/* Delete Line Up to Mark */
-	setPointY( row );
+	setPointY( strt_Row-getRowOffset() );
 	updateLine();
 
 	/* Combine With First Line, IFF Not Deleted */
@@ -280,9 +286,15 @@ void killRegion() {
   /* Remove Text/Textlines */
   _removeText( strt_X, strt_Y, stop_X, stop_Y );
 
-  /* Reset Point */
+
+  /* If Region Deleted from End of Buffer, Set Mark to EOB */
+  temp_Y = strt_Y < getBufferNumRows() - 1 ?
+    strt_Y : getBufferNumRows() - 1;
+  
+  /* Reset POINT (X,Y) */
+  setPointY( temp_Y - getRowOffset() );
   setPointX( strt_X - getColOffset() );
-  setPointY( strt_Y - getRowOffset() );
+
   setRegionActive( false );
 
   return;

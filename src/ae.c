@@ -67,7 +67,7 @@ void displaySplash( void ) {
   sleep(2);
 
   clear();
-  renderText( getBufferFilename(), getStatusFlagName(), getWinNumRows()-2, getWinNumCols(), getBufferNumRows() );
+  renderText();
 }
 
 /* Editor Polling Loop */
@@ -89,7 +89,7 @@ int main( int argc, char *argv[] ) {
   
   /* Process Key Presses */
   while( true ) {
-    renderText( getBufferFilename(), getStatusFlagName(), getWinNumRows()-2, getWinNumCols(), getBufferNumRows() );
+    renderText();
     processKeypress();
   } 
 

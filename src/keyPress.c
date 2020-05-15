@@ -41,7 +41,6 @@
 #include "window.h"
 
 /* Macros */
-/* Macros */
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ALT_KEY 27
 #define thisRow() (getRowOffset() + getPointY())

@@ -1,8 +1,8 @@
 
 src/ae.c,64
-void die(53,1882
-void displaySplash(67,2216
-int main(86,2687
+void die(43,1695
+void displaySplash(57,2029
+int main(74,2400
 
 src/files.c,278
 #define DEFAULTFILENAME 40,1448
@@ -50,25 +50,25 @@ void openLine(449,10295
 void combineLineWithPrior(509,11784
 
 src/pointMarkRegion.c,492
-bool REGIONP 40,1456
-static int POINT_X 43,1533
-static int POINT_Y 44,1586
-static int MARK_X 45,1639
-static int MARK_Y 46,1691
-int getPointX(55,1967
-int getPointY(58,2011
-void setPointX(61,2055
-void setPointY(64,2098
-int getMarkX(69,2177
-int getMarkY(72,2219
-void setMarkX(75,2261
-void setMarkY(78,2302
-bool swapPointAndMark(84,2371
-void setRegionActive(111,3011
-bool regionActiveP(116,3075
-bool inRegionP(122,3169
-static void _removeText(184,4390
-void killRegion(259,5859
+bool REGIONP 43,1477
+static int POINT_X 46,1554
+static int POINT_Y 47,1607
+static int MARK_X 48,1660
+static int MARK_Y 49,1712
+int getPointX(58,1988
+int getPointY(61,2032
+void setPointX(64,2076
+void setPointY(67,2119
+int getMarkX(72,2198
+int getMarkY(75,2240
+void setMarkX(78,2282
+void setMarkY(81,2323
+bool swapPointAndMark(87,2392
+void setRegionActive(114,3032
+bool regionActiveP(119,3096
+bool inRegionP(125,3190
+static void _removeText(187,4411
+void killRegion(269,6120
 
 src/state.c,680
 #define thisRow(37,1451
@@ -98,14 +98,14 @@ static char statusLine[statusLine33,1282
 void drawStatusLine(41,1540
 
 src/keyPress.c,205
-#define CTRL_KEY(45,1518
-#define ALT_KEY 46,1551
-#define thisRow(47,1570
-#define thisCol(48,1619
-int readKey(56,1900
-void eXtensionMenu(76,2366
-void metaMenu(152,4200
-void processKeypress(203,5269
+#define CTRL_KEY(44,1505
+#define ALT_KEY 45,1538
+#define thisRow(46,1557
+#define thisCol(47,1606
+int readKey(55,1887
+void eXtensionMenu(75,2353
+void metaMenu(151,4187
+void processKeypress(202,5256
 
 src/window.c,283
 static WINDOW *WIN;WIN31,1268
@@ -142,15 +142,16 @@ void forwardWord(154,3715
 void backwardWord(182,4167
 void pointToEndBuffer(226,5078
 void pageDown(246,5461
-void pageUp(272,5967
-void jumpToLine(301,6458
+void pageUp(275,6002
+void jumpToLine(304,6493
 
 src/window.h,63
 #define NORMAL_BACKGROUND 1,0
 #define HIGHLT_BACKGROUND 2,28
 
-src/render.c,25
-void renderText(42,1632
+src/render.c,55
+#define DISPLAY_ROWS 38,1409
+void renderText(45,1697
 
 src/edit.c,319
 static char EDITBUFFER[EDITBUFFER37,1441
