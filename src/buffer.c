@@ -128,6 +128,7 @@ void initializeBuffer( void ) {
 }
 
 
+/* ! DEPRACATED - Bad Practice */
 /* Return Pointer to Text BUFFER */
 buff_t getBufferHandle( void ) {
 

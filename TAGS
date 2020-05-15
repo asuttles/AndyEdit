@@ -50,25 +50,25 @@ void openLine(449,10295
 void combineLineWithPrior(509,11784
 
 src/pointMarkRegion.c,492
-bool REGIONP 43,1477
-static int POINT_X 46,1554
-static int POINT_Y 47,1607
-static int MARK_X 48,1660
-static int MARK_Y 49,1712
-int getPointX(58,1988
-int getPointY(61,2032
-void setPointX(64,2076
-void setPointY(67,2119
-int getMarkX(72,2198
-int getMarkY(75,2240
-void setMarkX(78,2282
-void setMarkY(81,2323
-bool swapPointAndMark(87,2392
-void setRegionActive(114,3032
-bool regionActiveP(119,3096
-bool inRegionP(125,3190
-static void _removeText(187,4411
-void killRegion(269,6120
+bool REGIONP 34,1329
+static int POINT_X 37,1406
+static int POINT_Y 38,1459
+static int MARK_X 39,1512
+static int MARK_Y 40,1564
+int getPointX(49,1840
+int getPointY(52,1884
+void setPointX(55,1928
+void setPointY(58,1971
+int getMarkX(63,2050
+int getMarkY(66,2092
+void setMarkX(69,2134
+void setMarkY(72,2175
+bool swapPointAndMark(78,2244
+void setRegionActive(105,2884
+bool regionActiveP(110,2948
+bool inRegionP(116,3042
+static void _removeText(178,4263
+void killRegion(256,5861
 
 src/state.c,680
 #define thisRow(37,1451

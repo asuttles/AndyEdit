@@ -23,12 +23,6 @@
 
 ==========================================================================================
  ***/
-
-// TODO
-// Remove references to buff_t
-// Update gettr and settr functions in buffer.c to elim references to buff_t here.
-
-
 #include <stdbool.h>
 
 #include "minibuffer.h"
@@ -44,7 +38,6 @@ static int POINT_X    =  0;			/* Point X Position */
 static int POINT_Y    =  0;			/* Point Y Position */
 static int MARK_X     = -1;			/* Mark X Position */
 static int MARK_Y     = -1;			/* Mark Y Position */
-
 
 
 /*******************************************************************************
@@ -184,9 +177,6 @@ bool inRegionP( int row, int col ) {
 static void _removeText( int strt_Col, int strt_Row,
 			 int stop_Col, int stop_Row ) {
 
-  buff_t buff = getBufferHandle();
-
-
   /* Loop Over Rows in Region */ 
   int row = strt_Row;
   do {
@@ -213,10 +203,11 @@ static void _removeText( int strt_Col, int strt_Row,
 
       /* Delete Mark to Point OR End of Line */
       else {
-	buff[row]->lPtr = strt_Col;
-	buff[row]->rPtr = ( stop_Row > strt_Row ) ? 
-	  buff[row]->len - 1 :		     /* Delete Rest of Line */
-	  (size_t)stop_Col;		     /* Delete Part of Line */
+
+	if( stop_Row > strt_Row )
+	  setBufferGapPtrs( row, strt_Col, getBufferLineLen( row ) - 1 );
+	else
+	  setBufferGapPtrs( row, strt_Col, stop_Col );
 
 	updateLine();
 	++row;
@@ -229,7 +220,7 @@ static void _removeText( int strt_Col, int strt_Row,
     else {
 
       /* Delete Entire Last Line */
-      if( stop_Col == (int)( buff[row]->len - 1 )) {
+      if( stop_Col == getBufferLineLen( row ) - 1 ) {
 	freeBufferLine( row );
 	--stop_Row;
 	++row;
@@ -242,8 +233,7 @@ static void _removeText( int strt_Col, int strt_Row,
 
       /* Delete Part of Last Line */
       else {
-	buff[row]->lPtr = 0;
-	buff[row]->rPtr = stop_Col;
+	setBufferGapPtrs( row, 0, stop_Col );
 
 	/* Delete Line Up to Mark */
 	setPointY( strt_Row-getRowOffset() );
