@@ -40,15 +40,15 @@ AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void 
 
 ## Versioning
 
-Latest Release: 0.3 (23APR20)
+Latest Release: 0.4 (15MAY20)
 
-### Release 0.4 [IN WORK]
+### Release 0.4
   - Removed GPL-licensed getline() utility
   - Updated file open/close menu functionality
   - Fully modularized the source tree for ease of maintenance and development. See [ARCHITECTURE](ARCHITECTURE) for rudimentary details on the modules that make up the system.
   - Cleaned up several memory leaks
 
-### Release 0.3
+### Release 0.3 (23 APR 20)
   - Kill Word
   - Highlight Region Between Point/Mark
   - Kill Buffer
