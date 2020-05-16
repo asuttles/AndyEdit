@@ -61,7 +61,7 @@ See [README](README.md) for information on how to compile ae.
 * C-x C-v - Find Alternate File
 * C-x C-f - Find File
 
-### Alt-Key Keybindings (alt+key)-
+### Alt-Key Keybindings (alt+key)
 * a-f     - Forward Word
 * a-b     - Backward Word
 * a-d     - Delete Word
