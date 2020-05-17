@@ -14,7 +14,7 @@ int _getMenuChoice(73,2277
 static bool _checkFileOrDirectory(104,2830
 bool openFile(143,3673
 
-src/buffer.c,1048
+src/buffer.c,1100
 #define _POSIX_C_SOURCE 26,1262
 #define MXRWS 45,1636
 static row_t **BUFFER BUFFER48,1725
@@ -22,32 +22,34 @@ static int MAXROWS 49,1779
 static int NUMROWS 50,1847
 void setBufferNumRows(58,2164
 int getBufferNumRows(64,2256
-static char *removeTabs(removeTabs74,2545
-void initializeBuffer(123,3736
-buff_t getBufferHandle(132,3961
-void openEmptyBuffer(139,4049
-void readBufferFile(158,4449
-void saveBuffer(213,5710
-void saveBufferNewName(240,6234
-void doubleBufferSize(273,6858
-bool bufferFullP(285,7149
-void closeBuffer(296,7291
-void killBuffer(330,7821
-int getBufferLineLen(345,8147
-char getBufferChar(350,8212
-bool bufferLineModifiedP(355,8293
-bool bufferRowEditedP(360,8388
-void setBufferRowEdited(365,8456
-int getBufferGapRightIndex(370,8537
-int getBufferGapLeftIndex(375,8609
-int getBufferGapSize(380,8680
-void setBufferGapPtrs(385,8768
-void increaseBufferGap(391,8885
-void freeBufferLine(402,9226
-void freeBufferPointToEOL(418,9511
-void replaceBufferLineText(437,10054
-void openLine(449,10295
-void combineLineWithPrior(509,11784
+int getBufferRow(70,2356
+int getBufferCol(75,2472
+static char *removeTabs(removeTabs85,2778
+void initializeBuffer(134,3969
+buff_t getBufferHandle(144,4228
+void openEmptyBuffer(151,4316
+void readBufferFile(170,4716
+void saveBuffer(225,5977
+void saveBufferNewName(252,6501
+void doubleBufferSize(285,7125
+bool bufferFullP(297,7416
+void closeBuffer(308,7558
+void killBuffer(342,8088
+int getBufferLineLen(357,8414
+char getBufferChar(362,8479
+bool bufferLineModifiedP(367,8560
+bool bufferRowEditedP(372,8655
+void setBufferRowEdited(377,8723
+int getBufferGapRightIndex(382,8804
+int getBufferGapLeftIndex(387,8876
+int getBufferGapSize(392,8947
+void setBufferGapPtrs(397,9035
+void increaseBufferGap(403,9152
+void freeBufferLine(414,9493
+void freeBufferPointToEOL(430,9778
+void replaceBufferLineText(449,10321
+void openLine(461,10562
+void combineLineWithPrior(521,12051
 
 src/pointMarkRegion.c,492
 bool REGIONP 34,1329
@@ -55,20 +57,20 @@ static int POINT_X 37,1406
 static int POINT_Y 38,1459
 static int MARK_X 39,1512
 static int MARK_Y 40,1564
-int getPointX(49,1840
-int getPointY(52,1884
-void setPointX(55,1928
-void setPointY(58,1971
-int getMarkX(63,2050
-int getMarkY(66,2092
-void setMarkX(69,2134
-void setMarkY(72,2175
-bool swapPointAndMark(78,2244
-void setRegionActive(105,2884
-bool regionActiveP(110,2948
-bool inRegionP(116,3042
-static void _removeText(178,4263
-void killRegion(256,5861
+int getPointX(48,1839
+int getPointY(51,1883
+void setPointX(54,1927
+void setPointY(57,1970
+int getMarkX(62,2049
+int getMarkY(65,2091
+void setMarkX(68,2133
+void setMarkY(71,2174
+bool swapPointAndMark(77,2243
+void setRegionActive(104,2883
+bool regionActiveP(109,2947
+bool inRegionP(115,3041
+static void _removeText(177,4262
+void killRegion(255,5860
 
 src/state.c,680
 #define thisRow(37,1451
@@ -97,15 +99,17 @@ src/statusBar.c,72
 static char statusLine[statusLine33,1282
 void drawStatusLine(41,1540
 
-src/keyPress.c,205
+src/keyPress.c,276
 #define CTRL_KEY(44,1505
 #define ALT_KEY 45,1538
 #define thisRow(46,1557
 #define thisCol(47,1606
-int readKey(55,1887
-void eXtensionMenu(75,2353
-void metaMenu(151,4187
-void processKeypress(202,5256
+int readKey(57,1966
+void _universalArgument(72,2189
+void eXtensionMenu(90,2654
+void metaMenu(166,4488
+static void _handleKeypress(217,5557
+void processKeypress(381,9055
 
 src/window.c,283
 static WINDOW *WIN;WIN31,1268
@@ -118,15 +122,18 @@ int getWinNumRows(101,2574
 int getWinThisCol(105,2630
 int getScreenRows(109,2686
 
-src/minibuffer.c,266
+src/minibuffer.c,380
 #define MINIBUFFSIZE 26,1202
-char MINIBUFFER[MINIBUFFER38,1386
-void miniBufferMessage(46,1654
-void miniBufferClear(56,1842
-void miniBufferGetInput(67,2007
-void miniBufferGetFilename(97,2568
-int miniBufferGetPosInteger(106,2745
-bool miniBufferGetYN(115,2895
+char MINIBUFFER[MINIBUFFER39,1405
+static int UNIVERSALCHAR;41,1466
+void miniBufferMessage(48,1739
+void miniBufferClear(58,1927
+void miniBufferGetInput(69,2092
+void miniBufferGetFilename(99,2653
+int miniBufferGetPosInteger(108,2830
+int miniBufferGetUniversalArg(116,2988
+int miniBufferGetUniversalChr(145,3566
+bool miniBufferGetYN(151,3671
 
 src/navigation.c,396
 #define screenRows(39,1453
@@ -162,9 +169,9 @@ void setEditBufferIndex(55,1883
 void autoIndent(65,2173
 void selfInsert(106,3129
 void deleteChar(127,3589
-void backspace(155,4268
-void killWord(204,5446
-void killLine(226,6099
+void backspace(155,4246
+void killWord(204,5424
+void killLine(226,6077
 
 src/buffer.h,233
   char  *txt;txt5,70

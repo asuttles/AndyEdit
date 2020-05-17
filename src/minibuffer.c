@@ -4,7 +4,7 @@
            / \   _ __   __| |_   _  | ____|__| (_) |_
           / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
          / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.5-beta
                              |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
@@ -29,14 +29,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <curses.h>
+#include <ctype.h>
 
 #include "ae.h"
 #include "keyPress.h"
 #include "window.h"
 #include "files.h"
 
-char MINIBUFFER[MINIBUFFSIZE];		/* Minibuffer Input */
+char MINIBUFFER[MINIBUFFSIZE];		     /* Minibuffer Input */
 
+static int UNIVERSALCHAR;		     /* Input to Universal Arg */
 
 /*******************************************************************************
 			      MINIBUFFER
@@ -110,6 +112,40 @@ int miniBufferGetPosInteger( const char *msg ) {
   return atoi( MINIBUFFER );
 }
 
+/* Read Universal Argument from MiniBuffer */
+int miniBufferGetUniversalArg( void ) {
+
+  int c;				     /* Input Char */
+  int val = 0;				     /* Value of univ arg */
+
+  const char *msg = "Enter Argument (c-g to exit) : ";
+  
+  int mbRow = getWinNumRows() - 1;
+  
+  /* Print Input Message */
+  mvaddstr( mbRow, 0, msg  );
+  refresh();
+
+  /* Read Inputs */
+  int strtCol = strlen( msg);
+
+  while( isdigit( c = readKey() )) {
+    val = ( val * 10 ) + ( c - 48 );
+    mvaddch( mbRow, ++strtCol, c );
+    refresh();
+  }
+
+  miniBufferClear();
+  
+  UNIVERSALCHAR = c;
+  return val;
+}
+
+/* Return Char Input After Universal Arg */
+int miniBufferGetUniversalChr( void ) {
+
+  return UNIVERSALCHAR;
+}
 
 /* Get Y/N Answer from Minibuffer */
 bool miniBufferGetYN( const char *msg ) {

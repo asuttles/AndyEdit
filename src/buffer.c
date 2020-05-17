@@ -66,6 +66,17 @@ int getBufferNumRows( void ) {
   return NUMROWS;
 }
 
+/* Get BUFFER Row Index for Line With POINT */
+int getBufferRow( void ) {
+
+  return getPointY() + getRowOffset();
+}
+/* Get BUFFER Col Index for Line With POINT */
+int getBufferCol( void ) {
+
+  return getPointX() + getColOffset();
+}
+
 /*****************************************************************************************
 				       TAB HANDLING
 *****************************************************************************************/

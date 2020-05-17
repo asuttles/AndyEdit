@@ -4,7 +4,7 @@
            / \   _ __   __| |_   _  | ____|__| (_) |_
           / _ \ | '_ \ / _` | | | | |  _| / _` | | __|
          / ___ \| | | | (_| | |_| | | |__| (_| | | |_
-        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.4-beta
+        /_/   \_\_| |_|\__,_|\__, | |_____\__,_|_|\__|  v0.5-beta
                              |___/
 
         Copyright 2020 (andrew.suttles@gmail.com)
@@ -46,6 +46,8 @@
 #define thisRow() (getRowOffset() + getPointY())
 #define thisCol() (getColOffset() + getPointX())
 
+/* Module Private Function Declarations */
+static void _handleKeypress( int );
 
 /*****************************************************************************************
 				      READ KEY INPUT
@@ -66,6 +68,19 @@ int readKey() {
   return c;
 }
 
+
+void _universalArgument( void ) {
+
+  int times = miniBufferGetUniversalArg();
+  int c     = miniBufferGetUniversalChr();
+
+  if( c == CTRL_KEY('g') )
+    return;
+  
+  while( times-- > 0 ) {
+    _handleKeypress( c );
+  }
+}
 
 /*****************************************************************************************
 			       HANDLE EXTENSION MENU INPUTS
@@ -199,10 +214,8 @@ void metaMenu( void ) {
 *****************************************************************************************/
 
 /* Process Keypresses */
-void processKeypress( void ) {
+static void _handleKeypress( int c ) {
 
-  int c       = readKey();
-  
   switch(c) {
     
     /* Meta Key */
@@ -215,6 +228,11 @@ void processKeypress( void ) {
     eXtensionMenu();
     break;
 
+    /* Universal Argument */
+  case CTRL_KEY('u'):
+    _universalArgument();
+    break;
+    
     /* Keyboard Quit */
   case CTRL_KEY('g'):
     setRegionActive( false );
@@ -230,6 +248,21 @@ void processKeypress( void ) {
     initializeTerminal();
     break;
 
+  case KEY_F(2):			     /* Find File */
+    
+    /* Close Old Buffer */
+    if( statusFlagModifiedP() )
+      if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " )) {
+	updateNavigationState();
+	saveBuffer();
+      }
+    killBuffer();
+    /* Open New Buffer */
+    if( openFile() )
+      readBufferFile( getBufferFilename() );
+    break;
+
+    
   case KEY_F(10):			     /* Exit */
     closeEditor();
     exit(EXIT_SUCCESS);
@@ -343,6 +376,15 @@ void processKeypress( void ) {
     break;
   }
 }
+
+
+void processKeypress( void ) {
+
+  _handleKeypress( readKey() );    
+}
+
+
+
 
 
 /***

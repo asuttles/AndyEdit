@@ -21,6 +21,8 @@ See [README](README.md) for information on how to compile ae.
 * END     - Point to Buffer End
 * TAB     - AutoTab (works in first column)
 * F1      - Keymap Help
+* F2      - Open File (TODO)
+* F5      - Undo (TODO)
 * F10     - Exit
 
 ### CTRL Modifier (control+key)
@@ -44,13 +46,14 @@ See [README](README.md) for information on how to compile ae.
 * C-r     - Search Reverse (TODO)
 * C-s     - Search Forward (TODO)
 * C-t     -
-* C-u     - Undo (TODO)
+* C-u     - Universal Argument
 * C-V     - Vertical Paging
 * C-w     - Kill Region
 * C-x     - eXtension Menu
 * C-y     - Yank Text (TODO)
 * C-z     - 
 * C-SPACE - Set Mark
+* C-_     - Undo (TODO)
 
 ### eXtension Keybindings (control+x key)
 * C-x C-x - Swap Point and Mark

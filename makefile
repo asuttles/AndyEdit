@@ -34,16 +34,19 @@ ae: $(OBJS)
 
 # Debugging
 debug: CFLAGS += -g -O0 -DDEBUG
-debug: ae tags .depend
+debug: ae tags .depend stats
 
 # Targets
-.phony: install tags
+.phony: install tags stats
 
 tags:
 	@echo "\nUpdating TAGS file..."
 	find src/ -name "*.[ch]" -print | etags -
 	@echo "\n"
 	@ls -l TAGS
+
+stats:
+	cloc src/*.[ch]
 
 install: CFLAGS += -O2 -DNDEBUG
 install: ae .depend

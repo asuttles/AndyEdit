@@ -18,6 +18,8 @@ enum _bn { DEFAULT, UNAMED };
 /* Buffer Status */
 void setBufferNumRows( int );
 int getBufferNumRows( void );
+int getBufferRow( void );
+int getBufferCol( void );
 
 /* Buffer Management */
 void initializeBuffer( void );

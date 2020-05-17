@@ -126,7 +126,7 @@ void selfInsert( int c ) {
 /* Delete Forward One Char */
 void deleteChar( void ) {
 
-  int thisRow = getColOffset() + getPointY();
+  int thisRow = getBufferRow();
   
   /* Continue Editing This Line? */
   if( bufferRowEditedP( thisRow )) {
@@ -140,14 +140,14 @@ void deleteChar( void ) {
 
       /* Continue Deleting Chars Up to EOL  */
       increaseBufferGap( thisRow );
-    }
+  }
 
-    /* *New* Edit To This Line? */
-    else {
-      setBufferGapPtrs( thisRow, getPointX(), getPointX() );
-      increaseBufferGap( thisRow );
-      updateEditState();
-    }
+  /* *New* Edit To This Line? */
+  else {
+    setBufferGapPtrs( thisRow, getBufferCol(), getBufferCol() );
+    increaseBufferGap( thisRow );
+    updateEditState();
+  }
 }
 
 

@@ -5,7 +5,7 @@
         /   |             |        / (_)   |  o
        |    |   _  _    __|        \__   __|    _|_
        |    |  / |/ |  /  |  |   | /    /  |  |  |
-        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.4-beta
+        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.5-beta
                                  /|
                                  \|
 
@@ -41,6 +41,9 @@ AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void 
 ## Versioning
 
 Latest Release: 0.4 (15MAY20)
+
+### Release 0.5 [IN WORK]
+  - Added Universal Argument
 
 ### Release 0.4
   - Removed GPL-licensed getline() utility
