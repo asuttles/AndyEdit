@@ -359,8 +359,15 @@ static void _handleKeypress( int c ) {
     updateEditState();
     killLine();
     updateNavigationState();
+    miniBufferMessage( "Killed Text" );
     break;
 
+  case CTRL_KEY('y'):			     /* Yank Line */
+    yankLine();
+    updateNavigationState();
+    miniBufferMessage( "Yanked Text" );
+    break;
+    
   case CTRL_KEY('w'):			     /* Kill Region  */
     killRegion();
     updateEditState();

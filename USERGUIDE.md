@@ -50,7 +50,7 @@ See [README](README.md) for information on how to compile ae.
 * C-V     - Vertical Paging
 * C-w     - Kill Region
 * C-x     - eXtension Menu
-* C-y     - Yank Text (TODO)
+* C-y     - Yank Text
 * C-z     - 
 * C-SPACE - Set Mark
 * C-_     - Undo (TODO)

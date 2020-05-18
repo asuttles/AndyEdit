@@ -7,3 +7,4 @@ void backspace( void );
 void deleteChar( void );
 void killWord( void );
 void killLine( void );
+void yankLine( void );

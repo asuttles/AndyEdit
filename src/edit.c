@@ -244,6 +244,19 @@ void killLine( void ) {
 }
 
 
+/* Kill Line at Point */
+void yankLine( void ) {
+
+  int i;
+  char *kb = getKillBufferPtr();
+
+  for( i=0; i<getKillBufferLength(); i++ ) {
+
+    selfInsert( kb[i] );
+  }
+
+  return;
+}
 
 /***
     Local Variables:

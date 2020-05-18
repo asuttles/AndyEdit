@@ -14,42 +14,48 @@ int _getMenuChoice(73,2277
 static bool _checkFileOrDirectory(104,2830
 bool openFile(143,3673
 
-src/buffer.c,1100
+src/buffer.c,1333
 #define _POSIX_C_SOURCE 26,1262
 #define MXRWS 45,1636
 static row_t **BUFFER BUFFER48,1725
 static int MAXROWS 49,1779
 static int NUMROWS 50,1847
-void setBufferNumRows(58,2164
-int getBufferNumRows(64,2256
-int getBufferRow(70,2356
-int getBufferCol(75,2472
-static char *removeTabs(removeTabs85,2778
-void initializeBuffer(134,3969
-buff_t getBufferHandle(144,4228
-void openEmptyBuffer(151,4316
-void readBufferFile(170,4716
-void saveBuffer(225,5977
-void saveBufferNewName(252,6501
-void doubleBufferSize(285,7125
-bool bufferFullP(297,7416
-void closeBuffer(308,7558
-void killBuffer(342,8088
-int getBufferLineLen(357,8414
-char getBufferChar(362,8479
-bool bufferLineModifiedP(367,8560
-bool bufferRowEditedP(372,8655
-void setBufferRowEdited(377,8723
-int getBufferGapRightIndex(382,8804
-int getBufferGapLeftIndex(387,8876
-int getBufferGapSize(392,8947
-void setBufferGapPtrs(397,9035
-void increaseBufferGap(403,9152
-void freeBufferLine(414,9493
-void freeBufferPointToEOL(430,9778
-void replaceBufferLineText(449,10321
-void openLine(461,10562
-void combineLineWithPrior(521,12051
+static char *KILLBUFFER KILLBUFFER52,1909
+static int  KILLBUFFERLENGTH 53,1973
+void setBufferNumRows(60,2298
+int getBufferNumRows(66,2390
+int getBufferRow(72,2490
+int getBufferCol(77,2606
+static char *removeTabs(removeTabs87,2912
+void initializeBuffer(136,4103
+buff_t getBufferHandle(146,4362
+void openEmptyBuffer(153,4450
+void readBufferFile(172,4850
+void saveBuffer(227,6111
+void saveBufferNewName(254,6635
+void doubleBufferSize(287,7259
+bool bufferFullP(299,7550
+void closeBuffer(310,7692
+void killBuffer(347,8274
+int getBufferLineLen(362,8600
+char getBufferChar(367,8665
+bool bufferLineModifiedP(372,8746
+bool bufferRowEditedP(377,8841
+void setBufferRowEdited(382,8909
+int getBufferGapRightIndex(387,8990
+int getBufferGapLeftIndex(392,9062
+int getBufferGapSize(397,9133
+void setBufferGapPtrs(402,9221
+void increaseBufferGap(408,9338
+void freeBufferLine(419,9679
+void emptyKillBuffer(440,10147
+void _trimKillBuffer(446,10237
+int getKillBufferLength(458,10449
+char *getKillBufferPtr(getKillBufferPtr462,10513
+void freeBufferPointToEOL(468,10623
+void replaceBufferLineText(499,11497
+void openLine(511,11738
+void combineLineWithPrior(571,13227
 
 src/pointMarkRegion.c,492
 bool REGIONP 34,1329
@@ -109,7 +115,7 @@ void _universalArgument(72,2189
 void eXtensionMenu(90,2654
 void metaMenu(166,4488
 static void _handleKeypress(217,5557
-void processKeypress(381,9055
+void processKeypress(388,9241
 
 src/window.c,283
 static WINDOW *WIN;WIN31,1268
@@ -160,7 +166,7 @@ src/render.c,55
 #define DISPLAY_ROWS 38,1409
 void renderText(45,1697
 
-src/edit.c,319
+src/edit.c,343
 static char EDITBUFFER[EDITBUFFER37,1441
 static int  EBINDEX 38,1503
 int getEditBufferIndex(45,1768
@@ -172,6 +178,7 @@ void deleteChar(127,3589
 void backspace(155,4246
 void killWord(204,5424
 void killLine(226,6077
+void yankLine(248,6524
 
 src/buffer.h,233
   char  *txt;txt5,70

@@ -44,6 +44,7 @@ Latest Release: 0.4 (15MAY20)
 
 ### Release 0.5 [IN WORK]
   - Added Universal Argument
+  - Added Rudimentary Kill/Yank Line
 
 ### Release 0.4
   - Removed GPL-licensed getline() utility

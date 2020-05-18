@@ -55,3 +55,10 @@ void openLine( void );
 void setBufferGapPtrs( int, int, int );
 void increaseBufferGap( int );
 void combineLineWithPrior( void );
+
+/* Killbuffer Management */
+void emptyKillBuffer( void );
+int getKillBufferLength( void );
+char *getKillBufferPtr( void );
+void freeBufferPointToEOL( int, int );
+

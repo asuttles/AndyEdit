@@ -49,9 +49,11 @@ static row_t **BUFFER = NULL;		     /* File Buffer */
 static int MAXROWS  = MXRWS;		     /* MAX Number of Buffer Lines */
 static int NUMROWS  = 0;		     /* Num Rows in Text Buffer */
 
+static char *KILLBUFFER = NULL;		     /* Line of Killed Text */
+static int  KILLBUFFERLENGTH = 0;	     /* Length of Killed Text */
 
 /*****************************************************************************************
-				       BUFFER ROWS
+				     TEXT BUFFER ROWS
 *****************************************************************************************/
 
 /* Update the Number of Lines in Buffer File */
@@ -331,6 +333,9 @@ void closeBuffer( void ) {
   setRegionActive( false );
   setStatusFlagOriginal();
 
+  /* Free the KILLBUFFER */
+  emptyKillBuffer();
+  
   clear();
 }
 
@@ -426,16 +431,61 @@ void freeBufferLine( int row ) {
   setBufferNumRows( --nRows );
 }
 
+
+/*****************************************************************************************
+				    MANAGE KILL BUFFER
+*****************************************************************************************/
+
+/* Empty Kill Buffer */
+void emptyKillBuffer( void ) {
+
+  free( KILLBUFFER );
+}
+
+/* Remove /n from Kill Buffer */
+void _trimKillBuffer( void ) {
+
+  int sz = strlen( KILLBUFFER );
+  if( KILLBUFFER[sz-1] == '\n' ) {
+    KILLBUFFER[sz-1] = '\0';
+    sz--;
+  }
+
+  KILLBUFFERLENGTH = sz;
+}
+
+/* Get KILLBUFFER Pointer and Length */
+int getKillBufferLength( void ) {
+
+  return KILLBUFFERLENGTH;
+}
+char *getKillBufferPtr( void ) {
+
+  return KILLBUFFER;
+}
+
 /* Delete Point (thisRow,thisCol) to End of Line */
 void freeBufferPointToEOL( int thisRow, int thisCol ) {
 
+  int size;
+  
   /* Create Heap Space for New 'Trimmed' String */
   char *tmp = malloc( sizeof( char ) * ( thisCol + 2 ));
   if( thisCol > 0 )
     strncpy( tmp, BUFFER[thisRow]->txt, thisCol );
+
+  /* Save Killed Text in Kill Buffer */
+  emptyKillBuffer();
+  size = BUFFER[thisRow]->len - thisCol;
+  KILLBUFFER = malloc( sizeof( char ) * size + 1 );
+  strncpy( KILLBUFFER, &(BUFFER[thisRow]->txt[thisCol]), size );
+  KILLBUFFER[size] = '\0';
+  _trimKillBuffer();
+
+  /* De-Allocate Heap Space for Old Buffer Line */
   free( BUFFER[thisRow]->txt );
 
-  /* Fix Up thisRow_t For This ThisRow */
+  /* Fix Up Row_t For This ThisRow */
   BUFFER[thisRow]->txt = tmp;
   BUFFER[thisRow]->len = thisCol + 1;
   BUFFER[thisRow]->txt[BUFFER[thisRow]->len-1] = '\n';
