@@ -14,7 +14,7 @@ int _getMenuChoice(73,2277
 static bool _checkFileOrDirectory(104,2830
 bool openFile(143,3673
 
-src/buffer.c,1333
+src/buffer.c,1385
 #define _POSIX_C_SOURCE 26,1262
 #define MXRWS 45,1636
 static row_t **BUFFER BUFFER48,1725
@@ -39,23 +39,24 @@ void closeBuffer(310,7692
 void killBuffer(347,8274
 int getBufferLineLen(362,8600
 char getBufferChar(367,8665
-bool bufferLineModifiedP(372,8746
-bool bufferRowEditedP(377,8841
-void setBufferRowEdited(382,8909
-int getBufferGapRightIndex(387,8990
-int getBufferGapLeftIndex(392,9062
-int getBufferGapSize(397,9133
-void setBufferGapPtrs(402,9221
-void increaseBufferGap(408,9338
-void freeBufferLine(419,9679
-void emptyKillBuffer(440,10147
-void _trimKillBuffer(446,10237
-int getKillBufferLength(458,10449
-char *getKillBufferPtr(getKillBufferPtr462,10513
-void freeBufferPointToEOL(468,10623
-void replaceBufferLineText(499,11497
-void openLine(511,11738
-void combineLineWithPrior(571,13227
+char *getBufferTextLine(getBufferTextLine372,8746
+bool bufferLineModifiedP(377,8816
+bool bufferRowEditedP(382,8911
+void setBufferRowEdited(387,8979
+int getBufferGapRightIndex(392,9060
+int getBufferGapLeftIndex(397,9132
+int getBufferGapSize(402,9203
+void setBufferGapPtrs(407,9291
+void increaseBufferGap(413,9408
+void freeBufferLine(424,9749
+void emptyKillBuffer(445,10217
+void _trimKillBuffer(451,10307
+int getKillBufferLength(463,10519
+char *getKillBufferPtr(getKillBufferPtr467,10583
+void freeBufferPointToEOL(473,10693
+void replaceBufferLineText(504,11567
+void openLine(516,11808
+void combineLineWithPrior(576,13297
 
 src/pointMarkRegion.c,492
 bool REGIONP 34,1329
@@ -79,43 +80,45 @@ static void _removeText(177,4262
 void killRegion(255,5860
 
 src/state.c,680
-#define thisRow(37,1451
-#define thisCol(38,1500
-static int ROWOFFSET 41,1568
-static int COLOFFSET 42,1632
-enum _sf 45,1724
-enum _sf { ORIGINAL,45,1724
-enum _sf { ORIGINAL, MODIFIED,45,1724
-enum _sf { ORIGINAL, MODIFIED, READONLY 45,1724
-static const char _sfname[_sfname46,1767
-static enum _sf STATUSFLAG 49,1868
-void setStatusFlagOriginal(55,2121
-void setStatusFlagModified(60,2187
-bool statusFlagModifiedP(64,2252
-char *getStatusFlagName(getStatusFlagName69,2328
-int getRowOffset(79,2665
-int getColOffset(82,2714
-void setRowOffset(85,2763
-void setColOffset(88,2813
-void updateLine(97,3116
-void updateEditState(146,4330
-void updateNavigationState(158,4691
+#define thisRow(38,1475
+#define thisCol(39,1524
+static int ROWOFFSET 42,1592
+static int COLOFFSET 43,1656
+enum _sf 46,1748
+enum _sf { ORIGINAL,46,1748
+enum _sf { ORIGINAL, MODIFIED,46,1748
+enum _sf { ORIGINAL, MODIFIED, READONLY 46,1748
+static const char _sfname[_sfname47,1791
+static enum _sf STATUSFLAG 50,1892
+void setStatusFlagOriginal(56,2145
+void setStatusFlagModified(61,2211
+bool statusFlagModifiedP(65,2276
+char *getStatusFlagName(getStatusFlagName70,2352
+int getRowOffset(80,2689
+int getColOffset(83,2738
+void setRowOffset(86,2787
+void setColOffset(89,2837
+void updateLine(98,3140
+void updateEditState(147,4354
+void updateNavigationState(160,4736
 
 src/statusBar.c,72
 static char statusLine[statusLine33,1282
 void drawStatusLine(41,1540
 
-src/keyPress.c,276
-#define CTRL_KEY(44,1505
-#define ALT_KEY 45,1538
-#define thisRow(46,1557
-#define thisCol(47,1606
-int readKey(57,1966
-void _universalArgument(72,2189
-void eXtensionMenu(90,2654
-void metaMenu(166,4488
-static void _handleKeypress(217,5557
-void processKeypress(388,9241
+src/keyPress.c,225
+#define thisRow(45,1527
+#define thisCol(46,1576
+int readKey(56,1936
+void _universalArgument(71,2159
+void eXtensionMenu(89,2624
+void metaMenu(165,4458
+static void _handleKeypress(216,5527
+void processKeypress(396,9453
+
+src/keyPress.h,45
+#define CTRL_KEY(2,20
+#define ALT_KEY 3,53
 
 src/window.c,283
 static WINDOW *WIN;WIN31,1268
@@ -128,35 +131,44 @@ int getWinNumRows(101,2574
 int getWinThisCol(105,2630
 int getScreenRows(109,2686
 
-src/minibuffer.c,380
+src/minibuffer.c,422
 #define MINIBUFFSIZE 26,1202
 char MINIBUFFER[MINIBUFFER39,1405
 static int UNIVERSALCHAR;41,1466
 void miniBufferMessage(48,1739
 void miniBufferClear(58,1927
-void miniBufferGetInput(69,2092
-void miniBufferGetFilename(99,2653
-int miniBufferGetPosInteger(108,2830
-int miniBufferGetUniversalArg(116,2988
-int miniBufferGetUniversalChr(145,3566
-bool miniBufferGetYN(151,3671
+bool miniBufferGetInput(69,2092
+bool miniBufferGetSearchString(111,2813
+void miniBufferGetFilename(124,3057
+int miniBufferGetPosInteger(133,3234
+int miniBufferGetUniversalArg(141,3392
+int miniBufferGetUniversalChr(170,3970
+bool miniBufferGetYN(176,4075
 
-src/navigation.c,396
-#define screenRows(39,1453
-#define thisRow(40,1496
-#define thisCol(41,1545
-void centerLine(45,1614
-void pointToEndLine(78,2219
-void priorLine(95,2556
-void nextLine(109,2862
-void pointForward(127,3247
-void pointBackward(140,3510
-void forwardWord(154,3715
-void backwardWord(182,4167
-void pointToEndBuffer(226,5078
-void pageDown(246,5461
-void pageUp(275,6002
-void jumpToLine(304,6493
+src/navigation.c,667
+#define screenRows(39,1443
+#define thisRow(40,1486
+#define thisCol(41,1535
+#define _SRCH_STR_LEN 43,1585
+static char _SRCH_STR[_SRCH_STR49,1682
+static bool SEARCHINGP 50,1720
+void pointForward(59,1997
+void pointBackward(72,2260
+void pointToEndLine(85,2477
+void forwardWord(109,3035
+void backwardWord(137,3508
+void wordSearchForward(180,4428
+char *_lastMatch(_lastMatch236,5698
+void wordSearchBackward(249,5905
+void clearSearchFlag(316,7372
+void nextLine(329,7678
+void priorLine(347,8069
+void centerLine(362,8364
+void pointToEndBuffer(401,9190
+void pageDown(420,9600
+void pageUp(449,10141
+static void _goto(478,10632
+void jumpToLine(494,10899
 
 src/window.h,63
 #define NORMAL_BACKGROUND 1,0
@@ -202,8 +214,6 @@ src/edit.h,0
 src/state.h,0
 
 src/navigation.h,0
-
-src/keyPress.h,0
 
 src/render.h,0
 

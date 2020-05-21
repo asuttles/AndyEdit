@@ -2,7 +2,7 @@ ae.o: src/ae.c src/keyPress.h src/render.h src/buffer.h src/window.h \
  src/files.h src/state.h
 keyPress.o: src/keyPress.c src/ae.h src/window.h src/navigation.h \
  src/pointMarkRegion.h src/files.h src/minibuffer.h src/state.h \
- src/edit.h src/buffer.h
+ src/edit.h src/buffer.h src/keyPress.h
 minibuffer.o: src/minibuffer.c src/ae.h src/keyPress.h src/window.h \
  src/files.h
 statusBar.o: src/statusBar.c src/window.h
@@ -14,10 +14,10 @@ buffer.o: src/buffer.c src/ae.h src/buffer.h src/minibuffer.h \
  src/pointMarkRegion.h src/files.h src/state.h src/edit.h src/window.h
 window.o: src/window.c src/ae.h src/window.h
 navigation.o: src/navigation.c src/ae.h src/state.h src/buffer.h \
- src/window.h src/pointMarkRegion.h src/minibuffer.h
+ src/window.h src/pointMarkRegion.h src/minibuffer.h src/keyPress.h
 files.o: src/files.c src/ae.h src/keyPress.h src/buffer.h \
  src/minibuffer.h src/files.h
 state.o: src/state.c src/ae.h src/pointMarkRegion.h src/buffer.h \
- src/minibuffer.h src/state.h src/edit.h
+ src/minibuffer.h src/navigation.h src/state.h src/edit.h
 edit.o: src/edit.c src/ae.h src/edit.h src/pointMarkRegion.h \
  src/navigation.h src/buffer.h src/minibuffer.h src/state.h

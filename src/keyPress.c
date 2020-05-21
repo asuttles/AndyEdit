@@ -39,10 +39,9 @@
 #include "edit.h"
 #include "buffer.h"
 #include "window.h"
+#include "keyPress.h"
 
 /* Macros */
-#define CTRL_KEY(k) ((k) & 0x1f)
-#define ALT_KEY 27
 #define thisRow() (getRowOffset() + getPointY())
 #define thisCol() (getColOffset() + getPointX())
 
@@ -236,6 +235,7 @@ static void _handleKeypress( int c ) {
     /* Keyboard Quit */
   case CTRL_KEY('g'):
     setRegionActive( false );
+    clearSearchFlag();
     setMarkY( -1 );
     setMarkX( -1 );
     break;
@@ -316,6 +316,14 @@ static void _handleKeypress( int c ) {
   case KEY_DOWN:
     updateNavigationState();
     nextLine();
+    break;
+  case CTRL_KEY('r'):			     /* Search Up for Word */
+    updateLine();
+    wordSearchBackward();
+    break;
+  case CTRL_KEY('s'):			     /* Search Down for Word */
+    updateLine();
+    wordSearchForward();
     break;
   case KEY_PPAGE:			     /* Page Up */
     updateNavigationState();

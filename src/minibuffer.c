@@ -66,7 +66,7 @@ void miniBufferClear() {
 }
 
 /* Minibuffer IO */
-void miniBufferGetInput( const char *msg ) {
+bool miniBufferGetInput( const char *msg ) {
 
   int c;                        /* Input Char */
 
@@ -83,15 +83,40 @@ void miniBufferGetInput( const char *msg ) {
   while((( c = readKey()) != '\r' ) &&
         ( i < MINIBUFFSIZE - 1 )) {
 
-    mvaddch( mbRow, strtCol+i, c );
-    MINIBUFFER[i++] = c;
-    refresh();
+    if( c == CTRL_KEY( 'g' )) return false;
+	
+    if( c == KEY_BACKSPACE ) {
+
+      i--;
+      move( mbRow, strtCol+i );
+      clrtoeol();
+    }
+
+    else {
+      mvaddch( mbRow, strtCol+i, c );
+      MINIBUFFER[i++] = c;
+      refresh();
+    }
   }
 
   MINIBUFFER[i] = '\0';                /* NULL Terminate String */
   
   move( mbRow, 0 );
   clrtoeol();
+
+  return true;
+}
+
+
+bool miniBufferGetSearchString( char *str, int len ) {
+
+  if( miniBufferGetInput( "Search String (c-g to cancel) :" )) {
+
+    strncpy( str, (char *)MINIBUFFER, (size_t)len );
+    return true;
+  }
+
+  return false;  
 }
 
 

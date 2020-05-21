@@ -2,7 +2,8 @@
 
 void miniBufferMessage( const char * );
 void miniBufferClear( void );
-void miniBufferGetInput( const char * );
+bool miniBufferGetInput( const char * );
+bool miniBufferGetSearchString( char *, int );
 void miniBufferGetFilename( void );
 int miniBufferGetPosInteger( const char * );
 int miniBufferGetUniversalArg( void );

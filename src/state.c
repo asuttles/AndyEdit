@@ -30,6 +30,7 @@
 #include "pointMarkRegion.h"
 #include "buffer.h"
 #include "minibuffer.h"
+#include "navigation.h"
 #include "state.h"
 #include "edit.h"
 
@@ -147,6 +148,7 @@ void updateEditState( void ) {
 
   setBufferRowEdited( thisRow(), true );
   setStatusFlagModified();
+  clearSearchFlag();
 }
 
 
@@ -163,6 +165,7 @@ void updateNavigationState( void ) {
   setBufferRowEdited( thisRow(), false );
   
   miniBufferClear();
+  clearSearchFlag();
 }
 
 

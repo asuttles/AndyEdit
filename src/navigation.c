@@ -24,6 +24,7 @@
 ==========================================================================================
  ***/
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 #include <curses.h>
 
@@ -33,95 +34,26 @@
 #include "window.h"
 #include "pointMarkRegion.h"
 #include "minibuffer.h"
+#include "keyPress.h"
 
-
-// Delete from ae.c when all references removed...
 #define screenRows() (getWinNumRows() - 3)
 #define thisRow() (getRowOffset() + getPointY())
 #define thisCol() (getColOffset() + getPointX())
 
+#define _SRCH_STR_LEN 32
 
-/* Center Line */
-void centerLine( void ) {
+/* Private Functions */
+static void _goto( int );
 
-  int PtY = getPointY();
-  int distToCenter = PtY - ( getWinNumRows() / 2 ) + 2;
-  int ro  = getRowOffset();
-  
-  /* Point Above Center */
-  if( distToCenter < 0 ) {
+/* Search String */
+static char _SRCH_STR[_SRCH_STR_LEN];
+static bool SEARCHINGP = false;
 
-    if( ro == 0 ) return;
-    
-    if( ro > abs( distToCenter )) {
-      setRowOffset( ro + distToCenter );
-      setPointY( PtY + abs( distToCenter ));
-      setPointX( 0 );
-    }
-
-    else {
-      setPointY( ro + PtY );
-      setRowOffset( 0 );
-    }
-  }
-
-  /* Point Below Center */
-  else {
-
-    setRowOffset( ro + distToCenter );
-    setPointY( PtY - distToCenter );
-  }
-}
-
-
-/* Move Point to End of Line */
-void pointToEndLine() {
-
-  int thisRow = thisRow();
-  int x = getBufferLineLen( thisRow ) - 1;   /* Text Line Length */
-  int y = getWinNumCols() - 1;		     /* Terminal Length */
-
-  if( x > y ) {
-    setPointX( y );
-    setColOffset( x - y );
-  }
-  else {
-    setPointX( x );
-    setColOffset( 0 );
-  }
-}
-
-/* Move Point to Prior Line */
-void priorLine() {
-
-  int PtY  = getPointY();
-  int ro   = getRowOffset(); 
-  int co   = getColOffset();
-  
-  if( PtY > 0 ) setPointY( --PtY );  
-  else if ( ro > 0 ) setRowOffset( --ro );
-  
-  if(( getPointX() + co ) >
-     getBufferLineLen( PtY + ro )) pointToEndLine();
-}
-
-/* Move Point to Next Line */
-void nextLine() {
-
-  int PtY  = getPointY();
-  int ro   = getRowOffset();
-  int co   = getColOffset();
-  
-  if(( PtY + ro ) < ( getBufferNumRows() - 1 )) {
-
-    /* Avoid Mode Line */
-    if( PtY < screenRows() ) setPointY( ++PtY );
-    else setRowOffset( ++ro );
-    
-    if(( getPointX() + co ) >
-       getBufferLineLen( PtY + ro )) pointToEndLine();
-  }
-}
+/***
+==========================================================================================
+				     POINT NAVIGATION
+==========================================================================================
+***/
 
 /* Move Point Forward */
 void pointForward( void ) {
@@ -149,6 +81,29 @@ void pointBackward( void ) {
   }
 }
 
+/* Move Point to End of Line */
+void pointToEndLine() {
+
+  int thisRow = thisRow();
+  int x = getBufferLineLen( thisRow ) - 1;   /* Text Line Length */
+  int y = getWinNumCols() - 1;                     /* Terminal Length */
+
+  if( x > y ) {
+    setPointX( y );
+    setColOffset( x - y );
+  }
+  else {
+    setPointX( x );
+    setColOffset( 0 );
+  }
+}
+
+
+/***
+==========================================================================================
+				     WORD NAVIGATION
+==========================================================================================
+***/
 
 /* Forward Word */
 void forwardWord( void ) {
@@ -166,9 +121,9 @@ void forwardWord( void ) {
 
   /* Move to End of Word */
   while( c != '\n' &&
-	 c != ' '  &&
-	 c != ')'  &&
-	 c != ']' ) {
+         c != ' '  &&
+         c != ')'  &&
+         c != ']' ) {
 
     pointForward();
     c = getBufferChar( thisRow(), thisCol() );
@@ -209,9 +164,9 @@ void backwardWord( void ) {
  /* Move to Beginning of Word */
   c = getBufferChar( thisRow(), thisCol() );
   while( thisCol() > 0                            &&
-	 c != ' '  &&
+         c != ' '  &&
          c != '('  &&
-	 c != '[' ) {
+         c != '[' ) {
     pointBackward();
     c = getBufferChar( thisRow(), thisCol() );
   }
@@ -221,7 +176,227 @@ void backwardWord( void ) {
     pointForward();
 }
 
+/* Search FORWARD for a Word */
+void wordSearchForward( void ) {
+
+  char *txt, *match;
   
+  int row     = getBufferRow();
+  int nRow    = getBufferNumRows();
+  bool matchP = false;
+
+  /* If not actively searching, get search string */
+  if( !SEARCHINGP ) {
+    if( miniBufferGetSearchString( _SRCH_STR, _SRCH_STR_LEN ) == false ) {
+      miniBufferClear();
+      return;
+    }
+  }
+
+  /* Search for search string in buffer lines */
+  for( ; row < nRow; row++ ) {
+
+    int pad = 0;			     /* Padding to Skip Prior  Matches */
+    
+    /* Search From Current Row Forward */
+    txt = getBufferTextLine( row );
+    if( row == getBufferRow() ) {	     /* Skip Past Current POINT */
+      pad = getPointX() + getColOffset() + 1;
+      txt += pad;
+    }
+
+    match = strstr( txt, _SRCH_STR );
+
+    /* Match Found */
+    if( match ) {			     
+
+      _goto( row+1 );			     /* Set Row */
+      setPointX( 0 );			     /* Set/Adjust Column */
+
+      int col = (int)(match - txt) / (int)sizeof( char ) - 1;
+      col    += pad;
+      
+      for( int i = 0; i <= col; i++ )
+	pointForward();
+
+      SEARCHINGP = true;
+      miniBufferMessage( "Found Match!" );
+      matchP = true;
+      break;
+    }
+  }
+
+  if( !matchP ) miniBufferMessage( "No Match Found" );
+  
+  
+  return;
+}
+
+/* Find Last Match in Text String */
+char *_lastMatch( char *str ) {
+
+  char *lastMatch = NULL;
+
+  while(( str = strstr( str, _SRCH_STR )) != NULL ) {
+    lastMatch = str;
+    str++;
+  }
+
+  return lastMatch;
+}
+
+/* Search BACKWARD for a Word */
+void wordSearchBackward( void ) {
+
+  char *txt, *match;
+  
+  int row     = getBufferRow();
+  bool matchP = false;
+
+  char *tmp   = NULL;
+
+  /* If not actively searching, get search string */
+  if( !SEARCHINGP ) {
+    if( miniBufferGetSearchString( _SRCH_STR, _SRCH_STR_LEN ) == false ) {
+      miniBufferClear();
+      return;
+    }
+  }
+
+  /* Search for search string in buffer lines */
+  for( ; row >= 0; row-- ) {
+
+    /* Search From Current Row Forward */
+    txt = getBufferTextLine( row );
+    int eol = 0;			     /* Only EOL Cutoff for Active Row  */
+
+    if( row == getBufferRow() ) {	     /* Skip Past Current POINT */
+
+      eol = getBufferCol();
+      if(( tmp = malloc( sizeof( char ) * eol )) == NULL ) {
+	miniBufferMessage( "Search Failed: Memory Error!" );
+	return;
+      }
+
+      /* Create a tmp string that does not include last half of line */
+      strncpy( tmp, txt, eol-1 );
+      tmp[eol] = '\0';
+      txt = tmp;
+    }
+
+    match = _lastMatch( txt );
+
+    /* Match Found */
+    if( match ) {			     
+
+      _goto( row+1 );			     /* Set Row */
+      setPointX( 0 );			     /* Set/Adjust Column */
+
+      int col = (int)(match - txt) / (int)sizeof( char ) - 1;
+      
+      for( int i = 0; i <= col; i++ )
+	pointForward();
+
+      SEARCHINGP = true;
+      miniBufferMessage( "Found Match!" );
+      matchP = true;
+
+      if( tmp ) free( tmp );
+      
+      break;
+    }
+  }
+
+  if( !matchP ) miniBufferMessage( "No Match Found" );
+  
+  return;
+}
+
+
+void clearSearchFlag( void ) {
+
+  SEARCHINGP = false;
+}
+
+
+/***
+==========================================================================================
+				     LINE NAVIGATION
+==========================================================================================
+***/
+
+/* Move Point to Next Line */
+void nextLine() {
+
+  int PtY  = getPointY();
+  int ro   = getRowOffset();
+  int co   = getColOffset();
+  
+  if(( PtY + ro ) < ( getBufferNumRows() - 1 )) {
+
+    /* Avoid Mode Line */
+    if( PtY < screenRows() ) setPointY( ++PtY );
+    else setRowOffset( ++ro );
+    
+    if(( getPointX() + co ) >
+       getBufferLineLen( PtY + ro )) pointToEndLine();
+  }
+}
+
+/* Move Point to Prior Line */
+void priorLine() {
+
+  int PtY  = getPointY();
+  int ro   = getRowOffset(); 
+  int co   = getColOffset();
+  
+  if( PtY > 0 ) setPointY( --PtY );  
+  else if ( ro > 0 ) setRowOffset( --ro );
+  
+  if(( getPointX() + co ) >
+     getBufferLineLen( PtY + ro )) pointToEndLine();
+}
+
+
+/* Center Line */
+void centerLine( void ) {
+
+  int PtY = getPointY();
+  int distToCenter = PtY - ( getWinNumRows() / 2 ) + 2;
+  int ro  = getRowOffset();
+  
+  /* Point Above Center */
+  if( distToCenter < 0 ) {
+
+    if( ro == 0 ) return;
+    
+    if( ro > abs( distToCenter )) {
+      setRowOffset( ro + distToCenter );
+      setPointY( PtY + abs( distToCenter ));
+      setPointX( 0 );
+    }
+
+    else {
+      setPointY( ro + PtY );
+      setRowOffset( 0 );
+    }
+  }
+
+  /* Point Below Center */
+  else {
+
+    setRowOffset( ro + distToCenter );
+    setPointY( PtY - distToCenter );
+  }
+}
+
+
+/***
+==========================================================================================
+				    BUFFER NAVIGATION
+==========================================================================================
+***/
+
 /* Move Point to End of Buffer */
 void pointToEndBuffer( void ) {
 
@@ -235,12 +410,11 @@ void pointToEndBuffer( void ) {
     setPointY( nr - 1 );
   }
 
-  else {				     /* Scroll to End Buffer */
+  else {                                     /* Scroll to End Buffer */
     setPointY( screenRows() );
     setPointX( 0 );    
   }
 }
-
 
 /* Page Down */
 void pageDown( void ) {
@@ -301,11 +475,10 @@ void pageUp( void ) {
 
 
 /* Jump to <input> Linenumber */
-void jumpToLine( void ) {
+static void _goto( int lineNum ) {
 
-  int lineNum = miniBufferGetPosInteger( "Line: " );
   int nr      = getBufferNumRows();
-  
+
   if( lineNum < 1 || lineNum > nr ) return;
 
   if( nr < screenRows() ) {
@@ -316,6 +489,13 @@ void jumpToLine( void ) {
     setPointY( 0 );
     centerLine();
   }
+}
+
+void jumpToLine( void ) {
+
+  int lineNum = miniBufferGetPosInteger( "Line: " );
+
+  _goto( lineNum );
 }
 
 /***

@@ -369,6 +369,11 @@ char getBufferChar( int row, int col ) {
   return BUFFER[ row ]->txt[ col ];
 }
 
+char *getBufferTextLine( int row ) {
+
+  return BUFFER[ row ]->txt;
+}
+
 bool bufferLineModifiedP( int row ) {
 
   return ( BUFFER[row]->lPtr != BUFFER[row]->rPtr );
