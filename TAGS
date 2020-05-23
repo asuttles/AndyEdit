@@ -133,42 +133,42 @@ int getScreenRows(109,2686
 
 src/minibuffer.c,422
 #define MINIBUFFSIZE 26,1202
-char MINIBUFFER[MINIBUFFER39,1405
-static int UNIVERSALCHAR;41,1466
-void miniBufferMessage(48,1739
-void miniBufferClear(58,1927
-bool miniBufferGetInput(69,2092
-bool miniBufferGetSearchString(111,2813
-void miniBufferGetFilename(131,3241
-int miniBufferGetPosInteger(140,3418
-int miniBufferGetUniversalArg(148,3576
-int miniBufferGetUniversalChr(177,4154
-bool miniBufferGetYN(183,4259
+char MINIBUFFER[MINIBUFFER40,1429
+static int UNIVERSALCHAR;42,1490
+void miniBufferMessage(49,1763
+void miniBufferClear(61,1971
+bool miniBufferGetInput(72,2136
+bool miniBufferGetSearchString(114,2857
+void miniBufferGetFilename(134,3285
+int miniBufferGetPosInteger(143,3462
+int miniBufferGetUniversalArg(151,3620
+int miniBufferGetUniversalChr(180,4198
+bool miniBufferGetYN(186,4303
 
 src/navigation.c,667
-#define screenRows(39,1443
-#define thisRow(40,1486
-#define thisCol(41,1535
-#define _SRCH_STR_LEN 43,1585
-static char _SRCH_STR[_SRCH_STR49,1682
-static bool SEARCHINGP 50,1733
-void pointForward(59,2010
-void pointBackward(72,2273
-void pointToEndLine(85,2490
-void forwardWord(109,3048
-void backwardWord(137,3521
-void wordSearchForward(180,4441
-char *_lastMatch(_lastMatch236,5711
-void wordSearchBackward(249,5918
-void clearSearchFlag(316,7385
-void nextLine(329,7691
-void priorLine(347,8082
-void centerLine(362,8377
-void pointToEndBuffer(401,9203
-void pageDown(420,9613
-void pageUp(449,10154
-static void _goto(478,10645
-void jumpToLine(494,10912
+#define screenRows(40,1467
+#define thisRow(41,1510
+#define thisCol(42,1559
+#define _SRCH_STR_LEN 44,1609
+static char _SRCH_STR[_SRCH_STR50,1706
+static bool SEARCHINGP 51,1757
+void pointForward(60,2034
+void pointBackward(73,2297
+void pointToEndLine(91,2601
+void forwardWord(115,3159
+void backwardWord(143,3632
+void wordSearchForward(186,4552
+char *_lastMatch(_lastMatch242,5822
+void wordSearchBackward(255,6029
+void clearSearchFlag(327,7659
+void nextLine(340,7965
+void priorLine(358,8356
+void centerLine(373,8651
+void pointToEndBuffer(412,9477
+void pageDown(431,9887
+void pageUp(460,10428
+static void _goto(489,10919
+void jumpToLine(505,11186
 
 src/window.h,63
 #define NORMAL_BACKGROUND 1,0

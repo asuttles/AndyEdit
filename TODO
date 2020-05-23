@@ -19,10 +19,9 @@ Future (v0.9-beta) Features:
 Beta Testing
 
 
-
 Other Updates
     X -  Enable backspace in minibuffer input
-    Update Search Functions to Use Last Search as Default
-    Prior Char Key sould move to end prior line
-    --- Prior-Line + End of Line
+    X -  Update Search Functions to Use Last Search as Default
+    X -  Fix memory error related to searching backward
+    X -  PointBackward should move to prior line when at Col 0.
 

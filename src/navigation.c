@@ -35,6 +35,7 @@
 #include "pointMarkRegion.h"
 #include "minibuffer.h"
 #include "keyPress.h"
+#include "navigation.h"
 
 #define screenRows() (getWinNumRows() - 3)
 #define thisRow() (getRowOffset() + getPointY())
@@ -78,6 +79,11 @@ void pointBackward( void ) {
       setColOffset( getColOffset() - 1 );
     else
       setPointX( --PtX );
+  }
+  else {
+    if( getBufferRow() > 0 ) {
+      priorLine(); pointToEndLine();
+    }
   }
 }
 
@@ -248,12 +254,10 @@ char *_lastMatch( char *str ) {
 /* Search BACKWARD for a Word */
 void wordSearchBackward( void ) {
 
-  char *txt, *match;
+  char *txt, *match, *tmp;
   
   int row     = getBufferRow();
   bool matchP = false;
-
-  char *tmp   = NULL;
 
   /* If not actively searching, get search string */
   if( !SEARCHINGP ) {
@@ -266,14 +270,21 @@ void wordSearchBackward( void ) {
   /* Search for search string in buffer lines */
   for( ; row >= 0; row-- ) {
 
+    tmp = NULL;
+    
     /* Search From Current Row Forward */
     txt = getBufferTextLine( row );
     int eol = 0;			     /* Only EOL Cutoff for Active Row  */
 
-    if( row == getBufferRow() ) {	     /* Skip Past Current POINT */
+    /* Skip Short Lines */
+    if( strlen( txt ) < strlen( _SRCH_STR )) continue;
 
-      eol = getBufferCol();
-      if(( tmp = malloc( sizeof( char ) * eol )) == NULL ) {
+    /* Only Search Up to POINT on Current Line */
+    if( row == getBufferRow() ) {	     
+
+      if(( eol = getBufferCol() ) < (int)strlen( _SRCH_STR )) continue;
+      
+      if(( tmp = malloc( sizeof( char ) * ( eol + 1))) == NULL ) {
 	miniBufferMessage( "Search Failed: Memory Error!" );
 	return;
       }
@@ -286,6 +297,8 @@ void wordSearchBackward( void ) {
 
     match = _lastMatch( txt );
 
+    if( tmp ) free( tmp );
+      
     /* Match Found */
     if( match ) {			     
 
@@ -301,8 +314,6 @@ void wordSearchBackward( void ) {
       miniBufferMessage( "Found Match!" );
       matchP = true;
 
-      if( tmp ) free( tmp );
-      
       break;
     }
   }

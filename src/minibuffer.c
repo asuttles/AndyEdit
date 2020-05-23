@@ -35,6 +35,7 @@
 #include "keyPress.h"
 #include "window.h"
 #include "files.h"
+#include "minibuffer.h"
 
 char MINIBUFFER[MINIBUFFSIZE];		     /* Minibuffer Input */
 
@@ -48,7 +49,9 @@ static int UNIVERSALCHAR;		     /* Input to Universal Arg */
 void miniBufferMessage( const char *msg ) {
 
   int mbRow = getWinNumRows() - 1;
-  
+
+  miniBufferClear();
+
   /* Print Input Message */
   mvaddstr( mbRow, 0, msg );
   refresh();
