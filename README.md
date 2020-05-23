@@ -18,6 +18,8 @@ This readme was edited in AndyEdit!
 
 ## Getting Started
 
+To use AndyEdit, down the source code from its git repository and build the project using make (gmake on BSD).
+
 To download:
 
 > git clone https://github.com/asuttles/AndyEdit.git
@@ -25,7 +27,7 @@ To download:
 
 From the top-level directory, simply type 'make' to install the editor:
 
-> make install
+> [g]make install
 
 
 ## Prerequisites
@@ -34,9 +36,9 @@ The AndyEdit editor requires the ncurses library be installed for terminal rende
 
 AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems.
 
-AndyEdit is being developed using the LLVM clang compiler and ncurses 5.7 on OpenBSD 6.7.
+AndyEdit has been developed using the Clang compiler and ncurses 5.7 on OpenBSD 6.7.
 
-AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void Linux 5.4
+AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void Linux 5.4.
 
 ## Versioning
 
@@ -100,6 +102,8 @@ Latest Release: 0.4
 ## Author
 
 * **Andrew Suttles** - [asuttles](https://github.com/asuttles)
+
+Contributions to AndyEdit are welcome.  See [CONTRIBUTE](CONTRIBUTE.md) file for details.
 
 ## License
 

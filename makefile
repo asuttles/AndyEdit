@@ -11,15 +11,25 @@ CFLAGS=-Wall -Wextra -pedantic -std=c99
 # Object Files
 OBJS=$(SRC:.c=.o)
 
+# OS Type
+OS_TYPE := $(shell uname -s)
+
 # Libraries
 LIBS=-lcurses -lreadline -lmenu
 
 # Header Dependencies
 default: .depend debug
 
+ifeq ($OS_TYPE,Linux)
 .depend: $(SRC)
-	rm -f ./.depend
+	echo "Linux System"
+	if [ -e ./.depend]; then
+	   rm -f ./.depend
+	fi
 	$(CC) $(CFLAGS) -MM $^>>./.depend
+else
+	gcc -MM $(SRC) >>./.depend
+endif
 
 include .depend
 
