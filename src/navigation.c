@@ -46,7 +46,7 @@
 static void _goto( int );
 
 /* Search String */
-static char _SRCH_STR[_SRCH_STR_LEN];
+static char _SRCH_STR[_SRCH_STR_LEN] = "AndyEdit";
 static bool SEARCHINGP = false;
 
 /***

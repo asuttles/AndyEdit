@@ -110,8 +110,15 @@ bool miniBufferGetInput( const char *msg ) {
 
 bool miniBufferGetSearchString( char *str, int len ) {
 
-  if( miniBufferGetInput( "Search String (c-g to cancel) :" )) {
+  char msg[MINIBUFFSIZE];
+  snprintf( msg, MINIBUFFSIZE, "Search String [%s] : ", str );
+  
+  if( miniBufferGetInput( msg )) {
 
+    /* Accept Default Search String */
+    if( strlen( MINIBUFFER ) == 0 ) return true;
+
+    /* Copy NEW Search String */
     strncpy( str, (char *)MINIBUFFER, (size_t)len );
     return true;
   }

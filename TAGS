@@ -139,11 +139,11 @@ void miniBufferMessage(48,1739
 void miniBufferClear(58,1927
 bool miniBufferGetInput(69,2092
 bool miniBufferGetSearchString(111,2813
-void miniBufferGetFilename(124,3057
-int miniBufferGetPosInteger(133,3234
-int miniBufferGetUniversalArg(141,3392
-int miniBufferGetUniversalChr(170,3970
-bool miniBufferGetYN(176,4075
+void miniBufferGetFilename(131,3241
+int miniBufferGetPosInteger(140,3418
+int miniBufferGetUniversalArg(148,3576
+int miniBufferGetUniversalChr(177,4154
+bool miniBufferGetYN(183,4259
 
 src/navigation.c,667
 #define screenRows(39,1443
@@ -151,24 +151,24 @@ src/navigation.c,667
 #define thisCol(41,1535
 #define _SRCH_STR_LEN 43,1585
 static char _SRCH_STR[_SRCH_STR49,1682
-static bool SEARCHINGP 50,1720
-void pointForward(59,1997
-void pointBackward(72,2260
-void pointToEndLine(85,2477
-void forwardWord(109,3035
-void backwardWord(137,3508
-void wordSearchForward(180,4428
-char *_lastMatch(_lastMatch236,5698
-void wordSearchBackward(249,5905
-void clearSearchFlag(316,7372
-void nextLine(329,7678
-void priorLine(347,8069
-void centerLine(362,8364
-void pointToEndBuffer(401,9190
-void pageDown(420,9600
-void pageUp(449,10141
-static void _goto(478,10632
-void jumpToLine(494,10899
+static bool SEARCHINGP 50,1733
+void pointForward(59,2010
+void pointBackward(72,2273
+void pointToEndLine(85,2490
+void forwardWord(109,3048
+void backwardWord(137,3521
+void wordSearchForward(180,4441
+char *_lastMatch(_lastMatch236,5711
+void wordSearchBackward(249,5918
+void clearSearchFlag(316,7385
+void nextLine(329,7691
+void priorLine(347,8082
+void centerLine(362,8377
+void pointToEndBuffer(401,9203
+void pageDown(420,9613
+void pageUp(449,10154
+static void _goto(478,10645
+void jumpToLine(494,10912
 
 src/window.h,63
 #define NORMAL_BACKGROUND 1,0

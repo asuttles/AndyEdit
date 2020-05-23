@@ -1,6 +1,13 @@
 vpath %.c src
 vpath %.h src
 
+CLOC := $(shell command -v cloc 2> /dev/null)
+TAGS := $(shell command -v etags 2> /dev/null)
+
+# ####################################################################
+#			     SOURCE CODE
+# ####################################################################
+
 # Source Code
 SRC=ae.c keyPress.c minibuffer.c statusBar.c \
     pointMarkRegion.c render.c buffer.c \
@@ -8,55 +15,79 @@ SRC=ae.c keyPress.c minibuffer.c statusBar.c \
     edit.c
 CFLAGS=-Wall -Wextra -pedantic -std=c99
 
+# ####################################################################
+#		      OBJECT FILES AND LIBRARIES
+# ####################################################################
+
 # Object Files
 OBJS=$(SRC:.c=.o)
-
-# OS Type
-OS_TYPE := $(shell uname -s)
 
 # Libraries
 LIBS=-lcurses -lreadline -lmenu
 
+# ####################################################################
+#			  BUILD DEPENDENCIES
+# ####################################################################
+
 # Header Dependencies
 default: .depend debug
 
-ifeq ($OS_TYPE,Linux)
 .depend: $(SRC)
-	echo "Linux System"
-	if [ -e ./.depend]; then
-	   rm -f ./.depend
-	fi
+	rm -f ./.depend
 	$(CC) $(CFLAGS) -MM $^>>./.depend
-else
-	gcc -MM $(SRC) >>./.depend
-endif
 
 include .depend
 
+# ####################################################################
+#			  BUILD THE PROJECT
+# ####################################################################
 
 # Build Files
 ae: $(OBJS)
 	$(CC) -o $@ $^ $(LIBS)
-	mv *.o obj
+	@mkdir -p obj
+	@mv *.o obj
 
 %.o: %.c %.h ae.h
 	$(CC) -o $@ -c $(CFLAGS) $<
 
+# ####################################################################
+#			   DEBUGGING FLAGS
+# ####################################################################
+
 # Debugging
 debug: CFLAGS += -g -O0 -DDEBUG
-debug: ae tags .depend stats
+debug: .depend ae tags stats
 
 # Targets
 .phony: install tags stats
 
+# ####################################################################
+#			      STATS/TAGS
+#
+# These targets assume cloc and etags installed on local system.
+#
+# ####################################################################
+
 tags:
 	@echo "\nUpdating TAGS file..."
-	find src/ -name "*.[ch]" -print | etags -
-	@echo "\n"
+	@find src/ -name "*.[ch]" -print | etags -
 	@ls -l TAGS
+	@echo "\n"
 
 stats:
-	cloc src/*.[ch]
+ifdef CLOC
+	@cloc src/*.[ch]
+else
+	@wc src/*.c
+endif
+
+# ####################################################################
+#			     INSTALLATION
+#
+# Install AndyEdit in bin/ directory of user's HOME.
+#
+# ####################################################################
 
 install: CFLAGS += -O2 -DNDEBUG
 install: ae .depend

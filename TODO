@@ -1,0 +1,28 @@
+Future (v0.5-beta) Features:
+    X - Repeat Command (Universal Argument) - keypress.c
+    X - Rudimentary Kill and Yank Text
+    X - Search-Forward/Backward
+
+Future (v0.6-beta) Features:
+    Rectangle Delete/Insert
+
+Future (v0.7-beta) Features:
+    Undo/Redo (undo linked list)
+    Yank Region
+
+Future (v0.8-beta) Features:
+    Syntax Highlighting
+
+Future (v0.9-beta) Features:
+    Update Help Mode
+
+Beta Testing
+
+
+
+Other Updates
+    X -  Enable backspace in minibuffer input
+    Update Search Functions to Use Last Search as Default
+    Prior Char Key sould move to end prior line
+    --- Prior-Line + End of Line
+
