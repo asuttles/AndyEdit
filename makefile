@@ -77,7 +77,7 @@ tags:
 
 stats:
 ifdef CLOC
-	@cloc src/*.[ch]
+	@cloc .
 else
 	@wc src/*.c
 endif

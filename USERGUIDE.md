@@ -1,4 +1,4 @@
-# Andy Edit v0.4-beta User Guide
+# Andy Edit v0.5-beta User Guide
 
         _              _         _____    _ _ _
        / \   _ __   __| |_   _  | ____|__| (_) |_
@@ -21,7 +21,7 @@ See [README](README.md) for information on how to compile ae.
 * END     - Point to Buffer End
 * TAB     - AutoTab (works in first column)
 * F1      - Keymap Help
-* F2      - Open File (TODO)
+* F2      - Open File
 * F5      - Undo (TODO)
 * F10     - Exit
 
@@ -43,8 +43,8 @@ See [README](README.md) for information on how to compile ae.
 * C-o     - 
 * C-p     - Previous Line
 * C-q     - 
-* C-r     - Search Reverse (TODO)
-* C-s     - Search Forward (TODO)
+* C-r     - Search Reverse
+* C-s     - Search Forward
 * C-t     -
 * C-u     - Universal Argument
 * C-V     - Vertical Paging

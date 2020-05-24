@@ -5,7 +5,7 @@
         /   |             |        / (_)   |  o
        |    |   _  _    __|        \__   __|    _|_
        |    |  / |/ |  /  |  |   | /    /  |  |  |
-        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.5-beta
+        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.5-beta [Release]
                                  /|
                                  \|
 
@@ -18,7 +18,7 @@ This readme was edited in AndyEdit!
 
 ## Getting Started
 
-To use AndyEdit, down the source code from its git repository and build the project using make (gmake on BSD).
+To use AndyEdit, down the source code from its git repository and build the project using make.  BSD users will have to install gmake to build the included makefile.
 
 To download:
 
@@ -29,6 +29,7 @@ From the top-level directory, simply type 'make' to install the editor:
 
 > [g]make install
 
+The editor installs in the user's bin directory.
 
 ## Prerequisites
 
@@ -36,27 +37,29 @@ The AndyEdit editor requires the ncurses library be installed for terminal rende
 
 AndyEdit uses the POSIX 'getline' utility.  This may not be found on all systems.
 
-AndyEdit has been developed using the Clang compiler and ncurses 5.7 on OpenBSD 6.7.
+AndyEdit has been developed using the latest Clang compiler and ncurses 5.7 on OpenBSD 6.7.
 
 AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void Linux 5.4.
 
 ## Versioning
 
-Latest Release: 0.4
+Latest Release: 0.5-beta
 
-### Release 0.5 [IN WORK]
+See [TODO](TODO) file for future release features.
+
+### Release 0.5-beta [RELEASE]
   - Added Universal Argument
   - Added Rudimentary Kill/Yank Line
   - Added backspace feature to minibuffer inputs
   - Added word-search forward/backward feature
 
-### Release 0.4 (15 MAY 20)
+### Release 0.4-beta (15 MAY 20)
   - Removed GPL-licensed getline() utility
   - Updated file open/close menu functionality
   - Fully modularized the source tree for ease of maintenance and development. See [ARCHITECTURE](ARCHITECTURE) for rudimentary details on the modules that make up the system.
   - Cleaned up several memory leaks
 
-### Release 0.3 (23 APR 20)
+### Release 0.3-beta (23 APR 20)
   - Kill Word
   - Highlight Region Between Point/Mark
   - Kill Buffer
@@ -67,7 +70,7 @@ Latest Release: 0.4
   - Find (alternate) File
   - Display Help
 
-### Release 0.2
+### Release 0.2-alpha
   - Save Buffer (as)
   - Open Line
   - Kill Line
@@ -83,7 +86,7 @@ Latest Release: 0.4
   - Self insert printable characters
   - Delete and Backspace
 
-### Release 0.1 (A Text Viewer)
+### Release 0.1-alpha (A Text Viewer)
   - Splash Screen
   - Open Buffer from command line
   - Initialize terminal and buffer data structures
@@ -93,17 +96,11 @@ Latest Release: 0.4
   - Status bar
   - Text Renderer
   
-## TODO
-   - (auto)TAB Function
-   - Undo/Redo
-   - Syntax Coloring
-   - Region Operations (Kill/Yank)
-
 ## Author
 
 * **Andrew Suttles** - [asuttles](https://github.com/asuttles)
 
-Contributions to AndyEdit are welcome.  See [CONTRIBUTE](CONTRIBUTE.md) file for details.
+Contributions to AndyEdit are welcome.  See [CONTRIBUTE](CONTRIBUTE.md) file for further information.
 
 ## License
 
