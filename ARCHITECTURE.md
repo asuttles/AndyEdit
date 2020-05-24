@@ -8,7 +8,7 @@
 * buffer           - Manage the Text Buffer, Add/Delete Lines, etc.
 * render           - Display the Text Buffer in Editor Window
 * window           - Update Curses Window
-* navigation       - Move the point around in the buffer window
+* navigation       - Move the Point Around in the Buffer Window
 * files            - Open/Close/Save Files
 * state            - Get/Update Editor States
 * edit             - Insert and Delete Text

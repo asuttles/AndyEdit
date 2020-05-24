@@ -60,7 +60,7 @@ void displaySplash( void ) {
   int third  = (getWinNumRows() / 3);
   
   mvaddstr( third + 0, center - 10, "Welcome to Andy Edit!" );
-  mvaddstr( third + 1, center - 6, "Version 0.4 beta" );
+  mvaddstr( third + 1, center - 6, "Version 0.5 beta" );
   mvaddstr( third + 3, center - 9, "(c) Copyright 2020" );
 
   refresh();

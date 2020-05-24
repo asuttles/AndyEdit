@@ -24,4 +24,4 @@ Other Updates
     X -  Update Search Functions to Use Last Search as Default
     X -  Fix memory error related to searching backward
     X -  PointBackward should move to prior line when at Col 0.
-
+    - Add capitalize word and upcase/lowercase word

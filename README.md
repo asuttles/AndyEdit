@@ -47,7 +47,7 @@ Latest Release: 0.5-beta
 
 See [TODO](TODO) file for future release features.
 
-### Release 0.5-beta [RELEASE]
+### Release 0.5-beta [CURRENT]
   - Added Universal Argument
   - Added Rudimentary Kill/Yank Line
   - Added backspace feature to minibuffer inputs
@@ -56,7 +56,7 @@ See [TODO](TODO) file for future release features.
 ### Release 0.4-beta (15 MAY 20)
   - Removed GPL-licensed getline() utility
   - Updated file open/close menu functionality
-  - Fully modularized the source tree for ease of maintenance and development. See [ARCHITECTURE](ARCHITECTURE) for rudimentary details on the modules that make up the system.
+  - Fully modularized the source tree for ease of maintenance and development. See [ARCHITECTURE](ARCHITECTURE.md) for rudimentary details on the modules that make up the system.
   - Cleaned up several memory leaks
 
 ### Release 0.3-beta (23 APR 20)
