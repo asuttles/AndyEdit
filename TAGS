@@ -1,8 +1,8 @@
 
 src/ae.c,64
-void die(43,1695
-void displaySplash(57,2029
-int main(74,2400
+void die(43,1687
+void displaySplash(57,2021
+int main(74,2392
 
 src/files.c,278
 #define DEFAULTFILENAME 40,1448
@@ -14,7 +14,7 @@ int _getMenuChoice(73,2277
 static bool _checkFileOrDirectory(104,2830
 bool openFile(143,3673
 
-src/buffer.c,1385
+src/buffer.c,1414
 #define _POSIX_C_SOURCE 26,1262
 #define MXRWS 45,1636
 static row_t **BUFFER BUFFER48,1725
@@ -39,24 +39,25 @@ void closeBuffer(310,7692
 void killBuffer(347,8274
 int getBufferLineLen(362,8600
 char getBufferChar(367,8665
-char *getBufferTextLine(getBufferTextLine372,8746
-bool bufferLineModifiedP(377,8816
-bool bufferRowEditedP(382,8911
-void setBufferRowEdited(387,8979
-int getBufferGapRightIndex(392,9060
-int getBufferGapLeftIndex(397,9132
-int getBufferGapSize(402,9203
-void setBufferGapPtrs(407,9291
-void increaseBufferGap(413,9408
-void freeBufferLine(424,9749
-void emptyKillBuffer(445,10217
-void _trimKillBuffer(451,10307
-int getKillBufferLength(463,10519
-char *getKillBufferPtr(getKillBufferPtr467,10583
-void freeBufferPointToEOL(473,10693
-void replaceBufferLineText(504,11567
-void openLine(516,11808
-void combineLineWithPrior(576,13297
+void setBufferChar(371,8745
+char *getBufferTextLine(getBufferTextLine376,8829
+bool bufferLineModifiedP(381,8899
+bool bufferRowEditedP(386,8994
+void setBufferRowEdited(391,9062
+int getBufferGapRightIndex(396,9143
+int getBufferGapLeftIndex(401,9215
+int getBufferGapSize(406,9286
+void setBufferGapPtrs(411,9374
+void increaseBufferGap(417,9491
+void freeBufferLine(428,9832
+void emptyKillBuffer(449,10300
+void _trimKillBuffer(455,10390
+int getKillBufferLength(467,10602
+char *getKillBufferPtr(getKillBufferPtr471,10666
+void freeBufferPointToEOL(477,10776
+void replaceBufferLineText(508,11650
+void openLine(520,11891
+void combineLineWithPrior(580,13380
 
 src/pointMarkRegion.c,492
 bool REGIONP 34,1329
@@ -113,23 +114,23 @@ int readKey(56,1936
 void _universalArgument(71,2159
 void eXtensionMenu(89,2624
 void metaMenu(165,4458
-static void _handleKeypress(216,5527
-void processKeypress(396,9453
+static void _handleKeypress(228,5747
+void processKeypress(408,9673
 
 src/keyPress.h,45
 #define CTRL_KEY(2,20
 #define ALT_KEY 3,53
 
 src/window.c,283
-static WINDOW *WIN;WIN31,1268
-void closeEditor(34,1330
-WINDOW *getWindowHandle(getWindowHandle41,1414
-static void _initColor(47,1461
-void initializeTerminal(60,1690
-int getWinNumCols(97,2518
-int getWinNumRows(101,2574
-int getWinThisCol(105,2630
-int getScreenRows(109,2686
+static WINDOW *WIN;WIN31,1270
+void closeEditor(34,1332
+WINDOW *getWindowHandle(getWindowHandle41,1416
+static void _initColor(47,1463
+void initializeTerminal(60,1692
+int getWinNumCols(97,2520
+int getWinNumRows(101,2576
+int getWinThisCol(105,2632
+int getScreenRows(109,2688
 
 src/minibuffer.c,422
 #define MINIBUFFSIZE 26,1202
@@ -146,29 +147,29 @@ int miniBufferGetUniversalChr(180,4198
 bool miniBufferGetYN(186,4303
 
 src/navigation.c,667
-#define screenRows(40,1467
-#define thisRow(41,1510
-#define thisCol(42,1559
-#define _SRCH_STR_LEN 44,1609
-static char _SRCH_STR[_SRCH_STR50,1706
-static bool SEARCHINGP 51,1757
-void pointForward(60,2034
-void pointBackward(73,2297
-void pointToEndLine(91,2601
-void forwardWord(115,3159
-void backwardWord(143,3632
-void wordSearchForward(186,4552
-char *_lastMatch(_lastMatch242,5822
-void wordSearchBackward(255,6029
-void clearSearchFlag(327,7659
-void nextLine(340,7965
-void priorLine(358,8356
-void centerLine(373,8651
-void pointToEndBuffer(412,9477
-void pageDown(431,9887
-void pageUp(460,10428
-static void _goto(489,10919
-void jumpToLine(505,11186
+#define screenRows(40,1459
+#define thisRow(41,1502
+#define thisCol(42,1551
+#define _SRCH_STR_LEN 44,1601
+static char _SRCH_STR[_SRCH_STR50,1698
+static bool SEARCHINGP 51,1749
+void pointForward(60,2026
+void pointBackward(73,2289
+void pointToEndLine(91,2593
+void forwardWord(115,3151
+void backwardWord(143,3624
+void wordSearchForward(186,4544
+char *_lastMatch(_lastMatch242,5814
+void wordSearchBackward(255,6021
+void clearSearchFlag(327,7651
+void nextLine(340,7957
+void priorLine(358,8348
+void centerLine(373,8643
+void pointToEndBuffer(412,9469
+void pageDown(431,9879
+void pageUp(460,10420
+static void _goto(489,10911
+void jumpToLine(505,11178
 
 src/window.h,63
 #define NORMAL_BACKGROUND 1,0
@@ -178,19 +179,22 @@ src/render.c,55
 #define DISPLAY_ROWS 38,1409
 void renderText(45,1697
 
-src/edit.c,343
-static char EDITBUFFER[EDITBUFFER37,1441
-static int  EBINDEX 38,1503
-int getEditBufferIndex(45,1768
-char getEditBufferChar(50,1823
-void setEditBufferIndex(55,1883
-void autoIndent(65,2173
-void selfInsert(106,3129
-void deleteChar(127,3589
-void backspace(155,4246
-void killWord(204,5424
-void killLine(226,6077
-void yankLine(248,6524
+src/edit.c,427
+static char EDITBUFFER[EDITBUFFER38,1452
+static int  EBINDEX 39,1514
+int getEditBufferIndex(46,1779
+char getEditBufferChar(51,1834
+void setEditBufferIndex(56,1894
+void autoIndent(66,2184
+void selfInsert(107,3140
+void deleteChar(128,3600
+void backspace(156,4257
+void killWord(205,5435
+void capitalizeWord(222,5867
+void upcaseWord(249,6311
+void downcaseWord(293,7011
+void killLine(341,7904
+void yankLine(363,8351
 
 src/buffer.h,233
   char  *txt;txt5,70

@@ -179,6 +179,10 @@ void metaMenu( void ) {
     backwardWord();
     break;
 
+  case 'c':				     /* Capitalize Word */
+    capitalizeWord();
+    break;
+
   case 'd':				     /* Kill Forward Word */
     killWord();
     updateEditState();
@@ -186,6 +190,14 @@ void metaMenu( void ) {
 
   case 'g':				     /* Alias for c-j */
     jumpToLine();
+    break;
+
+  case 'l':				     /* Downcase Word */
+    downcaseWord();
+    break;
+    
+  case 'u':				     /* Upcase Word */
+    upcaseWord();
     break;
     
   case 'v':				     /* Backward Page */

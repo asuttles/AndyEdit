@@ -5,20 +5,20 @@
         /   |             |        / (_)   |  o
        |    |   _  _    __|        \__   __|    _|_
        |    |  / |/ |  /  |  |   | /    /  |  |  |
-        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.5-beta [Release]
+        \__/\_/  |  |_/\_/|_/ \_/|/\___/\_/|_/|_/|_/   v0.6-beta [Draft]
                                  /|
                                  \|
 
 
 A simple, featureless, one file-at-a-time, line-oriented, terminal-based text editor with emacs-like keybindings.
 
-The editor is inspired by, but not derived from, similar works like mg and Kilo.
+The Editor Is Inspired By, But Not deRived From, Similar works like mg and Kilo.
 
 This readme was edited in AndyEdit!
 
 ## Getting Started
 
-To use AndyEdit, down the source code from its git repository and build the project using make.  BSD users will have to install gmake to build the included makefile.
+To use AndyEdit, clone the source code from its git repository and build the project using make.  BSD users will have to install gmake to build the included makefile.
 
 To download:
 
@@ -46,6 +46,10 @@ AndyEdit has been tested using the GNU gcc 9.3 compiler and ncurses 6.2 on Void 
 Latest Release: 0.5-beta
 
 See [TODO](TODO) file for future release features.
+
+### Release 0.6-beta [IN WORK]
+  - Added Capitalize Feature
+  - Added Upcase/Downcase Word Feature
 
 ### Release 0.5-beta [CURRENT]
   - Added Universal Argument

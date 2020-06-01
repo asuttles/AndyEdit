@@ -368,6 +368,10 @@ char getBufferChar( int row, int col ) {
 
   return BUFFER[ row ]->txt[ col ];
 }
+void setBufferChar( int row, int col, char c ) {
+
+  BUFFER[row]->txt[ col ] = c;
+}
 
 char *getBufferTextLine( int row ) {
 

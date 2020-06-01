@@ -24,6 +24,7 @@
 ==========================================================================================
  ***/
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "ae.h"
 #include "edit.h"
@@ -217,6 +218,120 @@ void killWord( void ) {
   updateEditState();
   updateNavigationState();
 }
+
+void capitalizeWord( void ) {
+
+  int c;
+  
+  int thisRow = getBufferRow();
+  int thisCol = getBufferCol();
+  int nextCol = thisCol;
+  
+  int lineLen = getBufferLineLen( thisRow );
+
+  while( nextCol < lineLen ) {
+
+    if( isalpha( c = (int)getBufferChar( thisRow, nextCol ))) {
+
+      setBufferChar( thisRow, nextCol, (char)toupper( c ));
+      forwardWord();
+      return;
+    }
+
+    nextCol++;
+  }
+
+  return;
+}
+
+
+/* Uppercase Word At Point */
+void upcaseWord( void ) {
+
+  int c;
+  bool alphaFoundP = false;
+  
+  int thisRow = getBufferRow();
+  int thisCol = getBufferCol();
+  int nextCol = thisCol;
+
+  int lineLen = getBufferLineLen( thisRow );
+  
+  /* Find Next Alpha */
+  while( nextCol < lineLen ) {
+
+    c = (int)getBufferChar( thisRow, nextCol );
+
+    /* Char NOT Alphabetic */
+    if( !isalpha( c )) {
+
+      if( alphaFoundP ) {
+	return;
+      }
+      else {
+	pointForward();
+	nextCol++;
+      }
+    }
+
+    /* Char IS Alphabetic */
+    else {
+      
+      setBufferChar( thisRow, nextCol, (char)toupper( c ));
+      pointForward();
+      alphaFoundP = true;
+      
+      nextCol++;
+    }
+  }
+
+  return;
+}
+
+
+/* Uppercase Word At Point */
+void downcaseWord( void ) {
+
+  int c;
+  bool alphaFoundP = false;
+  
+  int thisRow = getBufferRow();
+  int thisCol = getBufferCol();
+  int nextCol = thisCol;
+
+  int lineLen = getBufferLineLen( thisRow );
+  
+  /* Find Next Alpha */
+  while( nextCol < lineLen ) {
+
+    c = (int)getBufferChar( thisRow, nextCol );
+
+    /* Char NOT Alphabetic */
+    if( !isalpha( c )) {
+
+      if( alphaFoundP ) {
+	return;
+      }
+      else {
+	pointForward();
+	nextCol++;
+      }
+    }
+
+    /* Char IS Alphabetic */
+    else {
+      
+      setBufferChar( thisRow, nextCol, (char)tolower( c ));
+      pointForward();
+      alphaFoundP = true;
+      
+      nextCol++;
+    }
+  }
+
+  return;
+}
+
 
 /*****************************************************************************************
 					  LINES

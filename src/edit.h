@@ -6,5 +6,8 @@ void selfInsert( int );
 void backspace( void );
 void deleteChar( void );
 void killWord( void );
+void capitalizeWord( void );
+void upcaseWord( void );
+void downcaseWord( void );
 void killLine( void );
 void yankLine( void );

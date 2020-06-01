@@ -30,7 +30,7 @@ LIBS=-lcurses -lreadline -lmenu
 # ####################################################################
 
 # Header Dependencies
-default: .depend debug
+default: debug
 
 .depend: $(SRC)
 	rm -f ./.depend
@@ -60,7 +60,7 @@ debug: CFLAGS += -g -O0 -DDEBUG
 debug: .depend ae tags stats
 
 # Targets
-.phony: install tags stats
+#.phony: install tags stats default debug
 
 # ####################################################################
 #			      STATS/TAGS

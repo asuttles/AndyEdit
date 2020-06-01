@@ -36,6 +36,7 @@ void killBuffer( void );
 /* Buffer Information */
 int getBufferLineLen( int ); 
 char getBufferChar( int, int );
+void setBufferChar( int, int, char );
 char *getBufferTextLine( int );
 bool bufferLineModifiedP( int );
 bool bufferRowEditedP( int );

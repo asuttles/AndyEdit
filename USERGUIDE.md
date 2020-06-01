@@ -1,4 +1,4 @@
-# Andy Edit v0.5-beta User Guide
+# Andy Edit v0.6-beta User Guide
 
         _              _         _____    _ _ _
        / \   _ __   __| |_   _  | ____|__| (_) |_
@@ -67,8 +67,11 @@ See [README](README.md) for information on how to compile ae.
 ### Alt-Key Keybindings (alt+key)
 * a-f     - Forward Word
 * a-b     - Backward Word
+* a-c     - Capitalize Word
 * a-d     - Delete Word
 * a-g     - Goto Line
+* a-l     - Downcase Word
+* a-u     - Upcase Word
 * a-w     - Copy Region (TODO)
 * a-v     - Vertical Scroll Up
 * a-<     - Top of Buffer
