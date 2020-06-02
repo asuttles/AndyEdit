@@ -28,36 +28,36 @@ int getBufferRow(72,2490
 int getBufferCol(77,2606
 static char *removeTabs(removeTabs87,2912
 void initializeBuffer(136,4103
-buff_t getBufferHandle(146,4362
-void openEmptyBuffer(153,4450
-void readBufferFile(172,4850
-void saveBuffer(227,6111
-void saveBufferNewName(254,6635
-void doubleBufferSize(287,7259
-bool bufferFullP(299,7550
-void closeBuffer(310,7692
-void killBuffer(347,8274
-int getBufferLineLen(362,8600
-char getBufferChar(367,8665
-void setBufferChar(371,8745
-char *getBufferTextLine(getBufferTextLine376,8829
-bool bufferLineModifiedP(381,8899
-bool bufferRowEditedP(386,8994
-void setBufferRowEdited(391,9062
-int getBufferGapRightIndex(396,9143
-int getBufferGapLeftIndex(401,9215
-int getBufferGapSize(406,9286
-void setBufferGapPtrs(411,9374
-void increaseBufferGap(417,9491
-void freeBufferLine(428,9832
-void emptyKillBuffer(449,10300
-void _trimKillBuffer(455,10390
-int getKillBufferLength(467,10602
-char *getKillBufferPtr(getKillBufferPtr471,10666
-void freeBufferPointToEOL(477,10776
-void replaceBufferLineText(508,11650
-void openLine(520,11891
-void combineLineWithPrior(580,13380
+buff_t getBufferHandle(146,4368
+void openEmptyBuffer(153,4456
+void readBufferFile(172,4856
+void saveBuffer(234,6265
+void saveBufferNewName(261,6789
+void doubleBufferSize(294,7413
+bool bufferFullP(306,7704
+void closeBuffer(317,7846
+void killBuffer(354,8428
+int getBufferLineLen(368,8753
+char getBufferChar(373,8818
+void setBufferChar(377,8898
+char *getBufferTextLine(getBufferTextLine382,8982
+bool bufferLineModifiedP(387,9052
+bool bufferRowEditedP(392,9147
+void setBufferRowEdited(397,9215
+int getBufferGapRightIndex(402,9296
+int getBufferGapLeftIndex(407,9368
+int getBufferGapSize(412,9439
+void setBufferGapPtrs(417,9527
+void increaseBufferGap(423,9644
+void freeBufferLine(434,9985
+void emptyKillBuffer(455,10453
+void _trimKillBuffer(461,10543
+int getKillBufferLength(473,10755
+char *getKillBufferPtr(getKillBufferPtr477,10819
+void freeBufferPointToEOL(483,10929
+void replaceBufferLineText(514,11803
+void openLine(526,12044
+void combineLineWithPrior(586,13533
 
 src/pointMarkRegion.c,492
 bool REGIONP 34,1329
@@ -113,9 +113,9 @@ src/keyPress.c,225
 int readKey(56,1936
 void _universalArgument(71,2159
 void eXtensionMenu(89,2624
-void metaMenu(165,4458
-static void _handleKeypress(228,5747
-void processKeypress(408,9673
+void metaMenu(165,4488
+static void _handleKeypress(228,5777
+void processKeypress(408,9703
 
 src/keyPress.h,45
 #define CTRL_KEY(2,20
@@ -127,10 +127,10 @@ void closeEditor(34,1332
 WINDOW *getWindowHandle(getWindowHandle41,1416
 static void _initColor(47,1463
 void initializeTerminal(60,1692
-int getWinNumCols(97,2520
-int getWinNumRows(101,2576
-int getWinThisCol(105,2632
-int getScreenRows(109,2688
+int getWinNumCols(98,2546
+int getWinNumRows(102,2602
+int getWinThisCol(106,2658
+int getScreenRows(110,2714
 
 src/minibuffer.c,422
 #define MINIBUFFSIZE 26,1202

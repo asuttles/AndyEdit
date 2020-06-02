@@ -184,15 +184,17 @@ bool openFile( void ) {
 
   /* Read Menu Inputs */
   choice = _getMenuChoice( menu );
-
+  unpost_menu( menu );
+  free_menu( menu );
+  
   if( choice > 0 ) 
     setFilename( item_name( items[choice] ));
   
   /* Free Menu Memory */
-  for( i=0; i<=countFiles+1; i++ ) {
+  for( i=0; i<=countFiles+2; i++ ) {
     free_item( items[i] );
   }
-  free_menu( menu );
+  free( items );
 
   closedir( dp );
 

@@ -136,7 +136,7 @@ static char *removeTabs( char *line ) {
 void initializeBuffer( void ) {
 
   /* Reserve Heap Space for Buffer */
-  if(( BUFFER = malloc( sizeof( row_t * ) * MXRWS )) == NULL )
+  if(( BUFFER = calloc( (size_t)MXRWS, sizeof( row_t * ))) == NULL )
     die( "initializeData: BUFFER malloc failed" );
 }
 
@@ -195,6 +195,13 @@ void readBufferFile( char * fn ) {
       doubleBufferSize();
     }
 
+
+    /* Delete Previously Allocated BUFFER Lines */
+    if( BUFFER[i] != NULL ) {
+      free( BUFFER[i]->txt );
+      free( BUFFER[i] );
+    }
+    
     /* Reserve Heap Space for Text Row  */
     BUFFER[i] = malloc( sizeof( row_t ));
     BUFFER[i]->len   = 0;
@@ -353,7 +360,6 @@ void killBuffer( void ) {
   openEmptyBuffer( DEFAULT );
   
   clear();
-
 }
 
 /*****************************************************************************************

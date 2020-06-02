@@ -88,6 +88,7 @@ void initializeTerminal() {
   }
   else {
     _initColor();
+    use_default_colors();
   }
   
   timeout(100);

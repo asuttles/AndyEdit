@@ -122,7 +122,7 @@ void eXtensionMenu( void ) {
     }
     break;
 
-  case CTRL_KEY('f'):
+  case CTRL_KEY('f'):			     /* Open Buffer File */
   case CTRL_KEY('v'):
     /* Close Old Buffer */
     if( statusFlagModifiedP() )
