@@ -24,7 +24,9 @@
 ==========================================================================================
  ***/
 #include <stdbool.h>
+#include <string.h>
 #include <ctype.h>
+#include <curses.h>
 
 #include "ae.h"
 #include "edit.h"
@@ -35,7 +37,8 @@
 #include "state.h"
 
 /* EDIT BUFFER */
-static char EDITBUFFER[64];		/* Edit Buffer For Text Input */
+#define EBSZ 64
+static char EDITBUFFER[EBSZ];		/* Edit Buffer For Text Input */
 static int  EBINDEX   =  0;		/* Edit Buffer Index */
 
 
@@ -372,6 +375,124 @@ void yankLine( void ) {
 
   return;
 }
+
+
+/*****************************************************************************************
+					RECTANGLES
+*****************************************************************************************/
+
+void _swap( int *x, int *y ) {
+
+  int tmp = *x;
+  *x = *y;
+  *y = tmp;
+}
+
+void killRectangle( void ) {
+
+  int row, endCol, lineLen;
+
+  if( !regionActiveP() ) return;
+  
+  /* Find Row/Col Bounds */
+  int strtRow = getBufferRow();
+  int stopRow = getMarkY();
+
+  if( strtRow > stopRow )		     /* Work from Top Down */
+    _swap( &strtRow, &stopRow );		     
+
+  int strtCol = getBufferCol();
+  int stopCol = getMarkX();
+
+  if( strtCol > stopCol )		     /* Work Left to Right */
+    _swap( &strtCol, &stopCol );		     
+  
+  for( row = strtRow; row<=stopRow; row++ ) {
+
+    endCol = stopCol;
+    
+    /* Adjust for short lines */
+    lineLen = getBufferLineLen( row );
+    if( lineLen < strtCol ) continue;
+    if( lineLen < stopCol ) endCol = lineLen;
+
+    /* Update Line */
+    setPointX( strtCol ); setPointY( row );
+    setBufferGapPtrs( row, strtCol, endCol );
+    updateLine();
+  }
+
+  /* Update Editor Status */
+  clear();
+  setStatusFlagModified();
+  setRegionActive( false );
+  miniBufferMessage( "Region Killed" );
+
+  return;
+}
+
+
+void rectangleInsert( void ) {
+
+  int row, lineLen;
+  
+  /* Get User Input */
+  if( !regionActiveP() ) return;
+  if( !miniBufferGetInput( "Text: " )) return;
+  strncpy( EDITBUFFER, miniBufferGetUserText(), EBSZ );
+  
+  
+  /* Find Row/Col Bounds */
+  int strtRow = getBufferRow();
+  int stopRow = getMarkY();
+
+  if( strtRow > stopRow )		     /* Work from Top Down */
+    _swap( &strtRow, &stopRow );		     
+  
+  int strtCol = getBufferCol();
+  int stopCol = getMarkX();
+
+  if( strtCol > stopCol )		     /* Work Left to Right */
+    _swap( &strtCol, &stopCol );		     
+
+  /* Iter Over Rows.... */
+  for( row = strtRow; row<=stopRow; row++ ) {
+
+    /* Update Line */
+    setPointX( strtCol ); setPointY( row );
+
+    /* Adjust for short lines */
+    lineLen = getBufferLineLen( row );
+    if( lineLen < stopCol ) {
+
+      setPointX( lineLen-1 ); 
+      
+      for( int i = 0; i<(stopCol-lineLen+1); i++ ) {
+	
+	selfInsert( 'x' );
+      }
+
+      /* EDITBUFFER Got Clobbered by selfInsert */
+      strncpy( EDITBUFFER, miniBufferGetUserText(), EBSZ );
+      updateNavigationState();
+      setPointX( strtCol );
+    }
+
+    /* Setup Delete Area and Text Insertion Area */
+    setEditBufferIndex( strlen( EDITBUFFER ));
+    setBufferGapPtrs( row, strtCol, stopCol );
+    updateLine();
+  }
+
+  /* Update Editor Status */
+  clear();
+  setStatusFlagModified();
+  setRegionActive( false );
+  miniBufferMessage( "Rectangle Inserted" );
+
+  return;
+}
+
 
 /***
     Local Variables:

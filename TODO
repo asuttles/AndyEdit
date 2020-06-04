@@ -4,7 +4,8 @@ Completed Features (v0.5-beta):
     X - Search-Forward/Backward
 
 Future Features (v0.6-beta):
-    Rectangle Delete/Insert
+    X - Rectangle Delete (similar to kill region until rectangle-yank implemented)
+    X - Rectangle Insert
 
 Future Features (v0.7-beta):
     Undo/Redo (undo linked list)
@@ -26,5 +27,6 @@ Other Updates
     X -  PointBackward should move to prior line when at Col 0.
     X -  Add (un)capitalize word
     X - Add upcase/lowercase word
-    - valgrind killBuffer
+    X - valgrind killBuffer & Open/Close Files
     - Add keyboard macros
+    - Search/Replace

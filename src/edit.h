@@ -11,3 +11,5 @@ void upcaseWord( void );
 void downcaseWord( void );
 void killLine( void );
 void yankLine( void );
+void killRectangle( void );
+void rectangleInsert( void );

@@ -85,14 +85,40 @@ void _universalArgument( void ) {
 			       HANDLE EXTENSION MENU INPUTS
 *****************************************************************************************/
 
+static void _rectangleMenu( void ) {
+
+  int c = readKey();
+
+  switch(c) {
+    
+  case 'k':				     /* Kill Rectangle */
+    killRectangle();
+    break;
+
+  case 't':				     /* Insert Rectangle */
+    rectangleInsert();
+    break;
+
+  default:
+    miniBufferMessage( "unrecognized keypress" );
+    break;
+  }
+
+  return;
+}
+
+/*****************************************************************************************
+			       HANDLE EXTENSION MENU INPUTS
+*****************************************************************************************/
+
 /* eXtension Menu */
-void eXtensionMenu( void ) {
+static void _eXtensionMenu( void ) {
 
   int c = readKey();
 
   switch(c) {
 
-  case CTRL_KEY('c'):                 /* Close Editor */
+  case CTRL_KEY('c'):			     /* Close Editor */
     if( statusFlagModifiedP() )
       if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " )) {
 	updateNavigationState();
@@ -103,7 +129,7 @@ void eXtensionMenu( void ) {
     exit(EXIT_SUCCESS);
     break;
 
-  case 'k':                           /* Kill Buffer */
+  case 'k':				     /* Kill Buffer */
     if( statusFlagModifiedP() )
       if( miniBufferGetYN( "Buffer Modified. Save? [Y/N] " )) {
 	updateNavigationState();
@@ -111,8 +137,12 @@ void eXtensionMenu( void ) {
       }
     killBuffer();
     break;
+
+  case 'r':				     /* Rectangle Operations */
+    _rectangleMenu();
+    break;
     
-  case CTRL_KEY('s'):                /* Save Buffer */
+  case CTRL_KEY('s'):			     /* Save Buffer */
     if( statusFlagModifiedP() ) {
 	updateNavigationState();
 	saveBuffer();
@@ -236,7 +266,7 @@ static void _handleKeypress( int c ) {
 
     /* CTRL Key */
   case CTRL_KEY('x'):
-    eXtensionMenu();
+    _eXtensionMenu();
     break;
 
     /* Universal Argument */

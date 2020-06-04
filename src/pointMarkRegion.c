@@ -31,13 +31,13 @@
 #include "state.h"
 
 /* Private State Data */
-bool REGIONP   = false;			/* Is Region Active? */
+bool REGIONP   = false;			     /* Is Region Active? */
 
 /* Private Module Data */
-static int POINT_X    =  0;			/* Point X Position */
-static int POINT_Y    =  0;			/* Point Y Position */
-static int MARK_X     = -1;			/* Mark X Position */
-static int MARK_Y     = -1;			/* Mark Y Position */
+static int POINT_X    =  0;		     /* Point X Position */
+static int POINT_Y    =  0;		     /* Point Y Position */
+static int MARK_X     = -1;		     /* Mark X Position */
+static int MARK_Y     = -1;		     /* Mark Y Position */
 
 
 /*******************************************************************************

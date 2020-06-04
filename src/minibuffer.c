@@ -110,6 +110,11 @@ bool miniBufferGetInput( const char *msg ) {
   return true;
 }
 
+char * miniBufferGetUserText( void ) {
+
+  return MINIBUFFER;
+}
+
 
 bool miniBufferGetSearchString( char *str, int len ) {
 
