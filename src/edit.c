@@ -38,8 +38,14 @@
 
 /* EDIT BUFFER */
 #define EBSZ 64
-static char EDITBUFFER[EBSZ];		/* Edit Buffer For Text Input */
-static int  EBINDEX   =  0;		/* Edit Buffer Index */
+static char EDITBUFFER[EBSZ];		     /* Edit Buffer For Text Input */
+static int  EBINDEX   =  0;		     /* Edit Buffer Index */
+
+/* Rectangles */
+static int recStrtRow = 0;		     /* Rectangle Coords */
+static int recStopRow = 0;
+static int recStrtCol = 0;
+static int recStopCol = 0;
 
 
 /*****************************************************************************************
@@ -388,37 +394,42 @@ void _swap( int *x, int *y ) {
   *y = tmp;
 }
 
+/* Find Row/Col Bounds */
+void _setupRectangle( void ) {
+
+  recStrtRow = getBufferRow();
+  recStopRow = getMarkY();
+
+  if( recStrtRow > recStopRow )		     /* Work from Top Down */
+    _swap( &recStrtRow, &recStopRow );		     
+
+  recStrtCol = getBufferCol();
+  recStopCol = getMarkX();
+
+  if( recStrtCol > recStopCol )		     /* Work Left to Right */
+    _swap( &recStrtCol, &recStopCol );		     
+}
+
 void killRectangle( void ) {
 
   int row, endCol, lineLen;
 
   if( !regionActiveP() ) return;
   
-  /* Find Row/Col Bounds */
-  int strtRow = getBufferRow();
-  int stopRow = getMarkY();
-
-  if( strtRow > stopRow )		     /* Work from Top Down */
-    _swap( &strtRow, &stopRow );		     
-
-  int strtCol = getBufferCol();
-  int stopCol = getMarkX();
-
-  if( strtCol > stopCol )		     /* Work Left to Right */
-    _swap( &strtCol, &stopCol );		     
+  _setupRectangle();
   
-  for( row = strtRow; row<=stopRow; row++ ) {
+  for( row = recStrtRow; row<=recStopRow; row++ ) {
 
-    endCol = stopCol;
+    endCol = recStopCol;
     
     /* Adjust for short lines */
     lineLen = getBufferLineLen( row );
-    if( lineLen < strtCol ) continue;
-    if( lineLen < stopCol ) endCol = lineLen;
+    if( lineLen < recStrtCol ) continue;
+    if( lineLen < recStopCol ) endCol = lineLen;
 
     /* Update Line */
-    setPointX( strtCol ); setPointY( row );
-    setBufferGapPtrs( row, strtCol, endCol );
+    setPointX( recStrtCol ); setPointY( row );
+    setBufferGapPtrs( row, recStrtCol, endCol );
     updateLine();
   }
 
@@ -439,48 +450,36 @@ void rectangleInsert( void ) {
   /* Get User Input */
   if( !regionActiveP() ) return;
   if( !miniBufferGetInput( "Text: " )) return;
-  strncpy( EDITBUFFER, miniBufferGetUserText(), EBSZ );
+  strncpy( EDITBUFFER, miniBufferGetUserText(), EBSZ-1 );
   
-  
-  /* Find Row/Col Bounds */
-  int strtRow = getBufferRow();
-  int stopRow = getMarkY();
-
-  if( strtRow > stopRow )		     /* Work from Top Down */
-    _swap( &strtRow, &stopRow );		     
-  
-  int strtCol = getBufferCol();
-  int stopCol = getMarkX();
-
-  if( strtCol > stopCol )		     /* Work Left to Right */
-    _swap( &strtCol, &stopCol );		     
+  _setupRectangle();
 
   /* Iter Over Rows.... */
-  for( row = strtRow; row<=stopRow; row++ ) {
+  for( row = recStrtRow; row<=recStopRow; row++ ) {
 
     /* Update Line */
-    setPointX( strtCol ); setPointY( row );
+    setPointX( recStrtCol ); setPointY( row );
 
     /* Adjust for short lines */
     lineLen = getBufferLineLen( row );
-    if( lineLen < stopCol ) {
+    if( lineLen < recStopCol ) {
 
       setPointX( lineLen-1 ); 
       
-      for( int i = 0; i<(stopCol-lineLen+1); i++ ) {
+      for( int i = 0; i<(recStopCol-lineLen+1); i++ ) {
 	
 	selfInsert( 'x' );
       }
 
       /* EDITBUFFER Got Clobbered by selfInsert */
-      strncpy( EDITBUFFER, miniBufferGetUserText(), EBSZ );
+      strncpy( EDITBUFFER, miniBufferGetUserText(), EBSZ-1 );
       updateNavigationState();
-      setPointX( strtCol );
+      setPointX( recStrtCol );
     }
 
     /* Setup Delete Area and Text Insertion Area */
     setEditBufferIndex( strlen( EDITBUFFER ));
-    setBufferGapPtrs( row, strtCol, stopCol );
+    setBufferGapPtrs( row, recStrtCol, recStopCol );
     updateLine();
   }
 
@@ -489,6 +488,41 @@ void rectangleInsert( void ) {
   setStatusFlagModified();
   setRegionActive( false );
   miniBufferMessage( "Rectangle Inserted" );
+
+  return;
+}
+
+
+void rectangleNumberLines( void ) {
+
+  _setupRectangle();
+
+  if( recStrtCol != recStopCol ) {
+    miniBufferMessage( "Point and Mark Columns Must Match" );
+    return;
+  }
+
+  int x = miniBufferGetPosInteger( "Starting Number: " );
+
+  for( int row=recStrtRow; row<=recStopRow; row++ ) {
+
+    setPointX( recStrtCol ); setPointY( row );
+    
+    // Handle Short Lines...
+    
+    /* Setup Edit Buffer and Update Line */
+    snprintf( EDITBUFFER, EBSZ, "%i", x );
+    setEditBufferIndex( strlen( EDITBUFFER ));
+    setBufferGapPtrs( row, recStrtCol, recStrtCol );
+    updateLine();
+    x++;
+  }
+
+  /* Update Editor Status */
+  clear();
+  setStatusFlagModified();
+  setRegionActive( false );
+  miniBufferMessage( "Rectangle Numbers Inserted" );
 
   return;
 }

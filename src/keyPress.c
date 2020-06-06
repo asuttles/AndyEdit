@@ -99,6 +99,10 @@ static void _rectangleMenu( void ) {
     rectangleInsert();
     break;
 
+  case 'N':				     /* Insert Column of Numbers */
+    rectangleNumberLines();
+    break;
+    
   default:
     miniBufferMessage( "unrecognized keypress" );
     break;
