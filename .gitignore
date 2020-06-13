@@ -1,5 +1,5 @@
 ae
-ae.core
+*.core
 obj/*
 *~
 .valgrind

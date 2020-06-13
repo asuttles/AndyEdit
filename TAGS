@@ -4,16 +4,6 @@ void die(43,1687
 void displaySplash(57,2021
 int main(74,2392
 
-src/files.c,278
-#define DEFAULTFILENAME 40,1448
-static char FILENAME[FILENAME43,1488
-void setDefaultFilename(51,1806
-void setFilename(57,1904
-char *getBufferFilename(getBufferFilename63,2009
-int _getMenuChoice(73,2277
-static bool _checkFileOrDirectory(104,2830
-bool openFile(143,3673
-
 src/buffer.c,1414
 #define _POSIX_C_SOURCE 26,1262
 #define MXRWS 45,1636
@@ -59,53 +49,51 @@ void replaceBufferLineText(514,11803
 void openLine(526,12044
 void combineLineWithPrior(586,13533
 
-src/pointMarkRegion.c,492
-bool REGIONP 34,1329
-static int POINT_X 37,1411
-static int POINT_Y 38,1468
-static int MARK_X 39,1525
-static int MARK_Y 40,1581
-int getPointX(48,1860
-int getPointY(51,1904
-void setPointX(54,1948
-void setPointY(57,1991
-int getMarkX(62,2070
-int getMarkY(65,2112
-void setMarkX(68,2154
-void setMarkY(71,2195
-bool swapPointAndMark(77,2264
-void setRegionActive(104,2904
-bool regionActiveP(109,2968
-bool inRegionP(115,3062
-static void _removeText(177,4283
-void killRegion(255,5881
+src/buffer.h,233
+  char  *txt;txt5,70
+  size_t len;6,110
+  size_t lPtr;7,148
+  size_t rPtr;8,188
+  bool   editP;9,203
+} row_t;10,254
+typedef row_t** buff_t;13,290
+enum _bn 16,358
+enum _bn { DEFAULT,16,358
+enum _bn { DEFAULT, UNAMED 16,358
 
-src/state.c,680
-#define thisRow(38,1475
-#define thisCol(39,1524
-static int ROWOFFSET 42,1592
-static int COLOFFSET 43,1656
-enum _sf 46,1748
-enum _sf { ORIGINAL,46,1748
-enum _sf { ORIGINAL, MODIFIED,46,1748
-enum _sf { ORIGINAL, MODIFIED, READONLY 46,1748
-static const char _sfname[_sfname47,1791
-static enum _sf STATUSFLAG 50,1892
-void setStatusFlagOriginal(56,2145
-void setStatusFlagModified(61,2211
-bool statusFlagModifiedP(65,2276
-char *getStatusFlagName(getStatusFlagName70,2352
-int getRowOffset(80,2689
-int getColOffset(83,2738
-void setRowOffset(86,2787
-void setColOffset(89,2837
-void updateLine(98,3140
-void updateEditState(147,4354
-void updateNavigationState(160,4736
+src/edit.c,530
+#define EBSZ 40,1492
+static char EDITBUFFER[EDITBUFFER41,1508
+static int  EBINDEX 42,1572
+int getEditBufferIndex(49,1837
+char getEditBufferChar(54,1892
+void setEditBufferIndex(59,1952
+void autoIndent(69,2242
+void selfInsert(110,3198
+void deleteChar(131,3658
+void backspace(159,4315
+void killWord(208,5493
+void capitalizeWord(225,5925
+void upcaseWord(252,6369
+void downcaseWord(296,7069
+void killLine(344,7962
+void yankLine(366,8409
+void _swap(384,8766
+void killRectangle(391,8840
+void rectangleInsert(435,9799
 
-src/statusBar.c,72
-static char statusLine[statusLine33,1282
-void drawStatusLine(41,1540
+src/files.c,278
+#define DEFAULTFILENAME 40,1448
+static char FILENAME[FILENAME43,1488
+void setDefaultFilename(51,1806
+void setFilename(57,1904
+char *getBufferFilename(getBufferFilename63,2009
+int _getMenuChoice(73,2277
+static bool _checkFileOrDirectory(104,2830
+bool openFile(143,3673
+
+src/files.h,22
+#define FNLENGTH 1,0
 
 src/keyPress.c,271
 #define thisRow(45,1527
@@ -121,17 +109,6 @@ void processKeypress(438,10301
 src/keyPress.h,45
 #define CTRL_KEY(2,20
 #define ALT_KEY 3,53
-
-src/window.c,283
-static WINDOW *WIN;WIN31,1270
-void closeEditor(34,1332
-WINDOW *getWindowHandle(getWindowHandle41,1416
-static void _initColor(47,1463
-void initializeTerminal(60,1692
-int getWinNumCols(98,2546
-int getWinNumRows(102,2602
-int getWinThisCol(106,2658
-int getScreenRows(110,2714
 
 src/minibuffer.c,461
 #define MINIBUFFSIZE 26,1202
@@ -173,62 +150,85 @@ void pageUp(460,10420
 static void _goto(489,10911
 void jumpToLine(505,11178
 
-src/window.h,63
-#define NORMAL_BACKGROUND 1,0
-#define HIGHLT_BACKGROUND 2,28
+src/pointMarkRegion.c,492
+bool REGIONP 34,1329
+static int POINT_X 37,1411
+static int POINT_Y 38,1468
+static int MARK_X 39,1525
+static int MARK_Y 40,1581
+int getPointX(48,1860
+int getPointY(51,1904
+void setPointX(54,1948
+void setPointY(57,1991
+int getMarkX(62,2070
+int getMarkY(65,2112
+void setMarkX(68,2154
+void setMarkY(71,2195
+bool swapPointAndMark(77,2264
+void setRegionActive(104,2904
+bool regionActiveP(109,2968
+bool inRegionP(115,3062
+static void _removeText(177,4283
+void killRegion(255,5881
 
 src/render.c,55
 #define DISPLAY_ROWS 38,1409
 void renderText(45,1697
 
-src/edit.c,530
-#define EBSZ 40,1492
-static char EDITBUFFER[EDITBUFFER41,1508
-static int  EBINDEX 42,1572
-int getEditBufferIndex(49,1837
-char getEditBufferChar(54,1892
-void setEditBufferIndex(59,1952
-void autoIndent(69,2242
-void selfInsert(110,3198
-void deleteChar(131,3658
-void backspace(159,4315
-void killWord(208,5493
-void capitalizeWord(225,5925
-void upcaseWord(252,6369
-void downcaseWord(296,7069
-void killLine(344,7962
-void yankLine(366,8409
-void _swap(384,8766
-void killRectangle(391,8840
-void rectangleInsert(435,9799
+src/state.c,680
+#define thisRow(38,1475
+#define thisCol(39,1524
+static int ROWOFFSET 42,1592
+static int COLOFFSET 43,1656
+enum _sf 46,1748
+enum _sf { ORIGINAL,46,1748
+enum _sf { ORIGINAL, MODIFIED,46,1748
+enum _sf { ORIGINAL, MODIFIED, READONLY 46,1748
+static const char _sfname[_sfname47,1791
+static enum _sf STATUSFLAG 50,1892
+void setStatusFlagOriginal(56,2145
+void setStatusFlagModified(61,2211
+bool statusFlagModifiedP(65,2276
+char *getStatusFlagName(getStatusFlagName70,2352
+int getRowOffset(80,2689
+int getColOffset(83,2738
+void setRowOffset(86,2787
+void setColOffset(89,2837
+void updateLine(98,3140
+void updateEditState(147,4354
+void updateNavigationState(160,4736
 
-src/buffer.h,233
-  char  *txt;txt5,70
-  size_t len;6,110
-  size_t lPtr;7,148
-  size_t rPtr;8,188
-  bool   editP;9,203
-} row_t;10,254
-typedef row_t** buff_t;13,290
-enum _bn 16,358
-enum _bn { DEFAULT,16,358
-enum _bn { DEFAULT, UNAMED 16,358
+src/statusBar.c,72
+static char statusLine[statusLine33,1282
+void drawStatusLine(41,1540
 
-src/files.h,22
-#define FNLENGTH 1,0
+src/window.c,283
+static WINDOW *WIN;WIN31,1270
+void closeEditor(34,1332
+WINDOW *getWindowHandle(getWindowHandle41,1416
+static void _initColor(47,1463
+void initializeTerminal(60,1692
+int getWinNumCols(98,2546
+int getWinNumRows(102,2602
+int getWinThisCol(106,2658
+int getScreenRows(110,2714
 
-src/ae.h,0
-
-src/edit.h,0
-
-src/state.h,0
-
-src/navigation.h,0
-
-src/render.h,0
+src/window.h,63
+#define NORMAL_BACKGROUND 1,0
+#define HIGHLT_BACKGROUND 2,28
 
 src/statusBar.h,0
 
+src/state.h,0
+
+src/render.h,0
+
 src/pointMarkRegion.h,0
 
+src/navigation.h,0
+
 src/minibuffer.h,0
+
+src/edit.h,0
+
+src/ae.h,0

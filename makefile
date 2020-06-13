@@ -23,7 +23,8 @@ CFLAGS=-Wall -Wextra -pedantic -std=c99
 OBJS=$(SRC:.c=.o)
 
 # Libraries
-LIBS=-lcurses -lreadline -lmenu
+#LIBS=-lcurses -lreadline -lmenu
+LIBS=-lcurses -lmenu
 
 # ####################################################################
 #			  BUILD DEPENDENCIES
