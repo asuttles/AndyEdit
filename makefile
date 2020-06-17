@@ -61,7 +61,7 @@ debug: CFLAGS += -g -O0 -DDEBUG
 debug: .depend ae tags stats
 
 # Targets
-#.phony: install tags stats default debug
+.PHONY: install tags stats default debug
 
 # ####################################################################
 #			      STATS/TAGS

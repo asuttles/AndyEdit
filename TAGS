@@ -61,26 +61,32 @@ enum _bn 16,358
 enum _bn { DEFAULT,16,358
 enum _bn { DEFAULT, UNAMED 16,358
 
-src/edit.c,530
+src/edit.c,723
 #define EBSZ 40,1492
 static char EDITBUFFER[EDITBUFFER41,1508
-static int  EBINDEX 42,1572
-int getEditBufferIndex(49,1837
-char getEditBufferChar(54,1892
-void setEditBufferIndex(59,1952
-void autoIndent(69,2242
-void selfInsert(110,3198
-void deleteChar(131,3658
-void backspace(159,4315
-void killWord(208,5493
-void capitalizeWord(225,5925
-void upcaseWord(252,6369
-void downcaseWord(296,7069
-void killLine(344,7962
-void yankLine(366,8409
-void _swap(384,8766
-void killRectangle(391,8840
-void rectangleInsert(435,9799
+static int  EBINDEX 42,1577
+static int recStrtRow 45,1653
+static int recStopRow 46,1709
+static int recStrtCol 47,1736
+static int recStopCol 48,1763
+int getEditBufferIndex(55,2002
+char getEditBufferChar(60,2057
+void setEditBufferIndex(65,2117
+void autoIndent(75,2407
+void selfInsert(116,3363
+void deleteChar(137,3823
+void backspace(165,4480
+void killWord(214,5658
+void capitalizeWord(231,6090
+void upcaseWord(258,6534
+void downcaseWord(302,7234
+void killLine(350,8127
+void yankLine(372,8574
+void _swap(390,8931
+void _setupRectangle(398,9031
+void killRectangle(413,9403
+void rectangleInsert(446,10059
+void rectangleNumberLines(496,11193
 
 src/files.c,278
 #define DEFAULTFILENAME 40,1448
@@ -101,10 +107,10 @@ src/keyPress.c,271
 int readKey(56,1936
 void _universalArgument(71,2159
 static void _rectangleMenu(88,2603
-static void _eXtensionMenu(115,3167
-void metaMenu(195,5085
-static void _handleKeypress(258,6374
-void processKeypress(438,10301
+static void _eXtensionMenu(119,3262
+void metaMenu(199,5180
+static void _handleKeypress(262,6469
+void processKeypress(442,10396
 
 src/keyPress.h,45
 #define CTRL_KEY(2,20

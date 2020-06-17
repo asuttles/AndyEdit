@@ -13,3 +13,4 @@ void killLine( void );
 void yankLine( void );
 void killRectangle( void );
 void rectangleInsert( void );
+void rectangleNumberLines( void );

@@ -55,14 +55,16 @@ See [README](README.md) for information on how to compile ae.
 * C-SPACE - Set Mark
 * C-_     - Undo (TODO)
 
-### eXtension Keybindings (control+x key)
-* C-x C-x - Swap Point and Mark
+### eXtension Keybindings (control+x key(s))
 * C-x C-c - Close AE
-* C-x k   - Kill Buffer
-* C-x C-w - Save As
+* C-x C-f - Find File
 * C-x C-s - Save Buffer
 * C-x C-v - Find Alternate File
-* C-x C-f - Find File
+* C-x C-w - Save As
+* C-x C-x - Swap Point and Mark
+* C-x k   - Kill Buffer
+* C-x r k - Kill Rectangle
+* C-x r t - Insert Rectangle
 
 ### Alt-Key Keybindings (alt+key)
 * a-f     - Forward Word
